@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { Search } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, Search } from "lucide-react";
 
 type MenuItemType = {
   label: string;
@@ -10,7 +9,7 @@ type MenuItemType = {
   children?: MenuItemType[];
 };
 
-/* 🔥 Recursive filter */
+/* 🔥 Recursive filter function */
 const filterMenu = (menu: MenuItemType[], query: string): MenuItemType[] => {
   if (!query) return menu;
 
@@ -41,9 +40,11 @@ const filterMenu = (menu: MenuItemType[], query: string): MenuItemType[] => {
 const MenuItem = ({
   item,
   level = 0,
+  search = "",
 }: {
   item: MenuItemType;
   level?: number;
+  search?: string;
 }) => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
@@ -52,11 +53,23 @@ const MenuItem = ({
   const hasChildren = !!item.children;
   const isActive = item.path && location.pathname === item.path;
 
+  /* 🔥 Match logic for auto expand */
+  const isMatch = item.label.toLowerCase().includes(search.toLowerCase());
+
+  const hasMatchingChild =
+    item.children?.some((child) =>
+      JSON.stringify(child).toLowerCase().includes(search.toLowerCase())
+    ) ?? false;
+
+  const isOpen = search ? isMatch || hasMatchingChild : open;
+
   const handleClick = () => {
-    if (hasChildren) {
-      setOpen(!open);
-    } else if (item.path) {
-      navigate(item.path);
+    if (item.path) {
+      navigate(item.path); // ✅ always navigate if path exists
+    }
+
+    if (!search && hasChildren) {
+      setOpen((prev) => !prev); // ✅ manual toggle only when not searching
     }
   };
 
@@ -75,13 +88,18 @@ const MenuItem = ({
         <span className="text-sm">{item.label}</span>
 
         {hasChildren &&
-          (open ? <ChevronDown size={14} /> : <ChevronRight size={14} />)}
+          (isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />)}
       </div>
 
-      {hasChildren && open && (
+      {hasChildren && isOpen && (
         <div className="mt-1">
           {item.children!.map((child, i) => (
-            <MenuItem key={i} item={child} level={level + 1} />
+            <MenuItem
+              key={i}
+              item={child}
+              level={level + 1}
+              search={search}
+            />
           ))}
         </div>
       )}
@@ -123,7 +141,7 @@ export default function Sidebar({ menu }: { menu: MenuItemType[] }) {
       <div className="flex-1 overflow-y-auto px-2 space-y-1">
         {filteredMenu.length > 0 ? (
           filteredMenu.map((item, i) => (
-            <MenuItem key={i} item={item} />
+            <MenuItem key={i} item={item} search={search} />
           ))
         ) : (
           <div className="text-sm text-gray-400 px-3 py-2">
