@@ -19,7 +19,7 @@ const filterMenu = (menu: MenuItemType[], query: string): MenuItemType[] => {
         const filteredChildren = filterMenu(item.children, query);
 
         if (
-          item.label.toLowerCase().includes(query.toLowerCase()) ||
+          item?.label?.toLowerCase().includes(query.toLowerCase()) ||
           filteredChildren.length > 0
         ) {
           return {
@@ -54,7 +54,7 @@ const MenuItem = ({
   const isActive = item.path && location.pathname === item.path;
 
   /* 🔥 Match logic for auto expand */
-  const isMatch = item.label.toLowerCase().includes(search.toLowerCase());
+  const isMatch = item?.label?.toLowerCase().includes(search.toLowerCase());
 
   const hasMatchingChild =
     item.children?.some((child) =>

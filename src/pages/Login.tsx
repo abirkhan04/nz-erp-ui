@@ -1,14 +1,24 @@
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
+import type { Company } from "../types/interfaces";
+import { useGet } from "../hooks/useGet";
+import { fetchCompany } from "../mock/Api";
 
 type FormData = {
   email: string;
   password: string;
+  companyId: string;
 };
 
 export default function Login() {
   const { register, handleSubmit } = useForm<FormData>();
   const navigate = useNavigate();
+  const {
+      data: companies,
+    } = useGet<Company[]>({
+      key: ["menu"],
+      queryFn: fetchCompany,
+    });
 
   const onSubmit = (data: FormData) => {
     console.log("Login Data:", data);
@@ -54,6 +64,22 @@ export default function Login() {
               placeholder="Enter your password"
               className="w-full mt-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:outline-none transition"
             />
+          </div>
+          <div>
+            <label className="text-sm text-gray-600">Company</label>
+            <select
+                    {...register("companyId")}
+                defaultValue  = ""  
+                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400"
+                >
+                <option value="">Select Company</option>
+
+                {companies?.map((company) => (
+                    <option key={company.id} value={company.id}>
+                    {company.name}
+                    </option>
+                ))}
+            </select>
           </div>
 
           {/* Button */}

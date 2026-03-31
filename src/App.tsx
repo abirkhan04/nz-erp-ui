@@ -1,8 +1,8 @@
 import { Routes, Route } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
 import { useGet } from "./hooks/useGet";
-import { fetchMenu } from "./mock/menuApi";
-import type { MenuItemType } from "./types/types";
+import { fetchMenu } from "./mock/Api";
+import type { MenuItemType } from "./types/interfaces";
 import Topbar from "./components/Topbar";
 
 import { lazy } from "react";

@@ -5,7 +5,7 @@ import {
     FileText,
   } from "lucide-react";
   
-import type { MenuItemType } from "../types/types";
+import type { MenuItemType } from "../types/interfaces";
 
 export const mockMenu: MenuItemType[] = [
     {
