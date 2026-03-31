@@ -20,7 +20,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-indigo-200"
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-100 to-indigo-200 bg-cover bg-center bg-no-repeat"
     style={{
         backgroundImage: "url('/images/login-bg.jpg')",
       }}

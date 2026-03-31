@@ -9,15 +9,19 @@ export const fetchMenu = async (): Promise<MenuItemType[]> => {
             path: "/",
           },
           {
-            label: "Configuration",
+            label: "Set Up",
             children: [
-              { label: "Currency", path: "/currency" },
-              { label: "Branch", path: "/branch" },
-              { label: "Fiscal Year", path: "/fiscal-year" },
+              { label: "Company", path: "/company" },
+              { label: "Unit", path: "/unit" },
+              { label: "Section", path: "/section" },
+              { label: "Department", path: "/department" },
+              { label: "Designation", path: "/designation" },
+              { label: "Grade", path: "/grade" },
+              { label: "Shift", path: "/shift" },
             ],
           },
           {
-            label: "GL Module",
+            label: "Employee Entry",
             children: [
               { label: "Journal Entry", path: "/journal" },
               { label: "Reports", path: "/reports" },
