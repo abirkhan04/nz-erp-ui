@@ -1,5 +1,5 @@
 import axios from "axios";
 
 export const api = axios.create({
-  baseURL: "https://mock-api.local",
+  baseURL: "https://localhost:44339/api/",
 });

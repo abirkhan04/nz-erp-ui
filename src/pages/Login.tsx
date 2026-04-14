@@ -5,6 +5,8 @@ import { fetchCompany } from "../mock/Api";
 import type { Company } from "../types/interfaces";
 import { User, Lock, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
+import { usePost } from "../hooks/usePost";
+import { API_ROUTES } from "../api/routes";
 
 type FormData = {
   username: string;
@@ -16,15 +18,35 @@ export default function Login() {
   const { register, handleSubmit } = useForm<FormData>();
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const { mutateAsync: login, isPending } = usePost(API_ROUTES.LOGIN);
 
-  const { data: companies } = useGet<Company[]>({
-    key: ["companies"],
-    queryFn: fetchCompany,
-  });
+  const onSubmit = async (data: FormData) => {
+    try {
+      const res: any = await login({
+        username: data.username,
+        password: data.password,
+      });
 
-  const onSubmit = (data: FormData) => {
-    console.log("Login Data:", data);
-    setTimeout(() => navigate("/"), 500);
+      console.log("Login Success:", res);
+
+      // Axios হলে res.data, fetch হলে res directly
+      const token = res?.data?.token || res?.token;
+
+      if (token) {
+        localStorage.setItem("token", token);
+      }
+
+      navigate("/");
+    } catch (error: any) {
+      console.error(error);
+
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Login failed";
+
+      // alert(message);
+    }
   };
 
   return (
@@ -94,23 +116,6 @@ export default function Login() {
                 </div>
               </div>
 
-              {/* Company */}
-              <div>
-                <label className="text-xs text-[#333333]">Company</label>
-                <select
-                  {...register("companyId")}
-                  defaultValue=""
-                  className="w-full mt-1 px-3 py-2 text-sm border border-[#E0E0E0] rounded-lg focus:ring-2 focus:ring-[#2F80ED] focus:border-[#2F80ED]"
-                >
-                  <option value="">Select Company</option>
-                  {companies?.map((company) => (
-                    <option key={company.id} value={company.id}>
-                      {company.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
             </div>
 
             {/* MIDDLE */}
@@ -128,9 +133,10 @@ export default function Login() {
               {/* Sign In */}
               <button
                 type="submit"
-                className="w-full bg-[#2F80ED] text-white py-2 rounded-lg text-sm font-semibold hover:bg-[#256fd1] transition"
+                disabled={isPending}
+                className="w-full bg-[#2F80ED] text-white py-2 rounded-lg text-sm font-semibold hover:bg-[#256fd1] transition disabled:opacity-50"
               >
-                Sign In
+                {isPending ? "Signing in..." : "Sign In"}
               </button>
             </div>
 
