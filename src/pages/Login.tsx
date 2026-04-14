@@ -1,8 +1,5 @@
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { useGet } from "../hooks/useGet";
-import { fetchCompany } from "../mock/Api";
-import type { Company } from "../types/interfaces";
 import { User, Lock, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import { usePost } from "../hooks/usePost";
@@ -30,7 +27,7 @@ export default function Login() {
       console.log("Login Success:", res);
 
       // Axios হলে res.data, fetch হলে res directly
-      const token = res?.data?.token || res?.token;
+      const token = res?.data?.id || res?.token;
 
       if (token) {
         localStorage.setItem("token", token);
@@ -161,7 +158,7 @@ export default function Login() {
 
           {/* Footer */}
           <p className="text-center text-[10px] text-[#333333]/50 mt-3">
-            © 2024 NZ Group
+            © 2024 NZ Tex Group
           </p>
 
         </div>
