@@ -7,6 +7,7 @@ import Topbar from "./components/Topbar";
 import { lazy } from "react";
 
 const Login = lazy(() => import("./pages/Login"));
+const Dashboard = lazy(()=> import("./pages/Dashboard"));
 
 /**
  * 🔐 Auth check (replace with real logic)
@@ -38,7 +39,7 @@ function Layout() {
   return (
     <div className="flex h-screen">
       {/* Sidebar */}
-      {isLoading ? (
+      {/* {isLoading ? (
         <div className="w-64 flex items-center justify-center bg-gray-900 text-white">
           Loading menu...
         </div>
@@ -48,15 +49,15 @@ function Layout() {
         </div>
       ) : (
         <Sidebar menu={menu ?? []} />
-      )}
+      )} */}
 
       {/* Main */}
       <div className="flex-1 flex flex-col">
         <Topbar />
 
-        <div className="flex-1 p-6 bg-gray-50 overflow-auto">
+        <div className="flex-1 p-2 bg-gray-50 overflow-auto">
           <Routes>
-            <Route path="/" element={<Page title="Dashboard" />} />
+            <Route path="/" element={<Dashboard/>} />
             <Route path="/currency" element={<Page title="Currency" />} />
             <Route path="/branch" element={<Page title="Branch" />} />
             <Route path="/journal" element={<Page title="Journal Entry" />} />
