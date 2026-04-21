@@ -80,6 +80,39 @@ export default function Topbar() {
 
       {/* Right Section */}
       <div className="flex items-center gap-4">
+
+      {/* Location Multi-Select */}
+      <div className="relative" ref={locationRef}>
+        <div
+          onClick={() => setLocationOpen(!locationOpen)}
+          className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-md cursor-pointer min-w-[180px]"
+        >
+          <MapPin size={16} />
+          <span className="text-sm truncate">
+            {renderSelected(selectedLocations, "Select Location")}
+          </span>
+          <ChevronDown size={14} />
+        </div>
+
+        {locationOpen && (
+          <div className="absolute right-0 mt-2 w-56 bg-white text-black rounded-lg shadow-lg p-2">
+            {locations.map((loc) => (
+              <label
+                key={loc}
+                className="flex items-center gap-2 px-2 py-2 hover:bg-gray-100 rounded cursor-pointer text-sm"
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedLocations.includes(loc)}
+                  onChange={() => toggleLocation(loc)}
+                  className="accent-blue-500"
+                />
+                {loc}
+              </label>
+            ))}
+          </div>
+        )}
+      </div>
         
         {/* Company Multi-Select */}
         <div className="relative" ref={companyRef}>
@@ -108,39 +141,6 @@ export default function Topbar() {
                     className="accent-blue-500"
                   />
                   {company}
-                </label>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Location Multi-Select */}
-        <div className="relative" ref={locationRef}>
-          <div
-            onClick={() => setLocationOpen(!locationOpen)}
-            className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-md cursor-pointer min-w-[180px]"
-          >
-            <MapPin size={16} />
-            <span className="text-sm truncate">
-              {renderSelected(selectedLocations, "Select Location")}
-            </span>
-            <ChevronDown size={14} />
-          </div>
-
-          {locationOpen && (
-            <div className="absolute right-0 mt-2 w-56 bg-white text-black rounded-lg shadow-lg p-2">
-              {locations.map((loc) => (
-                <label
-                  key={loc}
-                  className="flex items-center gap-2 px-2 py-2 hover:bg-gray-100 rounded cursor-pointer text-sm"
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedLocations.includes(loc)}
-                    onChange={() => toggleLocation(loc)}
-                    className="accent-blue-500"
-                  />
-                  {loc}
                 </label>
               ))}
             </div>
