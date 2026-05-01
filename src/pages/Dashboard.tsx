@@ -3,6 +3,7 @@ import * as Icons from "lucide-react";
 import { useGet } from "../hooks/useGet";
 import type { MenuItemType } from "../types/interfaces";
 import { API_ROUTES } from "../api/routes";
+import { useNavigate } from "react-router-dom";
 
 // 🎨 Style pool
 const styles = [
@@ -27,6 +28,7 @@ const getIcon = (iconName?: string) => {
 const Dashboard: React.FC = () => {
 
     const [token, setToken] = useState<string | null>(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const storedToken = localStorage.getItem("token");
@@ -103,7 +105,7 @@ const Dashboard: React.FC = () => {
 
                                 <button
                                     className={`mt-4 w-full text-white py-2 rounded-lg ${card.btn}`}
-                                >
+                                    onClick={()=> navigate(card.url)}>
                                     {card.name}
                                 </button>
                             </div>

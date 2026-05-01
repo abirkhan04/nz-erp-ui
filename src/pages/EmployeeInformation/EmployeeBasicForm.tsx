@@ -1,18 +1,32 @@
 import React from "react";
+import { useGet } from "../../hooks/useGet";
 import {
   useFormContext,
 } from "react-hook-form";
 
 import type { EmployeeFormValues } from "./EmployeeFormValues";
 
+import { API_ROUTES } from "../../api/routes";
+import type { Department } from "../../types/interfaces";
+
 
 const EmployeeForm: React.FC = () => {
-const {
-  register,
-  handleSubmit,
-  reset,
-  formState: { errors },
-} = useFormContext<EmployeeFormValues>();
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useFormContext<EmployeeFormValues>();
+
+  const {
+    data: departments = [],
+    isLoading,
+    error,
+  } = useGet<Department[]>({
+    key: ["department"],
+    url: API_ROUTES.DEPARTMENT,
+  });
+
 
   const onSubmit = (data: EmployeeFormValues) => {
     console.log("Form Data:", data);
