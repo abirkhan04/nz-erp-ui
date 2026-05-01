@@ -1,0 +1,225 @@
+import React, { useState } from "react";
+import EmployeeInformationForm from "./EmployeeInformation/EmployeeBasicForm";
+import FinancialDetailsForm from "./EmployeeInformation/FinancialDetailsForm";
+import AddressDetailsForm from "./EmployeeInformation/AddressDetailsForm";
+import FamilyNomineeForm from "./EmployeeInformation/FamilyAndNomineeForm";
+//import DocumentsForm from "./DocumentsForm";
+//import ReviewSubmitForm from "./ReviewSubmitForm";
+
+type StepItem = {
+  id: number;
+  title: string;
+};
+
+const steps: StepItem[] = [
+  {
+    id: 1,
+    title: "Employee Information",
+  },
+  {
+    id: 2,
+    title: "Financial Details",
+  },
+  {
+    id: 3,
+    title: "Address Details",
+  },
+  {
+    id: 4,
+    title: "Family & Nominee",
+  },
+//   {
+//     id: 5,
+//     title: "Documents",
+//   },
+//   {
+//     id: 6,
+//     title: "Review & Submit",
+//   },
+];
+
+const EmployeeOnboardingParent: React.FC = () => {
+  const [activeStep, setActiveStep] = useState<number>(2);
+
+  const handleNext = () => {
+    if (activeStep < steps.length) {
+      setActiveStep((prev) => prev + 1);
+    }
+  };
+
+  const handlePrevious = () => {
+    if (activeStep > 1) {
+      setActiveStep((prev) => prev - 1);
+    }
+  };
+
+  const renderStepComponent = () => {
+    switch (activeStep) {
+      case 1:
+        return <EmployeeInformationForm />;
+
+      case 2:
+        return <FinancialDetailsForm />;
+
+      case 3:
+        return <AddressDetailsForm />;
+
+      case 4:
+        return <FamilyNomineeForm />;
+
+    //   case 5:
+    //     return <DocumentsForm />;
+
+    //   case 6:
+    //     return <ReviewSubmitForm />;
+
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#f7f8fc] p-6">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-200">
+        {/* TOP TAB STEPPER */}
+        <div className="flex items-center justify-between px-6 py-5 border-b overflow-x-auto">
+          <div className="flex items-center min-w-max w-full">
+            {steps.map((step, index) => {
+              const isCompleted = step.id < activeStep;
+              const isActive = step.id === activeStep;
+
+              return (
+                <React.Fragment key={step.id}>
+                  <div
+                    className="flex items-center gap-3 cursor-pointer"
+                    onClick={() => setActiveStep(step.id)}
+                  >
+                    {/* STEP CIRCLE */}
+                    <div
+                      className={`
+                        w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-all
+                        
+                        ${
+                          isCompleted
+                            ? "bg-green-100 text-green-600 border border-green-200"
+                            : ""
+                        }
+
+                        ${
+                          isActive
+                            ? "bg-blue-600 text-white"
+                            : ""
+                        }
+
+                        ${
+                          !isCompleted && !isActive
+                            ? "bg-gray-100 text-gray-500"
+                            : ""
+                        }
+                      `}
+                    >
+                      {isCompleted ? "✓" : step.id}
+                    </div>
+
+                    {/* STEP TITLE */}
+                    <div
+                      className={`
+                        text-sm font-medium whitespace-nowrap
+                        ${
+                          isActive
+                            ? "text-blue-600"
+                            : "text-gray-500"
+                        }
+                      `}
+                    >
+                      {step.title}
+                    </div>
+                  </div>
+
+                  {/* LINE */}
+                  {index !== steps.length - 1 && (
+                    <div className="flex-1 h-[2px] bg-gray-200 mx-4 min-w-[60px]" />
+                  )}
+                </React.Fragment>
+              );
+            })}
+          </div>
+
+          {/* ACTION BUTTONS */}
+          <div className="flex items-center gap-3 ml-6">
+            <button
+              className="
+                px-5 py-2
+                border border-gray-300
+                rounded-lg
+                text-sm font-medium
+                hover:bg-gray-50
+                whitespace-nowrap
+              "
+            >
+              Save as Draft
+            </button>
+
+            <button
+              onClick={handleNext}
+              className="
+                px-6 py-2
+                bg-blue-600
+                hover:bg-blue-700
+                text-white
+                rounded-lg
+                text-sm font-medium
+                whitespace-nowrap
+              "
+            >
+              Next →
+            </button>
+          </div>
+        </div>
+
+        {/* STEP CONTENT */}
+        <div className="p-6">
+          {renderStepComponent()}
+        </div>
+
+        {/* FOOTER NAVIGATION */}
+        <div className="flex justify-between items-center px-6 py-4 border-t">
+          <button
+            disabled={activeStep === 1}
+            onClick={handlePrevious}
+            className="
+              px-5 py-2
+              border border-gray-300
+              rounded-lg
+              text-sm
+              disabled:opacity-50
+            "
+          >
+            Previous
+          </button>
+
+          <div className="text-sm text-gray-500">
+            Step {activeStep} of {steps.length}
+          </div>
+
+          <button
+            disabled={activeStep === steps.length}
+            onClick={handleNext}
+            className="
+              px-5 py-2
+              bg-blue-600
+              text-white
+              rounded-lg
+              text-sm
+              disabled:opacity-50
+            "
+          >
+            Continue
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default EmployeeOnboardingParent;

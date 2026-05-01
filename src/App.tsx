@@ -8,6 +8,8 @@ import { lazy } from "react";
 
 const Login = lazy(() => import("./pages/Login"));
 const Dashboard = lazy(()=> import("./pages/Dashboard"));
+const EmployeeForm = lazy(()=> import("./pages/EmployeeOnBoardingParent"));
+
 
 /**
  * 🔐 Auth check (replace with real logic)
@@ -58,6 +60,7 @@ function Layout() {
         <div className="flex-1 p-2 bg-gray-50 overflow-auto">
           <Routes>
             <Route path="/" element={<Dashboard/>} />
+            <Route path="/new-recruitment" element={<EmployeeForm/>}/>
             <Route path="/currency" element={<Page title="Currency" />} />
             <Route path="/branch" element={<Page title="Branch" />} />
             <Route path="/journal" element={<Page title="Journal Entry" />} />
