@@ -1,10 +1,14 @@
 import React, { useState } from "react";
+import {
+  useForm,
+  FormProvider,
+} from "react-hook-form";
 import EmployeeInformationForm from "./EmployeeInformation/EmployeeBasicForm";
 import FinancialDetailsForm from "./EmployeeInformation/FinancialDetailsForm";
 import AddressDetailsForm from "./EmployeeInformation/AddressDetailsForm";
 import FamilyNomineeForm from "./EmployeeInformation/FamilyAndNomineeForm";
-//import DocumentsForm from "./DocumentsForm";
-//import ReviewSubmitForm from "./ReviewSubmitForm";
+import DocumentsForm from "./EmployeeInformation/DocumentsForm";
+import ReviewSubmitForm from "./EmployeeInformation/ReviewAndSubmit";
 
 type StepItem = {
   id: number;
@@ -28,18 +32,23 @@ const steps: StepItem[] = [
     id: 4,
     title: "Family & Nominee",
   },
-//   {
-//     id: 5,
-//     title: "Documents",
-//   },
-//   {
-//     id: 6,
-//     title: "Review & Submit",
-//   },
+  {
+    id: 5,
+    title: "Documents",
+  },
+  {
+    id: 6,
+    title: "Review & Submit",
+  },
 ];
 
 const EmployeeOnboardingParent: React.FC = () => {
   const [activeStep, setActiveStep] = useState<number>(2);
+  const [formData, setFormData] = useState({});
+
+    const methods = useForm({
+    mode: "onChange",
+  });
 
   const handleNext = () => {
     if (activeStep < steps.length) {
@@ -67,11 +76,16 @@ const EmployeeOnboardingParent: React.FC = () => {
       case 4:
         return <FamilyNomineeForm />;
 
-    //   case 5:
-    //     return <DocumentsForm />;
+      case 5:
+        return <DocumentsForm />;
 
-    //   case 6:
-    //     return <ReviewSubmitForm />;
+      case 6:
+        return (
+    <ReviewSubmitForm
+      onEditStep={setActiveStep}
+      formData={formData}
+    />
+  );
 
       default:
         return null;
@@ -79,11 +93,11 @@ const EmployeeOnboardingParent: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f7f8fc] p-6">
+    <div className="min-h-screen bg-[#f7f8fc] p-4 overflow-x-hidden">
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200">
         {/* TOP TAB STEPPER */}
-        <div className="flex items-center justify-between px-6 py-5 border-b overflow-x-auto">
-          <div className="flex items-center min-w-max w-full">
+        <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4 px-4 py-5 border-b overflow-hidden">
+          <div className="flex items-center w-full flex-wrap">
             {steps.map((step, index) => {
               const isCompleted = step.id < activeStep;
               const isActive = step.id === activeStep;
@@ -178,9 +192,11 @@ const EmployeeOnboardingParent: React.FC = () => {
         </div>
 
         {/* STEP CONTENT */}
-        <div className="p-6">
-          {renderStepComponent()}
-        </div>
+    <FormProvider {...methods}>
+      <div>
+        {renderStepComponent()}
+      </div>
+    </FormProvider>
 
         {/* FOOTER NAVIGATION */}
         <div className="flex justify-between items-center px-6 py-4 border-t">

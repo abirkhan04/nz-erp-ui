@@ -1,67 +1,18 @@
 import React from "react";
-import { useForm } from "react-hook-form";
+import {
+  useFormContext,
+} from "react-hook-form";
 
-type EmployeeFormValues = {
-  employeeId: string;
-  employeeNameEnglish: string;
-  employeeNameBangla: string;
-  companyName: string;
-  department: string;
-  section: string;
-  grade: string;
-  employeeType: string;
-  shift: string;
-  employeeNature: string;
-  holiday: string;
-  joiningDate: string;
-  confirmationDate: string;
+import type { EmployeeFormValues } from "./EmployeeFormValues";
 
-  dateOfBirth: string;
-  gender: string;
-  maritalStatus: string;
-  mobileNumber: string;
-  emailAddress: string;
-  documentType: string;
-  documentNumber: string;
-  bloodGroup: string;
-  religion: string;
-  nationality: string;
-
-  fatherNameEnglish: string;
-  fatherNameBangla: string;
-  motherNameEnglish: string;
-  motherNameBangla: string;
-  spouseName: string;
-  spouseMobile: string;
-  tinNumber: string;
-  employeeReference: string;
-};
 
 const EmployeeForm: React.FC = () => {
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<EmployeeFormValues>({
-    defaultValues: {
-      employeeId: "EMP-2026-0415",
-      companyName: "NZ Textile Ltd.",
-      department: "Weaving",
-      section: "Loom Operation",
-      grade: "Grade 1",
-      employeeType: "Worker",
-      shift: "Day Shift",
-      employeeNature: "Provision",
-      holiday: "Friday",
-      gender: "Male",
-      maritalStatus: "Unmarried",
-      documentType: "NID",
-      bloodGroup: "B+",
-      religion: "Islam",
-      nationality: "Bangladeshi",
-    },
-  });
+const {
+  register,
+  handleSubmit,
+  reset,
+  formState: { errors },
+} = useFormContext<EmployeeFormValues>();
 
   const onSubmit = (data: EmployeeFormValues) => {
     console.log("Form Data:", data);

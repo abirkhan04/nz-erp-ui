@@ -1,64 +1,23 @@
 import React from "react";
-import { useForm, Controller } from "react-hook-form";
+import {
+  useFormContext,
+  Controller
+} from "react-hook-form";
 
-type FinancialDetailsFormValues = {
-  basicSalary: number;
-  houseRentAllowance: number;
-  medicalAllowance: number;
-  conveyanceAllowance: number;
-  otherAllowance: number;
-  grossSalary: number;
-
-  paymentMethod: string;
-  bankName: string;
-  bankAccountNo: string;
-  accountType: string;
-  branch: string;
-
-  tinNumber: string;
-  taxStatus: string;
-  taxExempted: string;
-  nidNumber: string;
-
-  providentFund: string;
-  pfAccountNo: string;
-  gratuityApplicable: string;
-  esiApplicable: string;
-
-  salaryEffectiveFrom: string;
-  remarks: string;
-};
+import type { EmployeeFormValues } from "./EmployeeFormValues";
 
 const FinancialDetailsForm: React.FC = () => {
-  const {
-    register,
-    handleSubmit,
-    watch,
-    control,
-    formState: { errors },
-  } = useForm<FinancialDetailsFormValues>({
-    defaultValues: {
-      basicSalary: 15000,
-      houseRentAllowance: 7500,
-      medicalAllowance: 1000,
-      conveyanceAllowance: 800,
-      otherAllowance: 700,
-      grossSalary: 25000,
+const {
+  register,
+  handleSubmit,
+  reset,
+  watch,
+  control,
+  formState: { errors },
+} = useFormContext<EmployeeFormValues>();
 
-      paymentMethod: "Bank",
-      bankName: "Dutch-Bangla Bank Ltd.",
-      bankAccountNo: "12312123123123123",
-      accountType: "Savings",
-      branch: "Narayanganj Branch",
 
-      taxStatus: "Taxable",
-      providentFund: "Yes",
-      gratuityApplicable: "Yes",
-      esiApplicable: "Yes",
-    },
-  });
-
-  const onSubmit = (data: FinancialDetailsFormValues) => {
+  const onSubmit = (data: EmployeeFormValues) => {
     console.log("Financial Details:", data);
   };
 

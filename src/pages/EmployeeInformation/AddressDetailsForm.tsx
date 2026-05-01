@@ -1,35 +1,10 @@
 import React, { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import {
+  useFormContext,
+} from "react-hook-form";
 
-type AddressDetailsFormValues = {
-  sameAsPresentAddress: boolean;
+import type { EmployeeFormValues } from "./EmployeeFormValues";
 
-  // PRESENT ADDRESS
-  presentVillageRoadHouse: string;
-  presentPostOffice: string;
-  presentThanaUpazila: string;
-  presentDistrict: string;
-  presentDivision: string;
-
-  presentAddressBangla: string;
-  presentPostOfficeBangla: string;
-  presentThanaUpazilaBangla: string;
-  presentDistrictBangla: string;
-  presentDivisionBangla: string;
-
-  // PERMANENT ADDRESS
-  permanentVillageRoadHouse: string;
-  permanentPostOffice: string;
-  permanentThanaUpazila: string;
-  permanentDistrict: string;
-  permanentDivision: string;
-
-  permanentAddressBangla: string;
-  permanentPostOfficeBangla: string;
-  permanentThanaUpazilaBangla: string;
-  permanentDistrictBangla: string;
-  permanentDivisionBangla: string;
-};
 
 const AddressDetailsForm: React.FC = () => {
   const {
@@ -38,7 +13,7 @@ const AddressDetailsForm: React.FC = () => {
     watch,
     setValue,
     formState: { errors },
-  } = useForm<AddressDetailsFormValues>();
+  } = useFormContext<EmployeeFormValues>();
 
   const watchSameAsPresent = watch(
     "sameAsPresentAddress"
@@ -105,7 +80,7 @@ const AddressDetailsForm: React.FC = () => {
   ]);
 
   const onSubmit = (
-    data: AddressDetailsFormValues
+    data: EmployeeFormValues
   ) => {
     console.log("Address Details:", data);
   };
