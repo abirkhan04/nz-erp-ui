@@ -37,3 +37,15 @@ export interface Section {
   isActive: boolean;
 }
 
+export interface Grade {
+  id: string;
+  gradeName: string;
+  minSalary: number;
+  maxSalary: number;
+  createdOn: string;
+  createdBy: string;
+  updatedOn: string;
+  updatedBy: string;
+  isActive: boolean;
+}
+

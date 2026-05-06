@@ -7,7 +7,7 @@ import {
 import type { EmployeeFormValues } from "./EmployeeFormValues";
 
 import { API_ROUTES } from "../../api/routes";
-import type { Department, Section } from "../../types/interfaces";
+import type { Department, Grade, Section } from "../../types/interfaces";
 
 
 const EmployeeForm: React.FC = () => {
@@ -38,6 +38,15 @@ const {
   key: ["sections", selectedDepartment],
   url: `${API_ROUTES.SECTION}?includeInactive=true&departmentId=${selectedDepartment}`,
   enabled: !!selectedDepartment,
+});
+
+const {
+  data: grades = [],
+  isLoading: gradeLoading,
+  error: gradeError,
+} = useGet<Grade[]>({
+  key: ["grades"],
+  url: `${API_ROUTES.GRADE}?includeInactive=false`,
 });
 
 
@@ -135,13 +144,21 @@ const {
               {sectionLoading && <p>Loading sections...</p>}
               {sectionError && <p>Failed to load sections</p>}
             </div>
-
             <div>
               <label className={labelClass}>Grade *</label>
+
               <select {...register("grade")} className={inputClass}>
-                <option>Grade 1</option>
-                <option>Grade 2</option>
+                <option value="">Select Grade</option>
+
+                {grades.map((grade) => (
+                  <option key={grade.id} value={grade.id}>
+                    {grade.gradeName}
+                  </option>
+                ))}
               </select>
+
+              {gradeLoading && <p>Loading grades...</p>}
+              {gradeError && <p>Failed to load grades</p>}
             </div>
 
             <div>
