@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 
+
+import RecruitmentForm from "./EmployeeInformation/RecruitmentForm";
 import EmployeeInformationForm from "./EmployeeInformation/EmployeeBasicForm";
 import FinancialDetailsForm from "./EmployeeInformation/FinancialDetailsForm";
 import AddressDetailsForm from "./EmployeeInformation/AddressDetailsForm";
@@ -14,31 +16,35 @@ type StepItem = {
 };
 
 const steps: StepItem[] = [
-  {
-    id: 1,
-    title: "Employee Information",
-  },
-  {
-    id: 2,
-    title: "Financial Details",
-  },
-  {
-    id: 3,
-    title: "Address Details",
-  },
-  {
-    id: 4,
-    title: "Family & Nominee",
-  },
-  {
-    id: 5,
-    title: "Documents",
-  },
-  {
-    id: 6,
-    title: "Review & Submit",
-  },
-];
+    {
+      id: 1,
+      title: "Recruitment Form",
+    },
+    {
+      id: 2,
+      title: "Employee Information",
+    },
+    {
+      id: 3,
+      title: "Financial Details",
+    },
+    {
+      id: 4,
+      title: "Address Details",
+    },
+    {
+      id: 5,
+      title: "Family & Nominee",
+    },
+    {
+      id: 6,
+      title: "Documents",
+    },
+    {
+      id: 7,
+      title: "Review & Submit",
+    },
+  ];
 
 const EmployeeOnboardingParent: React.FC = () => {
   const [activeStep, setActiveStep] = useState<number>(1);
@@ -62,22 +68,24 @@ const EmployeeOnboardingParent: React.FC = () => {
 
   const renderStepComponent = () => {
     switch (activeStep) {
-      case 1:
+      case 1: 
+         return <RecruitmentForm />  
+      case 2:
         return <EmployeeInformationForm />;
 
-      case 2:
+      case 3:
         return <FinancialDetailsForm />;
 
-      case 3:
+      case 4:
         return <AddressDetailsForm />;
 
-      case 4:
+      case 5:
         return <FamilyNomineeForm />;
 
-      case 5:
+      case 6:
         return <DocumentsForm />;
 
-      case 6:
+      case 7:
         return (
           <ReviewSubmitForm
             onEditStep={setActiveStep}
@@ -94,7 +102,6 @@ const EmployeeOnboardingParent: React.FC = () => {
     <div className="min-h-screen bg-[#f5f7fb] p-5">
       <div className="bg-white rounded-[24px] border border-gray-200 overflow-hidden">
         {/* HEADER / TAB STEPPER */}
-{/* HEADER / TAB STEPPER */}
 <div className="border-b border-gray-200 bg-white px-6 py-4">
   <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-5">
     

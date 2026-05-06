@@ -82,7 +82,7 @@ export default function Topbar() {
       <div className="flex items-center gap-4">
 
       {/* Location Multi-Select */}
-      <div className="relative" ref={locationRef}>
+      {/* <div className="relative" ref={locationRef}>
         <div
           onClick={() => setLocationOpen(!locationOpen)}
           className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-md cursor-pointer min-w-[180px]"
@@ -112,7 +112,7 @@ export default function Topbar() {
             ))}
           </div>
         )}
-      </div>
+      </div> */}
         
         {/* Company Multi-Select */}
         <div className="relative" ref={companyRef}>

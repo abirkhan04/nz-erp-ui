@@ -48,6 +48,17 @@ const {
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div>
+                <label className={labelClass}>
+                  Gross Salary (BDT) *
+                </label>
+
+                <input
+                  type="number"
+                  {...register("grossSalary")}
+                  className={`${inputClass} bg-blue-50 font-semibold text-blue-700`}
+                />
+              </div>
               <div>
                 <label className={labelClass}>
                   Basic Salary *
@@ -113,18 +124,6 @@ const {
                   type="number"
                   {...register("otherAllowance")}
                   className={inputClass}
-                />
-              </div>
-
-              <div>
-                <label className={labelClass}>
-                  Gross Salary (BDT) *
-                </label>
-
-                <input
-                  type="number"
-                  {...register("grossSalary")}
-                  className={`${inputClass} bg-blue-50 font-semibold text-blue-700`}
                 />
               </div>
             </div>
