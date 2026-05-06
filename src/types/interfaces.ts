@@ -15,5 +15,25 @@ export interface Company {
 }
 
 export interface Department {
-  name: string;
+  id: string;
+  departmentName: string;
+  departmentCode: string;
+  createdOn: string;
+  createdBy: string;
+  updatedOn: string;
+  updatedBy: string;
+  isActive: boolean;
 }
+
+export interface Section {
+  id: string;
+  departmentId: string;
+  departmentName: string;
+  sectionName: string;
+  createdOn: string;
+  createdBy: string;
+  updatedOn: string;
+  updatedBy: string;
+  isActive: boolean;
+}
+

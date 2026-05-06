@@ -7,7 +7,7 @@ import {
 import type { EmployeeFormValues } from "./EmployeeFormValues";
 
 import { API_ROUTES } from "../../api/routes";
-import type { Department } from "../../types/interfaces";
+import type { Department, Section } from "../../types/interfaces";
 
 
 const EmployeeForm: React.FC = () => {
@@ -15,6 +15,7 @@ const EmployeeForm: React.FC = () => {
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors },
   } = useFormContext<EmployeeFormValues>();
 
@@ -26,6 +27,18 @@ const EmployeeForm: React.FC = () => {
     key: ["department"],
     url: API_ROUTES.DEPARTMENT,
   });
+
+  const selectedDepartment = watch("department");
+
+const {
+  data: sections = [],
+  isLoading: sectionLoading,
+  error: sectionError,
+} = useGet<Section[]>({
+  key: ["sections", selectedDepartment],
+  url: `${API_ROUTES.SECTION}?includeInactive=true&departmentId=${selectedDepartment}`,
+  enabled: !!selectedDepartment,
+});
 
 
   const onSubmit = (data: EmployeeFormValues) => {
@@ -91,19 +104,36 @@ const EmployeeForm: React.FC = () => {
             </div>
 
             <div>
-              <label className={labelClass}>Department *</label>
-              <select {...register("department")} className={inputClass}>
-                <option>Weaving</option>
-                <option>Knitting</option>
-                <option>Dyeing</option>
-              </select>
-            </div>
+          <label className={labelClass}>Department *</label>
 
+              <select {...register("department")} className={inputClass}>
+                <option value="">Select Department</option>
+
+                {departments.map((department) => (
+                  <option key={department.id} value={department.id}>
+                    {department.departmentName}
+                  </option>
+                ))}
+              </select>
+
+              {isLoading && <p>Loading departments...</p>}
+              {error && <p>Failed to load departments</p>}
+            </div>
             <div>
               <label className={labelClass}>Section *</label>
+
               <select {...register("section")} className={inputClass}>
-                <option>Loom Operation</option>
+                <option value="">Select Section</option>
+
+                {sections.map((section) => (
+                  <option key={section.id} value={section.id}>
+                    {section.sectionName}
+                  </option>
+                ))}
               </select>
+
+              {sectionLoading && <p>Loading sections...</p>}
+              {sectionError && <p>Failed to load sections</p>}
             </div>
 
             <div>

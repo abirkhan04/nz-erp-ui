@@ -1,5 +1,6 @@
 export const API_ROUTES = {
   LOGIN: "/login",
   MENU: "/MenuPermission/menus",
-  DEPARTMENT: "Departments"
+  DEPARTMENT: "Departments",
+  SECTION: "Sections"
 };
