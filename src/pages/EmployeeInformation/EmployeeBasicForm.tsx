@@ -1,17 +1,23 @@
 import React from "react";
 import { useFormContext } from "react-hook-form";
-
+import toast from "react-hot-toast";
 import { useGet } from "../../hooks/useGet";
 import { usePost } from "../../hooks/usePost";
 
 import CommonInputField from "./../../components/CommonInputFields";
 
 import type { EmployeeFormValues } from "./EmployeeFormValues";
-import type { Department, Grade, Section } from "../../types/interfaces";
+import type { Company, Department, Grade, Section } from "../../types/interfaces";
 
 import { API_ROUTES } from "../../api/routes";
 
-const EmployeeForm: React.FC = () => {
+type Props = {
+  setActiveStep: React.Dispatch<React.SetStateAction<number>>;
+};
+
+const EmployeeForm: React.FC<Props> = ({
+  setActiveStep,
+  }) => {
   const {
     register,
     handleSubmit,
@@ -25,6 +31,13 @@ const EmployeeForm: React.FC = () => {
   ====================================================== */
 
   const {
+    data: companies = [],
+  } = useGet<Company[]>({
+    key: ["company"],
+    url: API_ROUTES.COMPANY,
+  });
+
+  const {
     data: departments = [],
   } = useGet<Department[]>({
     key: ["department"],
@@ -33,7 +46,6 @@ const EmployeeForm: React.FC = () => {
 
   const selectedDepartment = watch("department");
 
-  console.log('selectedDepartment', selectedDepartment);
 
   const {
     data: sections = [],
@@ -50,13 +62,10 @@ const EmployeeForm: React.FC = () => {
     url: `${API_ROUTES.GRADE}?includeInactive=false`,
   });
 
-  const useCreateEmployeeMaster = () => {
-    return usePost(API_ROUTES.EMPLOYEES);
-  };
-
-  const {
-    mutate: EmployeePost,
-  } = useCreateEmployeeMaster();
+  const { mutate: EmployeePost } =
+  usePost<{ message: string }, any>(
+    API_ROUTES.EMPLOYEES
+  );
 
   /* ======================================================
       SUBMIT
@@ -67,45 +76,54 @@ const EmployeeForm: React.FC = () => {
       employeeCode: data.employeeId,
       employeeNameEnglish: data.employeeNameEnglish,
       employeeNameBangla: data.employeeNameBangla,
-
+    
       companyId: data.companyName,
       departmentId: data.department,
       sectionId: data.section,
       gradeId: data.grade,
-
+      holidayId: data.holiday,
+    
       employeeType: data.employeeType,
       shiftId: data.shift,
       employeeNature: Number(data.employeeNature),
-      holidayId: data.holiday,
-
-      joiningDate: data.joiningDate,
-      confirmationDate: data.confirmationDate,
-
-      dateOfBirth: data.dateOfBirth,
+    
+      joiningDate: new Date(data.joiningDate).toISOString(),
+    
+      confirmationDate: data.confirmationDate
+        ? new Date(data.confirmationDate).toISOString()
+        : null,
+    
+      dateOfBirth: new Date(data.dateOfBirth).toISOString(),
+    
       gender: Number(data.gender),
       maritalStatus: Number(data.maritalStatus),
-
+    
       mobileNumber: data.mobileNumber,
       emailAddress: data.emailAddress,
-
+    
       documentType: Number(data.documentType),
       documentNumber: data.documentNumber,
-
+    
       bloodGroup: Number(data.bloodGroup),
       religion: Number(data.religion),
       nationality: Number(data.nationality),
-
+    
       fatherNameEnglish: data.fatherNameEnglish,
       fatherNameBangla: data.fatherNameBangla,
-
+    
       motherNameEnglish: data.motherNameEnglish,
       motherNameBangla: data.motherNameBangla,
-
+    
       spouseName: data.spouseName,
       spouseMobile: data.spouseMobile,
-
+    
       tinNumber: data.tinNumber,
       employeeReference: data.employeeReference,
+    }, {
+      onSuccess: (response) => {
+        toast.success(response.message);
+        setActiveStep(3);
+      },
     });
   };
 
@@ -142,12 +160,10 @@ const EmployeeForm: React.FC = () => {
       label: "Company Name *",
       name: "companyName",
       type: "dropdown",
-      options: [
-        {
-          label: "NZ Textile Ltd.",
-          value: "1",
-        },
-      ],
+      options: companies.map((company) => ({
+        label: company.companyName,
+        value: company.id,
+      })),
       rules: {
         required: "Company ID is required",
       },
@@ -216,11 +232,12 @@ const EmployeeForm: React.FC = () => {
       name: "shift",
       type: "dropdown",
       options: [
-        { label: "Day Shift", value: "day" },
-        { label: "Night Shift", value: "night" },
+        { label: "Day Shift", value: "12313" },
+        // { label: "Night Shift", value: "213" },
       ],
       rules: {
         required: "Shift is required",
+        valueAsNumber: false,
       }
     },
   
@@ -240,11 +257,11 @@ const EmployeeForm: React.FC = () => {
   
     {
       label: "Holiday *",
-      name: "holidayId",
+      name: "holiday",
       type: "dropdown",
       options: [
-        { label: "Friday", value: "friday" },
-        { label: "Saturday", value: "saturday" },
+        { label: "Friday", value: "123" },
+        { label: "Saturday", value: "213" },
       ],
     },
   

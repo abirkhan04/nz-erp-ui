@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
 import { useGet } from "./hooks/useGet";
+import { Toaster } from "react-hot-toast";
 import { fetchMenu } from "./mock/Api";
 import type { MenuItemType } from "./types/interfaces";
 import Topbar from "./components/Topbar";
@@ -80,7 +81,8 @@ const Page = ({ title }: { title: string }) => (
 );
 
 export default function App() {
-  return (
+  return (<>
+   <Toaster position="top-right" />
     <Routes>
       {/* Public Route */}
       <Route path="/login" element={<Login />} />
@@ -95,5 +97,6 @@ export default function App() {
         }
       />
     </Routes>
+    </>
   );
 }

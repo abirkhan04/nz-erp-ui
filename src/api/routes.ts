@@ -7,4 +7,5 @@ export const API_ROUTES = {
 
 
   EMPLOYEES: "Employees",
+  COMPANY: "Company"
 };

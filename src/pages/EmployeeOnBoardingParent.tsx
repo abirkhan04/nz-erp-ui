@@ -71,7 +71,7 @@ const EmployeeOnboardingParent: React.FC = () => {
       case 1: 
          return <RecruitmentForm />  
       case 2:
-        return <EmployeeInformationForm />;
+        return <EmployeeInformationForm setActiveStep={setActiveStep}/>;
 
       case 3:
         return <FinancialDetailsForm />;

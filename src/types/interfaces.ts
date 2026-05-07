@@ -9,9 +9,16 @@ export interface MenuItemType {
 
 
 export interface Company {
-  name: string;
-  address: string;
   id: string;
+  companyCode: string;
+  companyName: string;
+  locationId: string;
+  createdOn: string;
+  createdBy: string;
+  updatedOn: string;
+  updatedBy: string;
+  isActive: boolean;
+  isCompliant: boolean;
 }
 
 export interface Department {
