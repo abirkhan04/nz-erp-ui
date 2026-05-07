@@ -27,7 +27,7 @@ export default function Login() {
       console.log("Login Success:", res);
 
       // Axios হলে res.data, fetch হলে res directly
-      const token = res?.data?.id || res?.token;
+      const token = res?.id;
 
       if (token) {
         localStorage.setItem("token", token);
