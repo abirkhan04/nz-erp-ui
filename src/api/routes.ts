@@ -3,5 +3,8 @@ export const API_ROUTES = {
   MENU: "/MenuPermission/menus",
   DEPARTMENT: "Departments",
   SECTION: "Sections",
-  GRADE: "Grades"
+  GRADE: "Grades",
+
+
+  EMPLOYEES: "Employees",
 };

@@ -1,14 +1,15 @@
 import React from "react";
+import { useFormContext } from "react-hook-form";
+
 import { useGet } from "../../hooks/useGet";
-import {
-  useFormContext,
-} from "react-hook-form";
+import { usePost } from "../../hooks/usePost";
+
+import CommonInputField from "./../../components/CommonInputFields";
 
 import type { EmployeeFormValues } from "./EmployeeFormValues";
-
-import { API_ROUTES } from "../../api/routes";
 import type { Department, Grade, Section } from "../../types/interfaces";
 
+import { API_ROUTES } from "../../api/routes";
 
 const EmployeeForm: React.FC = () => {
   const {
@@ -19,10 +20,12 @@ const EmployeeForm: React.FC = () => {
     formState: { errors },
   } = useFormContext<EmployeeFormValues>();
 
+  /* ======================================================
+      API CALLS
+  ====================================================== */
+
   const {
     data: departments = [],
-    isLoading,
-    error,
   } = useGet<Department[]>({
     key: ["department"],
     url: API_ROUTES.DEPARTMENT,
@@ -30,34 +33,426 @@ const EmployeeForm: React.FC = () => {
 
   const selectedDepartment = watch("department");
 
-const {
-  data: sections = [],
-  isLoading: sectionLoading,
-  error: sectionError,
-} = useGet<Section[]>({
-  key: ["sections", selectedDepartment],
-  url: `${API_ROUTES.SECTION}?includeInactive=true&departmentId=${selectedDepartment}`,
-  enabled: !!selectedDepartment,
-});
+  console.log('selectedDepartment', selectedDepartment);
 
-const {
-  data: grades = [],
-  isLoading: gradeLoading,
-  error: gradeError,
-} = useGet<Grade[]>({
-  key: ["grades"],
-  url: `${API_ROUTES.GRADE}?includeInactive=false`,
-});
+  const {
+    data: sections = [],
+  } = useGet<Section[]>({
+    key: ["sections", selectedDepartment],
+    url: `${API_ROUTES.SECTION}?includeInactive=true&departmentId=${selectedDepartment}`,
+    enabled: !!selectedDepartment,
+  });
 
+  const {
+    data: grades = [],
+  } = useGet<Grade[]>({
+    key: ["grades"],
+    url: `${API_ROUTES.GRADE}?includeInactive=false`,
+  });
 
-  const onSubmit = (data: EmployeeFormValues) => {
-    console.log("Form Data:", data);
+  const useCreateEmployeeMaster = () => {
+    return usePost(API_ROUTES.EMPLOYEES);
   };
 
-  const inputClass =
-    "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500";
+  const {
+    mutate: EmployeePost,
+  } = useCreateEmployeeMaster();
 
-  const labelClass = "block text-sm font-medium text-gray-700 mb-1";
+  /* ======================================================
+      SUBMIT
+  ====================================================== */
+
+  const onSubmit = (data: EmployeeFormValues) => {
+    EmployeePost({
+      employeeCode: data.employeeId,
+      employeeNameEnglish: data.employeeNameEnglish,
+      employeeNameBangla: data.employeeNameBangla,
+
+      companyId: data.companyName,
+      departmentId: data.department,
+      sectionId: data.section,
+      gradeId: data.grade,
+
+      employeeType: data.employeeType,
+      shiftId: data.shift,
+      employeeNature: Number(data.employeeNature),
+      holidayId: data.holiday,
+
+      joiningDate: data.joiningDate,
+      confirmationDate: data.confirmationDate,
+
+      dateOfBirth: data.dateOfBirth,
+      gender: Number(data.gender),
+      maritalStatus: Number(data.maritalStatus),
+
+      mobileNumber: data.mobileNumber,
+      emailAddress: data.emailAddress,
+
+      documentType: Number(data.documentType),
+      documentNumber: data.documentNumber,
+
+      bloodGroup: Number(data.bloodGroup),
+      religion: Number(data.religion),
+      nationality: Number(data.nationality),
+
+      fatherNameEnglish: data.fatherNameEnglish,
+      fatherNameBangla: data.fatherNameBangla,
+
+      motherNameEnglish: data.motherNameEnglish,
+      motherNameBangla: data.motherNameBangla,
+
+      spouseName: data.spouseName,
+      spouseMobile: data.spouseMobile,
+
+      tinNumber: data.tinNumber,
+      employeeReference: data.employeeReference,
+    });
+  };
+
+  /* ======================================================
+      FIELD CONFIGS
+  ====================================================== */
+
+  const basicEmploymentFields = [
+    {
+      label: "Employee ID *",
+      name: "employeeId",
+      type: "text",
+      rules: {
+        required: "Employee ID is required",
+      },
+    },
+  
+    {
+      label: "Employee Name (English) *",
+      name: "employeeNameEnglish",
+      type: "text",
+      rules: {
+        required: "Employee name is required",
+      },
+    },
+  
+    {
+      label: "Employee Name (Bangla)",
+      name: "employeeNameBangla",
+      type: "text",
+    },
+  
+    {
+      label: "Company Name *",
+      name: "companyName",
+      type: "dropdown",
+      options: [
+        {
+          label: "NZ Textile Ltd.",
+          value: "1",
+        },
+      ],
+      rules: {
+        required: "Company ID is required",
+      },
+    },
+  
+    {
+      label: "Department *",
+      name: "department",
+      type: "dropdown",
+      rules: {
+        required: "Department is required",
+      },
+      options: departments.map((department) => ({
+        label: department.departmentName,
+        value: department.id,
+      })),
+    },
+  
+    {
+      label: "Section *",
+      name: "section",
+      type: "dropdown",
+      options: sections.map((section) => ({
+        label: section.sectionName,
+        value: section.id,
+      })),
+      rules: {
+        required: "Section ID is required",
+      },
+    },
+  
+    {
+      label: "Grade *",
+      name: "grade",
+      type: "dropdown",
+      options: grades.map((grade) => ({
+        label: grade.gradeName,
+        value: grade.id,
+      })),
+      rules: {
+        required: "Grade ID is required",
+      },
+    },
+  
+    {
+      label: "Employee Type *",
+      name: "employeeType",
+      type: "dropdown",
+      rules: {
+        required: "Employee Type is required",
+        valueAsNumber: true,
+      },
+      options: [
+        { label: "Worker", value: 1 },
+        { label: "Staff", value: 2 },
+        { label: "Officer", value: 3 },
+        { label: "Manager", value: 4 },
+        { label: "Supervisor", value: 5 },
+        { label: "Operator", value: 6 },
+        { label: "Helper", value: 7 },
+      ],
+    },
+  
+    {
+      label: "Shift *",
+      name: "shift",
+      type: "dropdown",
+      options: [
+        { label: "Day Shift", value: "day" },
+        { label: "Night Shift", value: "night" },
+      ],
+      rules: {
+        required: "Shift is required",
+      }
+    },
+  
+    {
+      label: "Employee Nature *",
+      name: "employeeNature",
+      type: "dropdown",
+      rules: {
+        required: "Employee Nature is required",
+        valueAsNumber: true,
+      },
+      options: [
+        { label: "Provision", value: 1 },
+        { label: "Permanent", value: 2 },
+      ],
+    },
+  
+    {
+      label: "Holiday *",
+      name: "holidayId",
+      type: "dropdown",
+      options: [
+        { label: "Friday", value: "friday" },
+        { label: "Saturday", value: "saturday" },
+      ],
+    },
+  
+    {
+      label: "Joining Date *",
+      name: "joiningDate",
+      type: "date",
+      rules: {
+        required: "Joining Date is required",
+      },
+    },
+  
+    {
+      label: "Confirmation Date",
+      name: "confirmationDate",
+      type: "date",
+      rules: {
+        required: "Confirmation Date is required",
+      },
+    },
+  ];
+  
+  const personalFields = [
+    {
+      label: "Date of Birth *",
+      name: "dateOfBirth",
+      type: "date",
+      rules: {
+        required: "Date of birth is required",
+      },
+    },
+  
+    {
+      label: "Gender *",
+      name: "gender",
+      type: "dropdown",
+      options: [
+        { label: "Male", value: 1 },
+        { label: "Female", value: 2 },
+      ],
+    },
+  
+    {
+      label: "Marital Status *",
+      name: "maritalStatus",
+      type: "dropdown",
+      options: [
+        { label: "Unmarried", value: 1 },
+        { label: "Married", value: 2 },
+      ],
+      rules: {
+        required: "Marital Status is required",
+      },
+    },
+  
+    {
+      label: "Mobile Number *",
+      name: "mobileNumber",
+      type: "number",
+      rules: {
+        required: "Mobile number is required",
+        pattern: {
+          value: /^(?:\+8801|01)[3-9]\d{8}$/,
+          message: "Invalid mobile number format",
+        },
+      },
+    },
+  
+    {
+      label: "Email Address",
+      name: "emailAddress",
+      type: "email",
+      rules: {
+        pattern: {
+          value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+          message: "Invalid email format",
+        },
+      },
+    },
+  
+    {
+      label: "Document Type *",
+      name: "documentType",
+      type: "dropdown",
+      options: [
+        { label: "NID", value: 1 },
+        { label: "Passport", value: 2 },
+      ],
+      rules: {
+        required: "Document type is required",
+      },
+    },
+  
+    {
+      label: "Document Number *",
+      name: "documentNumber",
+      type: "text",
+      rules: {
+        required: "Document number is required",
+      },
+    },
+  
+    {
+      label: "Blood Group",
+      name: "bloodGroup",
+      type: "dropdown",
+      options: [
+        { label: "B+", value: 1 },
+        { label: "A+", value: 2 },
+        { label: "O+", value: 3 },
+      ],
+    },
+  
+    {
+      label: "Religion *",
+      name: "religion",
+      type: "dropdown",
+      options: [
+        { label: "Islam", value: 1 },
+        { label: "Hinduism", value: 2 },
+      ],
+      rules: {
+        required: "Religion is required",
+      },
+    },
+  
+    {
+      label: "Nationality *",
+      name: "nationality",
+      type: "dropdown",
+      options: [{ label: "Bangladeshi", value: 1 }],
+    },
+  ];
+  
+  const additionalFields = [
+    {
+      label: "Father's Name (English) *",
+      name: "fatherNameEnglish",
+      type: "text",
+      rules: {
+        required: "Father's name (English) is required",
+      },
+    },
+  
+    {
+      label: "Father's Name (Bangla)",
+      name: "fatherNameBangla",
+      type: "text",
+    },
+  
+    {
+      label: "Mother's Name (English) *",
+      name: "motherNameEnglish",
+      type: "text",
+      rules: {
+        required: "Mother's name (English) is required",
+      },
+    },
+  
+    {
+      label: "Mother's Name (Bangla)",
+      name: "motherNameBangla",
+      type: "text",
+    },
+  
+    {
+      label: "Spouse Name",
+      name: "spouseName",
+      type: "text",
+    },
+  
+    {
+      label: "Spouse Mobile",
+      name: "spouseMobile",
+      type: "number",
+    },
+  
+    {
+      label: "TIN Number",
+      name: "tinNumber",
+      type: "text",
+    },
+  
+    {
+      label: "Employee Reference",
+      name: "employeeReference",
+      type: "text",
+    },
+  ];
+
+  /* ======================================================
+      RENDER SECTION
+  ====================================================== */
+
+  const renderFields = (fields: any[]) => {
+    return fields.map((field) => (
+      <CommonInputField<EmployeeFormValues>
+        key={field.name}
+        label={field.label}
+        name={field.name}
+        register={register}
+        errors={errors}
+        type={field.type}
+        options={field.options}
+        rules={field.rules}
+      />
+    ));
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
@@ -66,318 +461,43 @@ const {
         className="max-w-7xl mx-auto bg-white rounded-2xl shadow-md p-6 space-y-8"
       >
         {/* BASIC EMPLOYMENT INFO */}
+
         <div>
           <h2 className="text-xl font-semibold text-blue-700 mb-6">
             Basic Employment Information
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-            <div>
-              <label className={labelClass}>Employee ID *</label>
-              <input
-                {...register("employeeId", {
-                  required: "Employee ID is required",
-                })}
-                className={inputClass}
-              />
-              {errors.employeeId && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.employeeId.message}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className={labelClass}>Employee Name (English) *</label>
-              <input
-                {...register("employeeNameEnglish", {
-                  required: "Employee name is required",
-                })}
-                className={inputClass}
-              />
-            </div>
-
-            <div>
-              <label className={labelClass}>Employee Name (Bangla) *</label>
-              <input
-                {...register("employeeNameBangla")}
-                className={inputClass}
-              />
-            </div>
-
-            <div>
-              <label className={labelClass}>Company Name *</label>
-              <select {...register("companyName")} className={inputClass}>
-                <option>NZ Textile Ltd.</option>
-              </select>
-            </div>
-
-            <div>
-          <label className={labelClass}>Department *</label>
-
-              <select {...register("department")} className={inputClass}>
-                <option value="">Select Department</option>
-
-                {departments.map((department) => (
-                  <option key={department.id} value={department.id}>
-                    {department.departmentName}
-                  </option>
-                ))}
-              </select>
-
-              {isLoading && <p>Loading departments...</p>}
-              {error && <p>Failed to load departments</p>}
-            </div>
-            <div>
-              <label className={labelClass}>Section *</label>
-
-              <select {...register("section")} className={inputClass}>
-                <option value="">Select Section</option>
-
-                {sections.map((section) => (
-                  <option key={section.id} value={section.id}>
-                    {section.sectionName}
-                  </option>
-                ))}
-              </select>
-
-              {sectionLoading && <p>Loading sections...</p>}
-              {sectionError && <p>Failed to load sections</p>}
-            </div>
-            <div>
-              <label className={labelClass}>Grade *</label>
-
-              <select {...register("grade")} className={inputClass}>
-                <option value="">Select Grade</option>
-
-                {grades.map((grade) => (
-                  <option key={grade.id} value={grade.id}>
-                    {grade.gradeName}
-                  </option>
-                ))}
-              </select>
-
-              {gradeLoading && <p>Loading grades...</p>}
-              {gradeError && <p>Failed to load grades</p>}
-            </div>
-
-            <div>
-              <label className={labelClass}>Employee Type *</label>
-              <select {...register("employeeType")} className={inputClass}>
-                <option>Worker</option>
-                <option>Staff</option>
-              </select>
-            </div>
-
-            <div>
-              <label className={labelClass}>Shift *</label>
-              <select {...register("shift")} className={inputClass}>
-                <option>Day Shift</option>
-                <option>Night Shift</option>
-              </select>
-            </div>
-
-            <div>
-              <label className={labelClass}>Employee Nature *</label>
-              <select {...register("employeeNature")} className={inputClass}>
-                <option>Provision</option>
-                <option>Permanent</option>
-              </select>
-            </div>
-
-            <div>
-              <label className={labelClass}>Holiday *</label>
-              <select {...register("holiday")} className={inputClass}>
-                <option>Friday</option>
-                <option>Saturday</option>
-              </select>
-            </div>
-
-            <div>
-              <label className={labelClass}>Joining Date *</label>
-              <input
-                type="date"
-                {...register("joiningDate")}
-                className={inputClass}
-              />
-            </div>
-
-            <div>
-              <label className={labelClass}>Confirmation Date</label>
-              <input
-                type="date"
-                {...register("confirmationDate")}
-                className={inputClass}
-              />
-            </div>
+            {renderFields(basicEmploymentFields)}
           </div>
         </div>
 
         {/* PERSONAL INFO */}
+
         <div>
           <h2 className="text-xl font-semibold text-blue-700 mb-6">
             Personal Information
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-            <div>
-              <label className={labelClass}>Date of Birth *</label>
-              <input
-                type="date"
-                {...register("dateOfBirth")}
-                className={inputClass}
-              />
-            </div>
-
-            <div>
-              <label className={labelClass}>Gender *</label>
-              <select {...register("gender")} className={inputClass}>
-                <option>Male</option>
-                <option>Female</option>
-              </select>
-            </div>
-
-            <div>
-              <label className={labelClass}>Marital Status *</label>
-              <select {...register("maritalStatus")} className={inputClass}>
-                <option>Unmarried</option>
-                <option>Married</option>
-              </select>
-            </div>
-
-            <div>
-              <label className={labelClass}>Mobile Number *</label>
-              <input
-                {...register("mobileNumber")}
-                className={inputClass}
-              />
-            </div>
-
-            <div>
-              <label className={labelClass}>Email Address</label>
-              <input
-                type="email"
-                {...register("emailAddress")}
-                className={inputClass}
-              />
-            </div>
-
-            <div>
-              <label className={labelClass}>Document Type *</label>
-              <select {...register("documentType")} className={inputClass}>
-                <option>NID</option>
-                <option>Passport</option>
-              </select>
-            </div>
-
-            <div>
-              <label className={labelClass}>Document Number *</label>
-              <input
-                {...register("documentNumber")}
-                className={inputClass}
-              />
-            </div>
-
-            <div>
-              <label className={labelClass}>Blood Group</label>
-              <select {...register("bloodGroup")} className={inputClass}>
-                <option>B+</option>
-                <option>A+</option>
-                <option>O+</option>
-              </select>
-            </div>
-
-            <div>
-              <label className={labelClass}>Religion *</label>
-              <select {...register("religion")} className={inputClass}>
-                <option>Islam</option>
-                <option>Hinduism</option>
-              </select>
-            </div>
-
-            <div>
-              <label className={labelClass}>Nationality *</label>
-              <select {...register("nationality")} className={inputClass}>
-                <option>Bangladeshi</option>
-              </select>
-            </div>
+            {renderFields(personalFields)}
           </div>
         </div>
 
         {/* ADDITIONAL INFO */}
+
         <div>
           <h2 className="text-xl font-semibold text-blue-700 mb-6">
             Additional Information
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-            <div>
-              <label className={labelClass}>Father's Name (English)</label>
-              <input
-                {...register("fatherNameEnglish")}
-                className={inputClass}
-              />
-            </div>
-
-            <div>
-              <label className={labelClass}>Father's Name (Bangla)</label>
-              <input
-                {...register("fatherNameBangla")}
-                className={inputClass}
-              />
-            </div>
-
-            <div>
-              <label className={labelClass}>Mother's Name (English)</label>
-              <input
-                {...register("motherNameEnglish")}
-                className={inputClass}
-              />
-            </div>
-
-            <div>
-              <label className={labelClass}>Mother's Name (Bangla)</label>
-              <input
-                {...register("motherNameBangla")}
-                className={inputClass}
-              />
-            </div>
-
-            <div>
-              <label className={labelClass}>Spouse Name</label>
-              <input
-                {...register("spouseName")}
-                className={inputClass}
-              />
-            </div>
-
-            <div>
-              <label className={labelClass}>Spouse Mobile</label>
-              <input
-                {...register("spouseMobile")}
-                className={inputClass}
-              />
-            </div>
-
-            <div>
-              <label className={labelClass}>TIN Number</label>
-              <input
-                {...register("tinNumber")}
-                className={inputClass}
-              />
-            </div>
-
-            <div>
-              <label className={labelClass}>Employee Reference</label>
-              <input
-                {...register("employeeReference")}
-                className={inputClass}
-              />
-            </div>
+            {renderFields(additionalFields)}
           </div>
         </div>
 
         {/* BUTTONS */}
+
         <div className="flex flex-wrap justify-between items-center pt-6 border-t">
           <div className="space-x-3">
             <button
@@ -396,21 +516,12 @@ const {
             </button>
           </div>
 
-          <div className="space-x-3">
-            <button
-              type="button"
-              className="px-5 py-2 border border-blue-500 text-blue-600 rounded-lg hover:bg-blue-50"
-            >
-              Validate Data
-            </button>
-
-            <button
-              type="submit"
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-            >
-              Save & Next
-            </button>
-          </div>
+          <button
+            type="submit"
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Save & Next
+          </button>
         </div>
       </form>
     </div>
