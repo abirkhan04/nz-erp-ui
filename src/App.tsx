@@ -40,7 +40,7 @@ function Layout() {
   });
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen w-full overflow-hidden">
       {/* Sidebar */}
       {/* {isLoading ? (
         <div className="w-64 flex items-center justify-center bg-gray-900 text-white">
@@ -55,10 +55,10 @@ function Layout() {
       )} */}
 
       {/* Main */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <Topbar />
 
-        <div className="flex-1 p-2 bg-gray-50 overflow-auto">
+        <div className="flex-1 p-2 bg-gray-50 overflow-y-auto overflow-x-hidden min-w-0">
           <Routes>
             <Route path="/" element={<Dashboard/>} />
             <Route path="/recruitment" element={<EmployeeForm/>}/>

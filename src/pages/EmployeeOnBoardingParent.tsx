@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 
-
 import RecruitmentForm from "./EmployeeInformation/RecruitmentForm";
 import EmployeeInformationForm from "./EmployeeInformation/EmployeeBasicForm";
 import FinancialDetailsForm from "./EmployeeInformation/FinancialDetailsForm";
@@ -16,35 +15,35 @@ type StepItem = {
 };
 
 const steps: StepItem[] = [
-    {
-      id: 1,
-      title: "Recruitment Form",
-    },
-    {
-      id: 2,
-      title: "Employee Information",
-    },
-    {
-      id: 3,
-      title: "Financial Details",
-    },
-    {
-      id: 4,
-      title: "Address Details",
-    },
-    {
-      id: 5,
-      title: "Family & Nominee",
-    },
-    {
-      id: 6,
-      title: "Documents",
-    },
-    {
-      id: 7,
-      title: "Review & Submit",
-    },
-  ];
+  {
+    id: 1,
+    title: "Recruitment Form",
+  },
+  {
+    id: 2,
+    title: "Employee Information",
+  },
+  {
+    id: 3,
+    title: "Financial Details",
+  },
+  {
+    id: 4,
+    title: "Address Details",
+  },
+  {
+    id: 5,
+    title: "Family & Nominee",
+  },
+  {
+    id: 6,
+    title: "Documents",
+  },
+  {
+    id: 7,
+    title: "Review & Submit",
+  },
+];
 
 const EmployeeOnboardingParent: React.FC = () => {
   const [activeStep, setActiveStep] = useState<number>(1);
@@ -68,10 +67,11 @@ const EmployeeOnboardingParent: React.FC = () => {
 
   const renderStepComponent = () => {
     switch (activeStep) {
-      case 1: 
-         return <RecruitmentForm />  
+      case 1:
+        return <RecruitmentForm />;
+
       case 2:
-        return <EmployeeInformationForm setActiveStep={setActiveStep}/>;
+        return <EmployeeInformationForm setActiveStep={setActiveStep} />;
 
       case 3:
         return <FinancialDetailsForm />;
@@ -99,134 +99,132 @@ const EmployeeOnboardingParent: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f5f7fb] p-5">
+    <div className="min-h-screen bg-[#f5f7fb] w-full overflow-x-hidden px-1 py-5 sm:px-1">
       <div className="bg-white rounded-[24px] border border-gray-200 overflow-hidden">
         {/* HEADER / TAB STEPPER */}
-<div className="border-b border-gray-200 bg-white px-6 py-4">
-  <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-5">
-    
-    {/* STEP TABS */}
-    <div className="flex items-center overflow-x-auto w-full scrollbar-hide">
-      {steps.map((step) => {
-        const isActive = activeStep === step.id;
-        const isCompleted = step.id < activeStep;
+        <div className="border-b border-gray-200 bg-white px-2 py-4">
+          <div className="flex flex-col xl:flex-row xl:items-center gap-3 min-w-0">
+            {/* STEP TABS */}
+            <div className="flex items-center flex-wrap gap-x-10 gap-y-2 min-w-0 flex-1">
+              {steps.map((step) => {
+                const isActive = activeStep === step.id;
+                const isCompleted = step.id < activeStep;
 
-        return (
-          <button
-            key={step.id}
-            type="button"
-            onClick={() => setActiveStep(step.id)}
-            className={`
-              relative flex items-center gap-3
-              px-4 py-3
-              min-w-fit
-              transition-all
-              border-b-2
-              
-              ${
-                isActive
-                  ? "border-[#2F49FF]"
-                  : "border-transparent"
-              }
-            `}
-          >
-            {/* STEP CIRCLE */}
-            <div
-              className={`
-                w-7 h-7 rounded-full
-                flex items-center justify-center
-                text-xs font-semibold
-                transition-all
-                
-                ${
-                  isCompleted
-                    ? "bg-[#E8F8EE] text-[#22C55E]"
-                    : ""
-                }
+                return (
+                  <button
+                    key={step.id}
+                    type="button"
+                    onClick={() => setActiveStep(step.id)}
+                    className={`
+                      relative flex items-center gap-2
+                      px-2 py-2
+                      transition-all
+                      border-b-2
+                      min-w-0
 
-                ${
-                  isActive
-                    ? "bg-[#2F49FF] text-white"
-                    : ""
-                }
+                      ${
+                        isActive
+                          ? "border-[#2F49FF]"
+                          : "border-transparent"
+                      }
+                    `}
+                  >
+                    {/* STEP CIRCLE */}
+                    <div
+                      className={`
+                        w-6 h-6 rounded-full
+                        flex items-center justify-center
+                        text-[11px] font-semibold
+                        transition-all
+                        shrink-0
 
-                ${
-                  !isCompleted && !isActive
-                    ? "border border-gray-300 text-gray-500 bg-white"
-                    : ""
-                }
-              `}
-            >
-              {isCompleted ? "✓" : step.id}
+                        ${
+                          isCompleted
+                            ? "bg-[#E8F8EE] text-[#22C55E]"
+                            : ""
+                        }
+
+                        ${
+                          isActive
+                            ? "bg-[#2F49FF] text-white"
+                            : ""
+                        }
+
+                        ${
+                          !isCompleted && !isActive
+                            ? "border border-gray-300 text-gray-500 bg-white"
+                            : ""
+                        }
+                      `}
+                    >
+                      {isCompleted ? "✓" : step.id}
+                    </div>
+
+                    {/* STEP TITLE */}
+                    <span
+                      className={`
+                        text-xs font-medium whitespace-nowrap
+
+                        ${
+                          isActive
+                            ? "text-[#2F49FF]"
+                            : isCompleted
+                            ? "text-[#1F2937]"
+                            : "text-gray-500"
+                        }
+                      `}
+                    >
+                      {step.title}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
 
-            {/* STEP TITLE */}
-            <span
-              className={`
-                text-sm font-medium whitespace-nowrap
-                
-                ${
-                  isActive
-                    ? "text-[#2F49FF]"
-                    : isCompleted
-                    ? "text-[#1F2937]"
-                    : "text-gray-500"
-                }
-              `}
-            >
-              {step.title}
-            </span>
-          </button>
-        );
-      })}
-    </div>
+            {/* ACTION BUTTONS */}
+            <div className="flex items-center gap-2 shrink-0 xl:ml-auto">
+              <button
+                type="button"
+                className="
+                  h-9 px-4
+                  rounded-lg
+                  border border-[#D9DCEC]
+                  bg-white
+                  text-xs font-medium
+                  text-[#344054]
+                  hover:bg-gray-50
+                  whitespace-nowrap
+                "
+              >
+                Save as Draft
+              </button>
 
-    {/* ACTION BUTTONS */}
-    <div className="flex items-center gap-3 shrink-0">
-      <button
-        type="button"
-        className="
-          h-10 px-5
-          rounded-lg
-          border border-[#D9DCEC]
-          bg-white
-          text-sm font-medium
-          text-[#344054]
-          hover:bg-gray-50
-          whitespace-nowrap
-        "
-      >
-        Save as Draft
-      </button>
-
-      <button
-        type="button"
-        onClick={handleNext}
-        disabled={activeStep === steps.length}
-        className="
-          h-10 px-6
-          rounded-lg
-          bg-[#2F49FF]
-          hover:bg-[#1f3cff]
-          disabled:opacity-50
-          text-white
-          text-sm font-medium
-          flex items-center gap-2
-          whitespace-nowrap
-        "
-      >
-        Next
-        <span>→</span>
-      </button>
-    </div>
-  </div>
-</div>
+              <button
+                type="button"
+                onClick={handleNext}
+                disabled={activeStep === steps.length}
+                className="
+                  h-9 px-5
+                  rounded-lg
+                  bg-[#2F49FF]
+                  hover:bg-[#1f3cff]
+                  disabled:opacity-50
+                  text-white
+                  text-xs font-medium
+                  flex items-center gap-1
+                  whitespace-nowrap
+                "
+              >
+                Next
+                <span>→</span>
+              </button>
+            </div>
+          </div>
+        </div>
 
         {/* FORM CONTENT */}
         <FormProvider {...methods}>
-          <div className="p-6">
-            {renderStepComponent()}
-          </div>
+          <div className="p-6">{renderStepComponent()}</div>
         </FormProvider>
 
         {/* FOOTER */}

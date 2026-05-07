@@ -18,7 +18,7 @@ const RecruitmentForm = () => {
             grid
             grid-cols-1
             lg:grid-cols-2
-            gap-x-6
+            gap-x-2
             gap-y-5
             px-2
         "
