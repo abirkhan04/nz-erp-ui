@@ -1,10 +1,9 @@
 import React, { useEffect } from "react";
-import {
-  useFormContext,
-} from "react-hook-form";
+import { useFormContext } from "react-hook-form";
+
+import CommonInputField from "./../../components/CommonInputFields";
 
 import type { EmployeeFormValues } from "./EmployeeFormValues";
-
 
 const AddressDetailsForm: React.FC = () => {
   const {
@@ -91,8 +90,166 @@ const AddressDetailsForm: React.FC = () => {
   const disabledInputClass =
     "w-full border border-gray-200 bg-gray-100 rounded-lg px-3 py-2 text-sm";
 
-  const labelClass =
-    "block text-sm font-medium text-gray-700 mb-1";
+  const presentAddressFields = [
+    {
+      label: "Village / Road / House *",
+      name: "presentVillageRoadHouse",
+      type: "text",
+      rules: {
+        required:
+          "Present address is required",
+      },
+    },
+
+    {
+      label: "Post Office *",
+      name: "presentPostOffice",
+      type: "text",
+    },
+
+    {
+      label: "Thana / Upazila *",
+      name: "presentThanaUpazila",
+      type: "text",
+    },
+
+    {
+      label: "District *",
+      name: "presentDistrict",
+      type: "dropdown",
+      options: [
+        {
+          label: "Dhaka",
+          value: "Dhaka",
+        },
+
+        {
+          label: "Narayanganj",
+          value: "Narayanganj",
+        },
+      ],
+    },
+
+    {
+      label: "Division *",
+      name: "presentDivision",
+      type: "dropdown",
+      options: [
+        {
+          label: "Dhaka",
+          value: "Dhaka",
+        },
+
+        {
+          label: "Chittagong",
+          value: "Chittagong",
+        },
+      ],
+    },
+
+    {
+      label: "Post Office (Bangla)",
+      name: "presentPostOfficeBangla",
+      type: "text",
+    },
+
+    {
+      label: "Thana / Upazila (Bangla)",
+      name: "presentThanaUpazilaBangla",
+      type: "text",
+    },
+
+    {
+      label: "District (Bangla)",
+      name: "presentDistrictBangla",
+      type: "text",
+    },
+
+    {
+      label: "Division (Bangla)",
+      name: "presentDivisionBangla",
+      type: "text",
+    },
+  ];
+
+  const permanentAddressFields = [
+    {
+      label: "Village / Road / House *",
+      name: "permanentVillageRoadHouse",
+      type: "text",
+    },
+
+    {
+      label: "Post Office *",
+      name: "permanentPostOffice",
+      type: "text",
+    },
+
+    {
+      label: "Thana / Upazila *",
+      name: "permanentThanaUpazila",
+      type: "text",
+    },
+
+    {
+      label: "District *",
+      name: "permanentDistrict",
+      type: "dropdown",
+      options: [
+        {
+          label: "Dhaka",
+          value: "Dhaka",
+        },
+
+        {
+          label: "Narayanganj",
+          value: "Narayanganj",
+        },
+      ],
+    },
+
+    {
+      label: "Division *",
+      name: "permanentDivision",
+      type: "dropdown",
+      options: [
+        {
+          label: "Dhaka",
+          value: "Dhaka",
+        },
+
+        {
+          label: "Chittagong",
+          value: "Chittagong",
+        },
+      ],
+    },
+
+    {
+      label: "Post Office (Bangla)",
+      name: "permanentPostOfficeBangla",
+      type: "text",
+    },
+
+    {
+      label:
+        "Thana / Upazila (Bangla)",
+      name: "permanentThanaUpazilaBangla",
+      type: "text",
+    },
+
+    {
+      label: "District (Bangla)",
+      name: "permanentDistrictBangla",
+      type: "text",
+    },
+
+    {
+      label: "Division (Bangla)",
+      name: "permanentDivisionBangla",
+      type: "text",
+    },
+  ];
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -101,7 +258,8 @@ const AddressDetailsForm: React.FC = () => {
         <div className="bg-white border rounded-2xl p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-semibold text-blue-700">
-              Present Address (Current Address)
+              Present Address (Current
+              Address)
             </h2>
 
             <div className="text-sm text-red-500">
@@ -110,104 +268,33 @@ const AddressDetailsForm: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-5 gap-5">
-            <div>
-              <label className={labelClass}>
-                Village / Road / House *
-              </label>
-
-              <input
-                {...register(
-                  "presentVillageRoadHouse",
-                  {
-                    required:
-                      "Present address is required",
+            {presentAddressFields.map(
+              (field) => (
+                <CommonInputField<EmployeeFormValues>
+                  key={field.name}
+                  label={field.label}
+                  name={
+                    field.name as keyof EmployeeFormValues
                   }
-                )}
-                className={inputClass}
-              />
-
-              {errors.presentVillageRoadHouse && (
-                <p className="text-red-500 text-xs mt-1">
-                  {
-                    errors.presentVillageRoadHouse
-                      .message
+                  type={
+                    field.type as
+                      | "text"
+                      | "number"
+                      | "date"
+                      | "email"
+                      | "dropdown"
                   }
-                </p>
-              )}
-            </div>
+                  register={register}
+                  errors={errors}
+                  rules={field.rules}
+                  options={field.options}
+                />
+              )
+            )}
 
+            {/* ADDRESS BANGLA */}
             <div>
-              <label className={labelClass}>
-                Post Office *
-              </label>
-
-              <input
-                {...register("presentPostOffice")}
-                className={inputClass}
-              />
-            </div>
-
-            <div>
-              <label className={labelClass}>
-                Thana / Upazila *
-              </label>
-
-              <input
-                {...register(
-                  "presentThanaUpazila"
-                )}
-                className={inputClass}
-              />
-            </div>
-
-            <div>
-              <label className={labelClass}>
-                District *
-              </label>
-
-              <select
-                {...register("presentDistrict")}
-                className={inputClass}
-              >
-                <option value="">
-                  Select District
-                </option>
-
-                <option value="Dhaka">
-                  Dhaka
-                </option>
-
-                <option value="Narayanganj">
-                  Narayanganj
-                </option>
-              </select>
-            </div>
-
-            <div>
-              <label className={labelClass}>
-                Division *
-              </label>
-
-              <select
-                {...register("presentDivision")}
-                className={inputClass}
-              >
-                <option value="">
-                  Select Division
-                </option>
-
-                <option value="Dhaka">
-                  Dhaka
-                </option>
-
-                <option value="Chittagong">
-                  Chittagong
-                </option>
-              </select>
-            </div>
-
-            <div>
-              <label className={labelClass}>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Address (Bangla) *
               </label>
 
@@ -217,58 +304,6 @@ const AddressDetailsForm: React.FC = () => {
                 )}
                 className={inputClass}
                 rows={3}
-              />
-            </div>
-
-            <div>
-              <label className={labelClass}>
-                Post Office (Bangla)
-              </label>
-
-              <input
-                {...register(
-                  "presentPostOfficeBangla"
-                )}
-                className={inputClass}
-              />
-            </div>
-
-            <div>
-              <label className={labelClass}>
-                Thana / Upazila (Bangla)
-              </label>
-
-              <input
-                {...register(
-                  "presentThanaUpazilaBangla"
-                )}
-                className={inputClass}
-              />
-            </div>
-
-            <div>
-              <label className={labelClass}>
-                District (Bangla)
-              </label>
-
-              <input
-                {...register(
-                  "presentDistrictBangla"
-                )}
-                className={inputClass}
-              />
-            </div>
-
-            <div>
-              <label className={labelClass}>
-                Division (Bangla)
-              </label>
-
-              <input
-                {...register(
-                  "presentDivisionBangla"
-                )}
-                className={inputClass}
               />
             </div>
           </div>
@@ -294,122 +329,50 @@ const AddressDetailsForm: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-5 gap-5">
+            {permanentAddressFields.map(
+              (field) => (
+                <div key={field.name}>
+                  <CommonInputField<EmployeeFormValues>
+                    label={field.label}
+                    name={
+                      field.name as keyof EmployeeFormValues
+                    }
+                    type={
+                      field.type as
+                        | "text"
+                        | "number"
+                        | "date"
+                        | "email"
+                        | "dropdown"
+                    }
+                    register={register}
+                    errors={errors}
+                    rules={field.rules}
+                    options={field.options}
+                    className={
+                      watchSameAsPresent
+                        ? "opacity-70"
+                        : ""
+                    }
+                  />
+
+                  {watchSameAsPresent && (
+                    <style>
+                      {`
+                        input,
+                        select {
+                          pointer-events: none;
+                        }
+                      `}
+                    </style>
+                  )}
+                </div>
+              )
+            )}
+
+            {/* ADDRESS BANGLA */}
             <div>
-              <label className={labelClass}>
-                Village / Road / House *
-              </label>
-
-              <input
-                {...register(
-                  "permanentVillageRoadHouse"
-                )}
-                className={
-                  watchSameAsPresent
-                    ? disabledInputClass
-                    : inputClass
-                }
-                disabled={watchSameAsPresent}
-              />
-            </div>
-
-            <div>
-              <label className={labelClass}>
-                Post Office *
-              </label>
-
-              <input
-                {...register(
-                  "permanentPostOffice"
-                )}
-                className={
-                  watchSameAsPresent
-                    ? disabledInputClass
-                    : inputClass
-                }
-                disabled={watchSameAsPresent}
-              />
-            </div>
-
-            <div>
-              <label className={labelClass}>
-                Thana / Upazila *
-              </label>
-
-              <input
-                {...register(
-                  "permanentThanaUpazila"
-                )}
-                className={
-                  watchSameAsPresent
-                    ? disabledInputClass
-                    : inputClass
-                }
-                disabled={watchSameAsPresent}
-              />
-            </div>
-
-            <div>
-              <label className={labelClass}>
-                District *
-              </label>
-
-              <select
-                {...register(
-                  "permanentDistrict"
-                )}
-                className={
-                  watchSameAsPresent
-                    ? disabledInputClass
-                    : inputClass
-                }
-                disabled={watchSameAsPresent}
-              >
-                <option value="">
-                  Select District
-                </option>
-
-                <option value="Dhaka">
-                  Dhaka
-                </option>
-
-                <option value="Narayanganj">
-                  Narayanganj
-                </option>
-              </select>
-            </div>
-
-            <div>
-              <label className={labelClass}>
-                Division *
-              </label>
-
-              <select
-                {...register(
-                  "permanentDivision"
-                )}
-                className={
-                  watchSameAsPresent
-                    ? disabledInputClass
-                    : inputClass
-                }
-                disabled={watchSameAsPresent}
-              >
-                <option value="">
-                  Select Division
-                </option>
-
-                <option value="Dhaka">
-                  Dhaka
-                </option>
-
-                <option value="Chittagong">
-                  Chittagong
-                </option>
-              </select>
-            </div>
-
-            <div>
-              <label className={labelClass}>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Address (Bangla) *
               </label>
 
@@ -423,78 +386,6 @@ const AddressDetailsForm: React.FC = () => {
                     : inputClass
                 }
                 rows={3}
-                disabled={watchSameAsPresent}
-              />
-            </div>
-
-            <div>
-              <label className={labelClass}>
-                Post Office (Bangla)
-              </label>
-
-              <input
-                {...register(
-                  "permanentPostOfficeBangla"
-                )}
-                className={
-                  watchSameAsPresent
-                    ? disabledInputClass
-                    : inputClass
-                }
-                disabled={watchSameAsPresent}
-              />
-            </div>
-
-            <div>
-              <label className={labelClass}>
-                Thana / Upazila (Bangla)
-              </label>
-
-              <input
-                {...register(
-                  "permanentThanaUpazilaBangla"
-                )}
-                className={
-                  watchSameAsPresent
-                    ? disabledInputClass
-                    : inputClass
-                }
-                disabled={watchSameAsPresent}
-              />
-            </div>
-
-            <div>
-              <label className={labelClass}>
-                District (Bangla)
-              </label>
-
-              <input
-                {...register(
-                  "permanentDistrictBangla"
-                )}
-                className={
-                  watchSameAsPresent
-                    ? disabledInputClass
-                    : inputClass
-                }
-                disabled={watchSameAsPresent}
-              />
-            </div>
-
-            <div>
-              <label className={labelClass}>
-                Division (Bangla)
-              </label>
-
-              <input
-                {...register(
-                  "permanentDivisionBangla"
-                )}
-                className={
-                  watchSameAsPresent
-                    ? disabledInputClass
-                    : inputClass
-                }
                 disabled={watchSameAsPresent}
               />
             </div>

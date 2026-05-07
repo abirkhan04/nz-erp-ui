@@ -1,239 +1,342 @@
 import React from "react";
 import {
-    useFormContext,
-    useFieldArray,
+  useFormContext,
+  useFieldArray,
 } from "react-hook-form";
 
-import type { EmployeeFormValues } from "./EmployeeFormValues";
 import { Trash2, Plus } from "lucide-react";
 
+import CommonInputField from "../../components/CommonInputFields";
+
+import type { EmployeeFormValues } from "./EmployeeFormValues";
 
 const FamilyAndNomineeForm: React.FC = () => {
-    const {
-        register,
-        handleSubmit,
-        control,
-        formState: { errors },
-    } = useFormContext<EmployeeFormValues>();
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useFormContext<EmployeeFormValues>();
 
-    const {
-        fields,
-        append,
-        remove,
-    } = useFieldArray({
-        control,
-        name: "familyMembers",
-    });
+  const {
+    fields,
+    append,
+    remove,
+  } = useFieldArray({
+    control,
+    name: "familyMembers",
+  });
 
-    const onSubmit = (
-        data: EmployeeFormValues
-    ) => {
-        console.log(data);
-    };
+  const onSubmit = (
+    data: EmployeeFormValues
+  ) => {
+    console.log(data);
+  };
 
-    const inputClass =
-        "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500";
+  const labelClass =
+    "block text-sm font-medium text-gray-700 mb-1";
 
-    const labelClass =
-        "block text-sm font-medium text-gray-700 mb-1";
+  const inputClass =
+    "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500";
 
-    return (
-        <form onSubmit={handleSubmit(onSubmit)}>
-            <div className="space-y-6">
-                {/* FAMILY INFORMATION */}
-                <div className="bg-white border rounded-2xl p-6">
-                    <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-lg font-semibold text-blue-700">
-                            Family Information
-                        </h2>
+  const relationOptions = [
+    {
+      label: "Father",
+      value: "Father",
+    },
 
-                        <p className="text-sm text-red-500">
-                            * Marked fields are mandatory
-                        </p>
-                    </div>
+    {
+      label: "Mother",
+      value: "Mother",
+    },
 
-                    {/* TABLE HEADER */}
-                    <div className="grid grid-cols-8 gap-4 mb-3 text-sm font-semibold text-gray-600">
-                        <div>SL</div>
-                        <div>Family Member Name (English)</div>
-                        <div>Family Member Name (Bangla)</div>
-                        <div>Relation</div>
-                        <div>Date of Birth</div>
-                        <div>Occupation</div>
-                        <div>Mobile Number</div>
-                        <div>Action</div>
-                    </div>
+    {
+      label: "Brother",
+      value: "Brother",
+    },
 
-                    {/* FAMILY MEMBERS */}
-                    <div className="space-y-4">
-                        {fields.map((field, index) => (
-                            <div
-                                key={field.id}
-                                className="grid grid-cols-8 gap-4 items-start"
-                            >
-                                {/* SL */}
-                                <div>
-                                    <input
-                                        value={index + 1}
-                                        disabled
-                                        className="w-full border border-gray-200 bg-gray-100 rounded-lg px-3 py-2 text-sm"
-                                    />
-                                </div>
+    {
+      label: "Sister",
+      value: "Sister",
+    },
 
-                                {/* NAME ENGLISH */}
-                                <div>
-                                    <input
-                                        {...register(
-                                            `familyMembers.${index}.familyMemberNameEnglish`,
-                                            {
-                                                required:
-                                                    "English name is required",
-                                            }
-                                        )}
-                                        placeholder="Enter name"
-                                        className={inputClass}
-                                    />
+    {
+      label: "Spouse",
+      value: "Spouse",
+    },
 
-                                    {errors.familyMembers?.[index]
-                                        ?.familyMemberNameEnglish && (
-                                            <p className="text-red-500 text-xs mt-1">
-                                                {
-                                                    errors.familyMembers[index]
-                                                        ?.familyMemberNameEnglish
-                                                        ?.message
-                                                }
-                                            </p>
-                                        )}
-                                </div>
+    {
+      label: "Son",
+      value: "Son",
+    },
 
-                                {/* NAME BANGLA */}
-                                <div>
-                                    <input
-                                        {...register(
-                                            `familyMembers.${index}.familyMemberNameBangla`,
-                                            {
-                                                required:
-                                                    "Bangla name is required",
-                                            }
-                                        )}
-                                        placeholder="নাম লিখুন"
-                                        className={inputClass}
-                                    />
-                                </div>
+    {
+      label: "Daughter",
+      value: "Daughter",
+    },
+  ];
 
-                                {/* RELATION */}
-                                <div>
-                                    <select
-                                        {...register(
-                                            `familyMembers.${index}.relation`,
-                                            {
-                                                required:
-                                                    "Relation is required",
-                                            }
-                                        )}
-                                        className={inputClass}
-                                    >
-                                        <option value="">
-                                            Select Relation
-                                        </option>
+  const nomineeFieldsLeft = [
+    {
+      label: "Nominee Name (English) *",
+      name: "nomineeNameEnglish",
+      type: "text",
+      rules: {
+        required:
+          "Nominee name is required",
+      },
+    },
 
-                                        <option value="Father">
-                                            Father
-                                        </option>
+    {
+      label: "Nominee Name (Bangla) *",
+      name: "nomineeNameBangla",
+      type: "text",
+    },
 
-                                        <option value="Mother">
-                                            Mother
-                                        </option>
+    {
+      label:
+        "Relation with Employee *",
+      name: "relationWithEmployee",
+      type: "dropdown",
+      options: relationOptions,
+    },
 
-                                        <option value="Brother">
-                                            Brother
-                                        </option>
+    {
+      label:
+        "Nominee NID / Birth Reg. No. *",
+      name: "nomineeNidBirthRegNo",
+      type: "text",
+    },
 
-                                        <option value="Sister">
-                                            Sister
-                                        </option>
+    {
+      label:
+        "Nominee Mobile Number *",
+      name: "nomineeMobileNumber",
+      type: "text",
+    },
+  ];
 
-                                        <option value="Spouse">
-                                            Spouse
-                                        </option>
+  const nomineeFieldsRight = [
+    {
+      label:
+        "Post Office (Bangla) *",
+      name: "nomineePostOfficeBangla",
+      type: "text",
+    },
 
-                                        <option value="Son">
-                                            Son
-                                        </option>
+    {
+      label:
+        "Thana / Upazila (Bangla) *",
+      name:
+        "nomineeThanaUpazilaBangla",
+      type: "text",
+    },
 
-                                        <option value="Daughter">
-                                            Daughter
-                                        </option>
-                                    </select>
-                                </div>
+    {
+      label: "District (Bangla) *",
+      name: "nomineeDistrictBangla",
+      type: "dropdown",
+      options: [
+        {
+          label: "নারায়ণগঞ্জ",
+          value: "নারায়ণগঞ্জ",
+        },
 
-                                {/* DOB */}
-                                <div>
-                                    <input
-                                        type="date"
-                                        {...register(
-                                            `familyMembers.${index}.dateOfBirth`
-                                        )}
-                                        className={inputClass}
-                                    />
-                                </div>
+        {
+          label: "ঢাকা",
+          value: "ঢাকা",
+        },
+      ],
+    },
 
-                                {/* OCCUPATION */}
-                                <div>
-                                    <input
-                                        {...register(
-                                            `familyMembers.${index}.occupation`
-                                        )}
-                                        placeholder="Enter occupation"
-                                        className={inputClass}
-                                    />
-                                </div>
+    {
+      label: "Division (Bangla) *",
+      name: "nomineeDivisionBangla",
+      type: "dropdown",
+      options: [
+        {
+          label: "ঢাকা",
+          value: "ঢাকা",
+        },
 
-                                {/* MOBILE */}
-                                <div>
-                                    <input
-                                        {...register(
-                                            `familyMembers.${index}.mobileNumber`
-                                        )}
-                                        placeholder="Enter mobile"
-                                        className={inputClass}
-                                    />
-                                </div>
+        {
+          label: "চট্টগ্রাম",
+          value: "চট্টগ্রাম",
+        },
+      ],
+    },
+  ];
 
-                                {/* DELETE */}
-                                <div>
-                                    <button
-                                        type="button"
-                                        onClick={() => remove(index)}
-                                        className="
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <div className="space-y-6">
+        {/* FAMILY INFORMATION */}
+        <div className="bg-white border rounded-2xl p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-lg font-semibold text-blue-700">
+              Family Information
+            </h2>
+
+            <p className="text-sm text-red-500">
+              * Marked fields are mandatory
+            </p>
+          </div>
+
+          {/* TABLE HEADER */}
+          <div className="grid grid-cols-8 gap-4 mb-3 text-sm font-semibold text-gray-600">
+            <div>SL</div>
+
+            <div>
+              Family Member Name
+              (English)
+            </div>
+
+            <div>
+              Family Member Name
+              (Bangla)
+            </div>
+
+            <div>Relation</div>
+
+            <div>Date of Birth</div>
+
+            <div>Occupation</div>
+
+            <div>Mobile Number</div>
+
+            <div>Action</div>
+          </div>
+
+          {/* FAMILY MEMBERS */}
+          <div className="space-y-4">
+            {fields.map((field, index) => (
+              <div
+                key={field.id}
+                className="grid grid-cols-8 gap-4 items-start"
+              >
+                {/* SL */}
+                <div>
+                  <input
+                    value={index + 1}
+                    disabled
+                    className="w-full border border-gray-200 bg-gray-100 rounded-lg px-3 py-2 text-sm"
+                  />
+                </div>
+
+                {/* NAME ENGLISH */}
+                <CommonInputField<EmployeeFormValues>
+                  label=""
+                  name={`familyMembers.${index}.familyMemberNameEnglish`}
+                  type="text"
+                  register={register}
+                  errors={errors}
+                  placeholder="Enter name"
+                  rules={{
+                    required:
+                      "English name is required",
+                  }}
+                />
+
+                {/* NAME BANGLA */}
+                <CommonInputField<EmployeeFormValues>
+                  label=""
+                  name={`familyMembers.${index}.familyMemberNameBangla`}
+                  type="text"
+                  register={register}
+                  errors={errors}
+                  placeholder="নাম লিখুন"
+                  rules={{
+                    required:
+                      "Bangla name is required",
+                  }}
+                />
+
+                {/* RELATION */}
+                <CommonInputField<EmployeeFormValues>
+                  label=""
+                  name={`familyMembers.${index}.relation`}
+                  type="dropdown"
+                  register={register}
+                  errors={errors}
+                  options={relationOptions}
+                  rules={{
+                    required:
+                      "Relation is required",
+                  }}
+                />
+
+                {/* DOB */}
+                <CommonInputField<EmployeeFormValues>
+                  label=""
+                  name={`familyMembers.${index}.dateOfBirth`}
+                  type="date"
+                  register={register}
+                  errors={errors}
+                />
+
+                {/* OCCUPATION */}
+                <CommonInputField<EmployeeFormValues>
+                  label=""
+                  name={`familyMembers.${index}.occupation`}
+                  type="text"
+                  register={register}
+                  errors={errors}
+                  placeholder="Enter occupation"
+                />
+
+                {/* MOBILE */}
+                <CommonInputField<EmployeeFormValues>
+                  label=""
+                  name={`familyMembers.${index}.mobileNumber`}
+                  type="text"
+                  register={register}
+                  errors={errors}
+                  placeholder="Enter mobile"
+                />
+
+                {/* DELETE */}
+                <div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      remove(index)
+                    }
+                    className="
                       border border-red-200
                       text-red-500
                       p-2
                       rounded-lg
                       hover:bg-red-50
                     "
-                                    >
-                                        <Trash2 size={16} />
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
 
-                    {/* ADD MORE BUTTON */}
-                    <button
-                        type="button"
-                        onClick={() =>
-                            append({
-                                familyMemberNameEnglish: "",
-                                familyMemberNameBangla: "",
-                                relation: "",
-                                dateOfBirth: "",
-                                occupation: "",
-                                mobileNumber: "",
-                            })
-                        }
-                        className="
+          {/* ADD MORE BUTTON */}
+          <button
+            type="button"
+            onClick={() =>
+              append({
+                familyMemberNameEnglish:
+                  "",
+
+                familyMemberNameBangla:
+                  "",
+
+                relation: "",
+
+                dateOfBirth: "",
+
+                occupation: "",
+
+                mobileNumber: "",
+              })
+            }
+            className="
               mt-5
               flex items-center gap-2
               border border-blue-500
@@ -242,242 +345,125 @@ const FamilyAndNomineeForm: React.FC = () => {
               rounded-lg
               hover:bg-blue-50
             "
-                    >
-                        <Plus size={16} />
-                        Add More Family Member
-                    </button>
-                </div>
+          >
+            <Plus size={16} />
+            Add More Family Member
+          </button>
+        </div>
 
-                {/* NOMINEE INFORMATION */}
-                <div className="bg-white border rounded-2xl p-6">
-                    <h2 className="text-lg font-semibold text-blue-700 mb-6">
-                        Nominee Information
-                    </h2>
+        {/* NOMINEE INFORMATION */}
+        <div className="bg-white border rounded-2xl p-6">
+          <h2 className="text-lg font-semibold text-blue-700 mb-6">
+            Nominee Information
+          </h2>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* LEFT SIDE */}
-                        <div className="space-y-5">
-                            <div>
-                                <label className={labelClass}>
-                                    Nominee Name (English) *
-                                </label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* LEFT SIDE */}
+            <div className="space-y-5">
+              {nomineeFieldsLeft.map(
+                (field) => (
+                  <CommonInputField<EmployeeFormValues>
+                    key={field.name}
+                    label={field.label}
+                    name={
+                      field.name as keyof EmployeeFormValues
+                    }
+                    type={
+                      field.type as
+                        | "text"
+                        | "number"
+                        | "date"
+                        | "email"
+                        | "dropdown"
+                    }
+                    register={register}
+                    errors={errors}
+                    rules={field.rules}
+                    options={field.options}
+                  />
+                )
+              )}
+            </div>
 
-                                <input
-                                    {...register(
-                                        "nomineeNameEnglish",
-                                        {
-                                            required:
-                                                "Nominee name is required",
-                                        }
-                                    )}
-                                    className={inputClass}
-                                />
-                            </div>
+            {/* RIGHT SIDE */}
+            <div className="space-y-5">
+              {/* ADDRESS */}
+              <div>
+                <label className={labelClass}>
+                  Nominee Address
+                  (Bangla) *
+                </label>
 
-                            <div>
-                                <label className={labelClass}>
-                                    Nominee Name (Bangla) *
-                                </label>
+                <textarea
+                  rows={4}
+                  {...register(
+                    "nomineeAddressBangla"
+                  )}
+                  className={inputClass}
+                />
+              </div>
 
-                                <input
-                                    {...register(
-                                        "nomineeNameBangla"
-                                    )}
-                                    className={inputClass}
-                                />
-                            </div>
+              <div className="grid grid-cols-2 gap-5">
+                {nomineeFieldsRight.map(
+                  (field) => (
+                    <CommonInputField<EmployeeFormValues>
+                      key={field.name}
+                      label={field.label}
+                      name={
+                        field.name as keyof EmployeeFormValues
+                      }
+                      type={
+                        field.type as
+                          | "text"
+                          | "number"
+                          | "date"
+                          | "email"
+                          | "dropdown"
+                      }
+                      register={register}
+                      errors={errors}
+                      rules={field.rules}
+                      options={
+                        field.options
+                      }
+                    />
+                  )
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
 
-                            <div>
-                                <label className={labelClass}>
-                                    Relation with Employee *
-                                </label>
-
-                                <select
-                                    {...register(
-                                        "relationWithEmployee"
-                                    )}
-                                    className={inputClass}
-                                >
-                                    <option value="">
-                                        Select Relation
-                                    </option>
-
-                                    <option value="Father">
-                                        Father
-                                    </option>
-
-                                    <option value="Mother">
-                                        Mother
-                                    </option>
-
-                                    <option value="Brother">
-                                        Brother
-                                    </option>
-
-                                    <option value="Sister">
-                                        Sister
-                                    </option>
-
-                                    <option value="Spouse">
-                                        Spouse
-                                    </option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label className={labelClass}>
-                                    Nominee NID / Birth Reg. No. *
-                                </label>
-
-                                <input
-                                    {...register(
-                                        "nomineeNidBirthRegNo"
-                                    )}
-                                    className={inputClass}
-                                />
-                            </div>
-
-                            <div>
-                                <label className={labelClass}>
-                                    Nominee Mobile Number *
-                                </label>
-
-                                <input
-                                    {...register(
-                                        "nomineeMobileNumber"
-                                    )}
-                                    className={inputClass}
-                                />
-                            </div>
-                        </div>
-
-                        {/* RIGHT SIDE */}
-                        <div className="space-y-5">
-                            <div>
-                                <label className={labelClass}>
-                                    Nominee Address (Bangla) *
-                                </label>
-
-                                <textarea
-                                    rows={4}
-                                    {...register(
-                                        "nomineeAddressBangla"
-                                    )}
-                                    className={inputClass}
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-5">
-                                <div>
-                                    <label className={labelClass}>
-                                        Post Office (Bangla) *
-                                    </label>
-
-                                    <input
-                                        {...register(
-                                            "nomineePostOfficeBangla"
-                                        )}
-                                        className={inputClass}
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className={labelClass}>
-                                        Thana / Upazila (Bangla) *
-                                    </label>
-
-                                    <input
-                                        {...register(
-                                            "nomineeThanaUpazilaBangla"
-                                        )}
-                                        className={inputClass}
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className={labelClass}>
-                                        District (Bangla) *
-                                    </label>
-
-                                    <select
-                                        {...register(
-                                            "nomineeDistrictBangla"
-                                        )}
-                                        className={inputClass}
-                                    >
-                                        <option value="">
-                                            Select District
-                                        </option>
-
-                                        <option value="নারায়ণগঞ্জ">
-                                            নারায়ণগঞ্জ
-                                        </option>
-
-                                        <option value="ঢাকা">
-                                            ঢাকা
-                                        </option>
-                                    </select>
-                                </div>
-
-                                <div>
-                                    <label className={labelClass}>
-                                        Division (Bangla) *
-                                    </label>
-
-                                    <select
-                                        {...register(
-                                            "nomineeDivisionBangla"
-                                        )}
-                                        className={inputClass}
-                                    >
-                                        <option value="">
-                                            Select Division
-                                        </option>
-
-                                        <option value="ঢাকা">
-                                            ঢাকা
-                                        </option>
-
-                                        <option value="চট্টগ্রাম">
-                                            চট্টগ্রাম
-                                        </option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* ACTION BUTTONS */}
-                <div className="flex justify-end gap-4">
-                    <button
-                        type="button"
-                        className="
+        {/* ACTION BUTTONS */}
+        <div className="flex justify-end gap-4">
+          <button
+            type="button"
+            className="
               px-6 py-2
               border border-gray-300
               rounded-lg
               hover:bg-gray-50
             "
-                    >
-                        Save as Draft
-                    </button>
+          >
+            Save as Draft
+          </button>
 
-                    <button
-                        type="submit"
-                        className="
+          <button
+            type="submit"
+            className="
               px-6 py-2
               bg-blue-600
               text-white
               rounded-lg
               hover:bg-blue-700
             "
-                    >
-                        Next
-                    </button>
-                </div>
-            </div>
-        </form>
-    );
+          >
+            Next
+          </button>
+        </div>
+      </div>
+    </form>
+  );
 };
 
 export default FamilyAndNomineeForm;
