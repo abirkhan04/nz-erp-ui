@@ -1,21 +1,21 @@
 import React from "react";
 import {
+  Controller,
   useFormContext,
-  Controller
 } from "react-hook-form";
+
+import CommonInputField from "./../../components/CommonInputFields";
 
 import type { EmployeeFormValues } from "./EmployeeFormValues";
 
 const FinancialDetailsForm: React.FC = () => {
-const {
-  register,
-  handleSubmit,
-  reset,
-  watch,
-  control,
-  formState: { errors },
-} = useFormContext<EmployeeFormValues>();
-
+  const {
+    register,
+    handleSubmit,
+    watch,
+    control,
+    formState: { errors },
+  } = useFormContext<EmployeeFormValues>();
 
   const onSubmit = (data: EmployeeFormValues) => {
     console.log("Financial Details:", data);
@@ -23,18 +23,191 @@ const {
 
   const salarySummary = {
     basicSalary: watch("basicSalary") || 0,
-    houseRentAllowance: watch("houseRentAllowance") || 0,
-    medicalAllowance: watch("medicalAllowance") || 0,
-    conveyanceAllowance: watch("conveyanceAllowance") || 0,
+    houseRentAllowance:
+      watch("houseRentAllowance") || 0,
+    medicalAllowance:
+      watch("medicalAllowance") || 0,
+    conveyanceAllowance:
+      watch("conveyanceAllowance") || 0,
     otherAllowance: watch("otherAllowance") || 0,
     grossSalary: watch("grossSalary") || 0,
   };
 
-  const inputClass =
-    "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500";
-
   const labelClass =
     "block text-sm font-medium text-gray-700 mb-1";
+
+  const salaryInformationFields = [
+    {
+      label: "Gross Salary (BDT) *",
+      name: "grossSalary",
+      type: "number",
+      className:
+        "bg-blue-50 font-semibold text-blue-700 rounded-lg",
+    },
+
+    {
+      label: "Basic Salary *",
+      name: "basicSalary",
+      type: "number",
+      rules: {
+        required: "Basic salary is required",
+      },
+    },
+
+    {
+      label: "House Rent Allowance",
+      name: "houseRentAllowance",
+      type: "number",
+    },
+
+    {
+      label: "Medical Allowance",
+      name: "medicalAllowance",
+      type: "number",
+    },
+
+    {
+      label: "Conveyance Allowance",
+      name: "conveyanceAllowance",
+      type: "number",
+    },
+
+    {
+      label: "Other Allowance",
+      name: "otherAllowance",
+      type: "number",
+    },
+  ];
+
+  const paymentInformationFields = [
+    {
+      label: "Payment Method *",
+      name: "paymentMethod",
+      type: "dropdown",
+      options: [
+        {
+          label: "Bank",
+          value: "Bank",
+        },
+        {
+          label: "Cash",
+          value: "Cash",
+        },
+        {
+          label: "Mobile Banking",
+          value: "Mobile Banking",
+        },
+      ],
+    },
+
+    {
+      label: "Bank Name *",
+      name: "bankName",
+      type: "dropdown",
+      options: [
+        {
+          label:
+            "Dutch-Bangla Bank Ltd.",
+          value:
+            "Dutch-Bangla Bank Ltd.",
+        },
+
+        {
+          label: "BRAC Bank",
+          value: "BRAC Bank",
+        },
+
+        {
+          label: "City Bank",
+          value: "City Bank",
+        },
+      ],
+    },
+
+    {
+      label: "Bank Account No. *",
+      name: "bankAccountNo",
+      type: "text",
+    },
+
+    {
+      label: "Account Type",
+      name: "accountType",
+      type: "dropdown",
+      options: [
+        {
+          label: "Savings",
+          value: "Savings",
+        },
+
+        {
+          label: "Current",
+          value: "Current",
+        },
+      ],
+    },
+
+    {
+      label: "Branch",
+      name: "branch",
+      type: "text",
+    },
+  ];
+
+  const taxInformationFields = [
+    {
+      label: "TIN Number",
+      name: "tinNumber",
+      type: "text",
+    },
+
+    {
+      label: "Tax Exempted (If any)",
+      name: "taxExempted",
+      type: "dropdown",
+      options: [
+        {
+          label: "Disabled",
+          value: "Disabled",
+        },
+
+        {
+          label: "Freedom Fighter",
+          value: "Freedom Fighter",
+        },
+      ],
+    },
+
+    {
+      label: "NID Number",
+      name: "nidNumber",
+      type: "text",
+    },
+  ];
+
+  const otherFinancialFields = [
+    {
+      label: "PF Account No.",
+      name: "pfAccountNo",
+      type: "text",
+      placeholder: "Enter PF Account No.",
+    },
+
+    {
+      label: "Salary Effective From *",
+      name: "salaryEffectiveFrom",
+      type: "date",
+    },
+
+    {
+      label: "Remarks",
+      name: "remarks",
+      type: "text",
+      placeholder:
+        "Enter remarks (if any)",
+      className: "md:col-span-3",
+    },
+  ];
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -48,84 +221,35 @@ const {
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            <div>
-                <label className={labelClass}>
-                  Gross Salary (BDT) *
-                </label>
-
-                <input
-                  type="number"
-                  {...register("grossSalary")}
-                  className={`${inputClass} bg-blue-50 font-semibold text-blue-700`}
-                />
-              </div>
-              <div>
-                <label className={labelClass}>
-                  Basic Salary *
-                </label>
-
-                <input
-                  type="number"
-                  {...register("basicSalary", {
-                    required: "Basic salary is required",
-                  })}
-                  className={inputClass}
-                />
-
-                {errors.basicSalary && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {errors.basicSalary.message}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label className={labelClass}>
-                  House Rent Allowance
-                </label>
-
-                <input
-                  type="number"
-                  {...register("houseRentAllowance")}
-                  className={inputClass}
-                />
-              </div>
-
-              <div>
-                <label className={labelClass}>
-                  Medical Allowance
-                </label>
-
-                <input
-                  type="number"
-                  {...register("medicalAllowance")}
-                  className={inputClass}
-                />
-              </div>
-
-              <div>
-                <label className={labelClass}>
-                  Conveyance Allowance
-                </label>
-
-                <input
-                  type="number"
-                  {...register("conveyanceAllowance")}
-                  className={inputClass}
-                />
-              </div>
-
-              <div>
-                <label className={labelClass}>
-                  Other Allowance
-                </label>
-
-                <input
-                  type="number"
-                  {...register("otherAllowance")}
-                  className={inputClass}
-                />
-              </div>
+              {salaryInformationFields.map(
+                (field) => (
+                  <CommonInputField<EmployeeFormValues>
+                    key={field.name}
+                    label={field.label}
+                    name={
+                      field.name as keyof EmployeeFormValues
+                    }
+                    type={
+                      field.type as
+                        | "text"
+                        | "number"
+                        | "date"
+                        | "email"
+                        | "dropdown"
+                    }
+                    register={register}
+                    errors={errors}
+                    rules={field.rules}
+                    options={field.options}
+                    placeholder={
+                      field.placeholder
+                    }
+                    className={
+                      field.className
+                    }
+                  />
+                )
+              )}
             </div>
           </div>
 
@@ -136,71 +260,32 @@ const {
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-5 gap-5">
-              <div>
-                <label className={labelClass}>
-                  Payment Method *
-                </label>
-
-                <select
-                  {...register("paymentMethod")}
-                  className={inputClass}
-                >
-                  <option>Bank</option>
-                  <option>Cash</option>
-                  <option>Mobile Banking</option>
-                </select>
-              </div>
-
-              <div>
-                <label className={labelClass}>
-                  Bank Name *
-                </label>
-
-                <select
-                  {...register("bankName")}
-                  className={inputClass}
-                >
-                  <option>Dutch-Bangla Bank Ltd.</option>
-                  <option>BRAC Bank</option>
-                  <option>City Bank</option>
-                </select>
-              </div>
-
-              <div>
-                <label className={labelClass}>
-                  Bank Account No. *
-                </label>
-
-                <input
-                  {...register("bankAccountNo")}
-                  className={inputClass}
-                />
-              </div>
-
-              <div>
-                <label className={labelClass}>
-                  Account Type
-                </label>
-
-                <select
-                  {...register("accountType")}
-                  className={inputClass}
-                >
-                  <option>Savings</option>
-                  <option>Current</option>
-                </select>
-              </div>
-
-              <div>
-                <label className={labelClass}>
-                  Branch
-                </label>
-
-                <input
-                  {...register("branch")}
-                  className={inputClass}
-                />
-              </div>
+              {paymentInformationFields.map(
+                (field) => (
+                  <CommonInputField<EmployeeFormValues>
+                    key={field.name}
+                    label={field.label}
+                    name={
+                      field.name as keyof EmployeeFormValues
+                    }
+                    type={
+                      field.type as
+                        | "text"
+                        | "number"
+                        | "date"
+                        | "email"
+                        | "dropdown"
+                    }
+                    register={register}
+                    errors={errors}
+                    rules={field.rules}
+                    options={field.options}
+                    placeholder={
+                      field.placeholder
+                    }
+                  />
+                )
+              )}
             </div>
           </div>
 
@@ -211,17 +296,34 @@ const {
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
-              <div>
-                <label className={labelClass}>
-                  TIN Number
-                </label>
+              {taxInformationFields.map(
+                (field) => (
+                  <CommonInputField<EmployeeFormValues>
+                    key={field.name}
+                    label={field.label}
+                    name={
+                      field.name as keyof EmployeeFormValues
+                    }
+                    type={
+                      field.type as
+                        | "text"
+                        | "number"
+                        | "date"
+                        | "email"
+                        | "dropdown"
+                    }
+                    register={register}
+                    errors={errors}
+                    rules={field.rules}
+                    options={field.options}
+                    placeholder={
+                      field.placeholder
+                    }
+                  />
+                )
+              )}
 
-                <input
-                  {...register("tinNumber")}
-                  className={inputClass}
-                />
-              </div>
-
+              {/* TAX STATUS */}
               <div>
                 <label className={labelClass}>
                   Tax Status *
@@ -236,9 +338,15 @@ const {
                         <input
                           type="radio"
                           value="Taxable"
-                          checked={field.value === "Taxable"}
-                          onChange={field.onChange}
+                          checked={
+                            field.value ===
+                            "Taxable"
+                          }
+                          onChange={
+                            field.onChange
+                          }
                         />
+
                         Taxable
                       </label>
 
@@ -247,43 +355,18 @@ const {
                           type="radio"
                           value="Non-Taxable"
                           checked={
-                            field.value === "Non-Taxable"
+                            field.value ===
+                            "Non-Taxable"
                           }
-                          onChange={field.onChange}
+                          onChange={
+                            field.onChange
+                          }
                         />
+
                         Non-Taxable
                       </label>
                     </div>
                   )}
-                />
-              </div>
-
-              <div>
-                <label className={labelClass}>
-                  Tax Exempted (If any)
-                </label>
-
-                <select
-                  {...register("taxExempted")}
-                  className={inputClass}
-                >
-                  <option value="">
-                    Select Exemption
-                  </option>
-
-                  <option>Disabled</option>
-                  <option>Freedom Fighter</option>
-                </select>
-              </div>
-
-              <div>
-                <label className={labelClass}>
-                  NID Number
-                </label>
-
-                <input
-                  {...register("nidNumber")}
-                  className={inputClass}
                 />
               </div>
             </div>
@@ -296,10 +379,11 @@ const {
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
-              {/* PF */}
+              {/* PROVIDENT FUND */}
               <div>
                 <label className={labelClass}>
-                  Provident Fund (PF) Applicable
+                  Provident Fund (PF)
+                  Applicable
                 </label>
 
                 <Controller
@@ -311,9 +395,15 @@ const {
                         <input
                           type="radio"
                           value="Yes"
-                          checked={field.value === "Yes"}
-                          onChange={field.onChange}
+                          checked={
+                            field.value ===
+                            "Yes"
+                          }
+                          onChange={
+                            field.onChange
+                          }
                         />
+
                         Yes
                       </label>
 
@@ -321,26 +411,19 @@ const {
                         <input
                           type="radio"
                           value="No"
-                          checked={field.value === "No"}
-                          onChange={field.onChange}
+                          checked={
+                            field.value ===
+                            "No"
+                          }
+                          onChange={
+                            field.onChange
+                          }
                         />
+
                         No
                       </label>
                     </div>
                   )}
-                />
-              </div>
-
-              {/* PF ACCOUNT */}
-              <div>
-                <label className={labelClass}>
-                  PF Account No.
-                </label>
-
-                <input
-                  {...register("pfAccountNo")}
-                  className={inputClass}
-                  placeholder="Enter PF Account No."
                 />
               </div>
 
@@ -359,9 +442,15 @@ const {
                         <input
                           type="radio"
                           value="Yes"
-                          checked={field.value === "Yes"}
-                          onChange={field.onChange}
+                          checked={
+                            field.value ===
+                            "Yes"
+                          }
+                          onChange={
+                            field.onChange
+                          }
                         />
+
                         Yes
                       </label>
 
@@ -369,9 +458,15 @@ const {
                         <input
                           type="radio"
                           value="No"
-                          checked={field.value === "No"}
-                          onChange={field.onChange}
+                          checked={
+                            field.value ===
+                            "No"
+                          }
+                          onChange={
+                            field.onChange
+                          }
                         />
+
                         No
                       </label>
                     </div>
@@ -394,9 +489,15 @@ const {
                         <input
                           type="radio"
                           value="Yes"
-                          checked={field.value === "Yes"}
-                          onChange={field.onChange}
+                          checked={
+                            field.value ===
+                            "Yes"
+                          }
+                          onChange={
+                            field.onChange
+                          }
                         />
+
                         Yes
                       </label>
 
@@ -404,9 +505,15 @@ const {
                         <input
                           type="radio"
                           value="No"
-                          checked={field.value === "No"}
-                          onChange={field.onChange}
+                          checked={
+                            field.value ===
+                            "No"
+                          }
+                          onChange={
+                            field.onChange
+                          }
                         />
+
                         No
                       </label>
                     </div>
@@ -414,29 +521,35 @@ const {
                 />
               </div>
 
-              <div>
-                <label className={labelClass}>
-                  Salary Effective From *
-                </label>
-
-                <input
-                  type="date"
-                  {...register("salaryEffectiveFrom")}
-                  className={inputClass}
-                />
-              </div>
-
-              <div className="md:col-span-3">
-                <label className={labelClass}>
-                  Remarks
-                </label>
-
-                <input
-                  {...register("remarks")}
-                  className={inputClass}
-                  placeholder="Enter remarks (if any)"
-                />
-              </div>
+              {otherFinancialFields.map(
+                (field) => (
+                  <CommonInputField<EmployeeFormValues>
+                    key={field.name}
+                    label={field.label}
+                    name={
+                      field.name as keyof EmployeeFormValues
+                    }
+                    type={
+                      field.type as
+                        | "text"
+                        | "number"
+                        | "date"
+                        | "email"
+                        | "dropdown"
+                    }
+                    register={register}
+                    errors={errors}
+                    rules={field.rules}
+                    options={field.options}
+                    placeholder={
+                      field.placeholder
+                    }
+                    className={
+                      field.className
+                    }
+                  />
+                )
+              )}
             </div>
           </div>
 
@@ -478,13 +591,17 @@ const {
           <div className="space-y-4 text-sm">
             <div className="flex justify-between">
               <span>Basic Salary</span>
+
               <span className="font-medium">
                 {salarySummary.basicSalary.toLocaleString()}
               </span>
             </div>
 
             <div className="flex justify-between">
-              <span>House Rent Allowance</span>
+              <span>
+                House Rent Allowance
+              </span>
+
               <span className="font-medium">
                 {salarySummary.houseRentAllowance.toLocaleString()}
               </span>
@@ -492,13 +609,17 @@ const {
 
             <div className="flex justify-between">
               <span>Medical Allowance</span>
+
               <span className="font-medium">
                 {salarySummary.medicalAllowance.toLocaleString()}
               </span>
             </div>
 
             <div className="flex justify-between">
-              <span>Conveyance Allowance</span>
+              <span>
+                Conveyance Allowance
+              </span>
+
               <span className="font-medium">
                 {salarySummary.conveyanceAllowance.toLocaleString()}
               </span>
@@ -506,21 +627,26 @@ const {
 
             <div className="flex justify-between">
               <span>Other Allowance</span>
+
               <span className="font-medium">
                 {salarySummary.otherAllowance.toLocaleString()}
               </span>
             </div>
 
             <div className="border-t pt-4 flex justify-between text-blue-700 font-bold">
-              <span>Gross Salary (BDT)</span>
+              <span>
+                Gross Salary (BDT)
+              </span>
+
               <span>
                 {salarySummary.grossSalary.toLocaleString()}
               </span>
             </div>
 
             <div className="mt-6 p-4 bg-blue-50 rounded-xl text-xs text-gray-600 leading-5">
-              This information will be used for salary
-              processing and statutory compliance.
+              This information will be used
+              for salary processing and
+              statutory compliance.
             </div>
           </div>
         </div>
