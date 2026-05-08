@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom"; // Import useNavigate for navigation
 import * as Icons from "lucide-react";
 import { useGet } from "../hooks/useGet";
 import type { MenuItemType } from "../types/interfaces";
@@ -25,6 +26,7 @@ const getIcon = (iconName?: string) => {
 };
 
 const Dashboard: React.FC = () => {
+    const navigate = useNavigate(); // Initialize useNavigate for navigation
 
     const [token, setToken] = useState<string | null>(null);
 
@@ -48,6 +50,7 @@ const Dashboard: React.FC = () => {
         url: token ? `${API_ROUTES.MENU}/${token}` : undefined,
         enabled: !!token,
     });
+
     // ✅ Enrich data (memoized)
     const enrichedMenus = useMemo(() => {
         if (!menu) return [];
@@ -63,6 +66,17 @@ const Dashboard: React.FC = () => {
             };
         });
     }, [menu]);
+
+    // Add Configuration card manually
+    const configurationCard = {
+        name: "Configuration",
+        color: "bg-purple-100",
+        btn: "bg-purple-500",
+        iconComponent: Icons.Settings,
+    };
+
+    // Combine enriched menus with the Configuration card
+    const allCards = [...enrichedMenus, configurationCard];
 
     // ⏳ Loading
     if (isLoading) {
@@ -86,7 +100,7 @@ const Dashboard: React.FC = () => {
         <div className="flex items-center justify-center bg-gray-100 pt-20">
             <div className="bg-white rounded-2xl shadow-md p-4 w-full max-w-6xl">
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                    {enrichedMenus.map((card, index) => {
+                    {allCards.map((card, index) => {
                         const Icon = card.iconComponent;
 
                         return (
@@ -103,6 +117,11 @@ const Dashboard: React.FC = () => {
 
                                 <button
                                     className={`mt-4 w-full text-white py-2 rounded-lg ${card.btn}`}
+                                    onClick={() => {
+                                        if (card.name === "Configuration") {
+                                            navigate("/location"); // Navigate to Location page
+                                        }
+                                    }}
                                 >
                                     {card.name}
                                 </button>

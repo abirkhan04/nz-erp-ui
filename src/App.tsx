@@ -8,6 +8,8 @@ import { lazy } from "react";
 
 const Login = lazy(() => import("./pages/Login"));
 const Dashboard = lazy(()=> import("./pages/Dashboard"));
+const Location = lazy(()=> import("./pages/Location"));
+
 
 /**
  * 🔐 Auth check (replace with real logic)
@@ -63,6 +65,7 @@ function Layout() {
             <Route path="/journal" element={<Page title="Journal Entry" />} />
             <Route path="/reports" element={<Page title="Reports" />} />
             <Route path="/voucher" element={<Page title="Voucher" />} />
+            <Route path="/location" element={<Location/>} />
           </Routes>
         </div>
       </div>
