@@ -1,4 +1,6 @@
 export type EmployeeFormValues = {
+
+   companyLocation: string;
    /* ======================================================
       EMPLOYEE INFORMATION
    ====================================================== */

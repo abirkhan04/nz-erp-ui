@@ -8,6 +8,9 @@ const RecruitmentForm = () => {
     formState: { errors },
   } = useFormContext<EmployeeFormValues>();
 
+  
+
+
   return (
         <div
             className="
@@ -34,13 +37,34 @@ const RecruitmentForm = () => {
       </div>
   
       {/* Factory Location */}
+             <div className="min-w-0">
+        <label className="block text-sm font-medium mb-1">
+          কোম্পানি নাম
+        </label>
+  
+        <select
+          {...register("companyName")}
+          className="w-full border rounded-md px-3 py-2"
+        >
+          <option value="">সিলেক্ট করুন</option>
+          <option value="Factory 1">এন.জেড. ডিওয়াই.  ফ্ল্যাক্স স্পিনিং লি.</option>
+          <option value="Factory 2">Factory 2</option>
+        </select>
+  
+        {errors.companyName && (
+          <p className="text-red-500 text-sm mt-1 break-words">
+            {errors.companyName.message}
+          </p>
+        )}
+      </div>
+
       <div className="min-w-0">
         <label className="block text-sm font-medium mb-1">
           ফ্যাক্টরি লোকেশন
         </label>
   
         <select
-          {...register("companyName")}
+          {...register("factoryLocation")}
           className="w-full border rounded-md px-3 py-2"
         >
           <option value="">সিলেক্ট করুন</option>
