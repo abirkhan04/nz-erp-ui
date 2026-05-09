@@ -56,3 +56,16 @@ export interface Grade {
   isActive: boolean;
 }
 
+export interface Location {
+  locationName: string;
+  districtId: string;
+  district: string | null;
+  companies: unknown[] | null;
+  id: string;
+  createdOn: string;
+  createdBy: string;
+  updatedOn: string;
+  updatedBy: string;
+  isActive: boolean;
+}
+

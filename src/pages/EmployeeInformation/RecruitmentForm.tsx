@@ -1,14 +1,39 @@
 import { useFormContext } from "react-hook-form";
+import { useGet } from "../../hooks/useGet";
+import { API_ROUTES } from "../../api/routes";
+import type { Company, Department, Location } from "../../types/interfaces";
 
 import type { EmployeeFormValues } from "./EmployeeFormValues";
 
 const RecruitmentForm = () => {
   const {
     register,
+    watch,
+    setValue,
     formState: { errors },
   } = useFormContext<EmployeeFormValues>();
 
+  const {
+    data: companies = [],
+  } = useGet<Company[]>({
+    key: ["company"],
+    url: API_ROUTES.COMPANY,
+  });
 
+
+  const {
+    data: locations = [] } = useGet<Location[]>({
+      key: ["location"],
+      url: API_ROUTES.LOCATION,
+    });
+
+
+  const {
+    data: departments = [],
+  } = useGet<Department[]>({
+    key: ["department"],
+    url: API_ROUTES.DEPARTMENT,
+  });
 
 
   return (
@@ -27,12 +52,12 @@ const RecruitmentForm = () => {
         "
     >
       {/* ======================================================
-          ০১. প্রতিষ্ঠানের বিবরণ
+          ০১. চাকরির তথ্য
       ====================================================== */}
 
       <div className="lg:col-span-2 min-w-0">
         <h2 className="text-lg font-semibold border-b pb-2 mb-4">
-          ০১. প্রতিষ্ঠানের বিবরণ
+          ০১. চাকরির তথ্য
         </h2>
       </div>
 
@@ -47,8 +72,12 @@ const RecruitmentForm = () => {
           className="w-full border rounded-md px-3 py-2"
         >
           <option value="">সিলেক্ট করুন</option>
-          <option value="Factory 1">এন.জেড. ডিওয়াই.  ফ্ল্যাক্স স্পিনিং লি.</option>
-          <option value="Factory 2">Factory 2</option>
+
+          {companies?.map((company) => (
+            <option key={company.id} value={company.companyName}>
+              {company.companyName}
+            </option>
+          ))}
         </select>
 
         {errors.companyName && (
@@ -60,7 +89,7 @@ const RecruitmentForm = () => {
 
       <div className="min-w-0">
         <label className="block text-sm font-medium mb-1">
-          লোকেশন
+          লোকেশন / সাব ইউনিট
         </label>
 
         <select
@@ -68,9 +97,12 @@ const RecruitmentForm = () => {
           className="w-full border rounded-md px-3 py-2"
         >
           <option value="">সিলেক্ট করুন</option>
-          <option value="Factory 1">NZ DY H/O</option>
-          <option value="Factory 2">NZ DY Shed-1</option>
-          <option value="Factory 2">NZ DY Shed-2</option>
+
+          {locations?.map((location: Location) => (
+            <option key={location.id} value={location.id}>
+              {location.locationName}
+            </option>
+          ))}
         </select>
 
         {errors.companyName && (
@@ -83,17 +115,19 @@ const RecruitmentForm = () => {
       {/* Department */}
       <div className="min-w-0">
         <label className="block text-sm font-medium mb-1">
-          বিভাগ
+          ডিপার্টমেন্ট
         </label>
-
         <select
           {...register("department")}
           className="w-full border rounded-md px-3 py-2"
         >
           <option value="">সিলেক্ট করুন</option>
-          <option value="HR">HR</option>
-          <option value="Accounts">Accounts</option>
-          <option value="Production">Production</option>
+
+          {departments?.map((department: Department) => (
+            <option key={department.id} value={department.id}>
+              {department.departmentName}
+            </option>
+          ))}
         </select>
       </div>
 
@@ -113,13 +147,54 @@ const RecruitmentForm = () => {
         </select>
       </div>
 
+      <div className="min-w-0">
+        <label className="block text-sm font-medium mb-1">
+          সেল
+        </label>
+
+        <select
+          {...register("section")}
+          className="w-full border rounded-md px-3 py-2"
+        >
+          <option value="">সিলেক্ট করুন</option>
+          <option value="Recruitment">Recuitment</option>
+          <option value="House Keeping">House Keeping</option>
+        </select>
+      </div>
+
+      <div className="min-w-0">
+        <label className="block text-sm font-medium mb-1">
+          প্রস্তাবিত বেতন (মাসিক)
+        </label>
+
+        <input
+          type="number"
+          {...register("grossSalary")}
+          placeholder="টাকা"
+          className="w-full border rounded-md px-3 py-2"
+        />
+      </div>
+
+      {/* Joining Date */}
+      <div className="min-w-0">
+        <label className="block text-sm font-medium mb-1">
+          যোগদানের তারিখ
+        </label>
+
+        <input
+          type="date"
+          {...register("joiningDate")}
+          className="w-full border rounded-md px-3 py-2"
+        />
+      </div>
+
       {/* ======================================================
-          ০২. প্রার্থীর পরিচয় ও তথ্য
+          ০২. প্রার্থীর ব্যক্তিগত তথ্য
       ====================================================== */}
 
       <div className="lg:col-span-2 mt-4 min-w-0">
         <h2 className="text-lg font-semibold border-b pb-2 mb-4">
-          ০২. প্রার্থীর পরিচয় ও তথ্য
+          ০২. প্রার্থীর ব্যক্তিগত তথ্য
         </h2>
       </div>
 
@@ -146,9 +221,8 @@ const RecruitmentForm = () => {
           {...register("employeeType")}
           className="w-full border rounded-md px-3 py-2"
         >
-          <option value="Management">ম্যানেজমেন্ট</option>
-          <option value="Staff">স্টাফ </option>
           <option value="Worker">ওয়ার্কার</option>
+          <option value="Staff">স্টাফ </option>
           {/* <option value="Production">Production</option> */}
         </select>
       </div>
@@ -167,15 +241,32 @@ const RecruitmentForm = () => {
         />
       </div>
 
-      {/* NID */}
+      {/* ID Type */}
       <div className="min-w-0">
         <label className="block text-sm font-medium mb-1">
-          জাতীয় পরিচয়পত্র নং
+          পরিচয়পত্রের ধরন
+        </label>
+
+        <select
+          {...register("idType")}
+          className="w-full border rounded-md px-3 py-2"
+        >
+          <option value="">সিলেক্ট করুন</option>
+          <option value="NID">এনআইডি</option>
+          <option value="Birth Certificate">জন্ম নিবন্ধন</option>
+          <option value="Passport">পাসপোর্ট</option>
+        </select>
+      </div>
+
+      {/* ID Number */}
+      <div className="min-w-0">
+        <label className="block text-sm font-medium mb-1">
+          পরিচয়পত্র নম্বর
         </label>
 
         <input
           type="text"
-          {...register("nidNumber")}
+          {...register("idNumber")}
           placeholder="তথ্যটি লিখুন"
           className="w-full border rounded-md px-3 py-2"
         />
@@ -231,37 +322,37 @@ const RecruitmentForm = () => {
 
 
 
-      {/* Joining Date */}
+      {/* Father/Husband Type */}
       <div className="min-w-0">
-        <label className="block text-sm font-medium mb-1">
-          যোগদানের তারিখ
+        <label className="block text-sm font-medium mb-2">
+          অভিভাবকের ধরন
         </label>
 
-        <input
-          type="date"
-          {...register("joiningDate")}
-          className="w-full border rounded-md px-3 py-2"
-        />
+        <div className="flex items-center gap-6">
+          <label className="flex items-center gap-2">
+            <input
+              type="radio"
+              value="father"
+              {...register("guardianType")}
+            />
+            <span>পিতা</span>
+          </label>
+
+          <label className="flex items-center gap-2">
+            <input
+              type="radio"
+              value="husband"
+              {...register("guardianType")}
+            />
+            <span>স্বামী</span>
+          </label>
+        </div>
       </div>
 
-      {/* Proposed Salary */}
+      {/* Father/Husband Name */}
       <div className="min-w-0">
         <label className="block text-sm font-medium mb-1">
-          প্রস্তাবিত বেতন (মাসিক)
-        </label>
-
-        <input
-          type="number"
-          {...register("grossSalary")}
-          placeholder="টাকা"
-          className="w-full border rounded-md px-3 py-2"
-        />
-      </div>
-
-      {/* Father Name */}
-      <div className="min-w-0">
-        <label className="block text-sm font-medium mb-1">
-          পিতার নাম
+          পিতা/স্বামীর নাম
         </label>
 
         <input
@@ -296,60 +387,11 @@ const RecruitmentForm = () => {
         </h2>
       </div>
 
-      {/* Permanent Address */}
-      <div className="min-w-0">
-        <label className="block text-sm font-medium mb-1">
-          স্থায়ী ঠিকানা
-        </label>
-
-        <input
-          type="text"
-          {...register("permanentVillageRoadHouse")}
-          placeholder="গ্রাম / এলাকা / রাস্তা"
-          className="w-full border rounded-md px-3 py-2"
-        />
-      </div>
-
-      {/* Permanent Post Office */}
-      <div className="min-w-0">
-        <label className="block text-sm font-medium mb-1">
-          ডাকঘর
-        </label>
-
-        <input
-          type="text"
-          {...register("permanentPostOffice")}
-          placeholder="ডাকঘর"
-          className="w-full border rounded-md px-3 py-2"
-        />
-      </div>
-
-      {/* Permanent Thana */}
-      <div className="min-w-0">
-        <label className="block text-sm font-medium mb-1">
-          থানা / উপজেলা
-        </label>
-
-        <input
-          type="text"
-          {...register("permanentThanaUpazila")}
-          placeholder="থানা / উপজেলা"
-          className="w-full border rounded-md px-3 py-2"
-        />
-      </div>
-
-      {/* Permanent District */}
-      <div className="min-w-0">
-        <label className="block text-sm font-medium mb-1">
-          জেলা / বিভাগ
-        </label>
-
-        <input
-          type="text"
-          {...register("permanentDistrict")}
-          placeholder="জেলা / বিভাগ"
-          className="w-full border rounded-md px-3 py-2"
-        />
+      {/* Present Address Title */}
+      <div className="lg:col-span-2">
+        <h3 className="text-md font-semibold mb-2">
+          বর্তমান ঠিকানা
+        </h3>
       </div>
 
       {/* Present Address */}
@@ -403,6 +445,96 @@ const RecruitmentForm = () => {
         <input
           type="text"
           {...register("presentDistrict")}
+          placeholder="জেলা / বিভাগ"
+          className="w-full border rounded-md px-3 py-2"
+        />
+      </div>
+
+      {/* Permanent Address Header + Checkbox */}
+      <div className="lg:col-span-2 flex items-center justify-between mt-6">
+        <h3 className="text-md font-semibold">
+          স্থায়ী ঠিকানা
+        </h3>
+
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            onChange={(e) => {
+              if (e.target.checked) {
+                setValue(
+                  "permanentVillageRoadHouse",
+                  watch("presentVillageRoadHouse")
+                );
+                setValue(
+                  "permanentPostOffice",
+                  watch("presentPostOffice")
+                );
+                setValue(
+                  "permanentThanaUpazila",
+                  watch("presentThanaUpazila")
+                );
+                setValue(
+                  "permanentDistrict",
+                  watch("presentDistrict")
+                );
+              }
+            }}
+          />
+          বর্তমান ও স্থায়ী ঠিকানা একই
+        </label>
+      </div>
+
+      {/* Permanent Address */}
+      <div className="min-w-0">
+        <label className="block text-sm font-medium mb-1">
+          স্থায়ী ঠিকানা
+        </label>
+
+        <input
+          type="text"
+          {...register("permanentVillageRoadHouse")}
+          placeholder="গ্রাম / এলাকা / রাস্তা"
+          className="w-full border rounded-md px-3 py-2"
+        />
+      </div>
+
+      {/* Permanent Post Office */}
+      <div className="min-w-0">
+        <label className="block text-sm font-medium mb-1">
+          ডাকঘর
+        </label>
+
+        <input
+          type="text"
+          {...register("permanentPostOffice")}
+          placeholder="ডাকঘর"
+          className="w-full border rounded-md px-3 py-2"
+        />
+      </div>
+
+      {/* Permanent Thana */}
+      <div className="min-w-0">
+        <label className="block text-sm font-medium mb-1">
+          থানা / উপজেলা
+        </label>
+
+        <input
+          type="text"
+          {...register("permanentThanaUpazila")}
+          placeholder="থানা / উপজেলা"
+          className="w-full border rounded-md px-3 py-2"
+        />
+      </div>
+
+      {/* Permanent District */}
+      <div className="min-w-0">
+        <label className="block text-sm font-medium mb-1">
+          জেলা / বিভাগ
+        </label>
+
+        <input
+          type="text"
+          {...register("permanentDistrict")}
           placeholder="জেলা / বিভাগ"
           className="w-full border rounded-md px-3 py-2"
         />
