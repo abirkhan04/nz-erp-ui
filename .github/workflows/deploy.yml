@@ -1,0 +1,29 @@
+name: Deploy NZ ERP UI
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.0.3
+
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+
+          script: |
+            cd ~/nz-erp-ui
+
+            git fetch origin
+            git reset --hard origin/master
+
+            npm install
+
+            pm2 restart nz-erp-ui
