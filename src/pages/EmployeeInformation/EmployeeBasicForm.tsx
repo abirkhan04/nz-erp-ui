@@ -440,12 +440,6 @@ const EmployeeForm: React.FC<Props> = ({
     },
   
     {
-      label: "TIN Number",
-      name: "tinNumber",
-      type: "text",
-    },
-  
-    {
       label: "Employee Reference",
       name: "employeeReference",
       type: "text",
