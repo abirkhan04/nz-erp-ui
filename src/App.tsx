@@ -10,6 +10,7 @@ import { lazy } from "react";
 const Login = lazy(() => import("./pages/Login"));
 const Dashboard = lazy(()=> import("./pages/Dashboard"));
 const EmployeeForm = lazy(()=> import("./pages/EmployeeOnBoardingParent"));
+const EmployeeAttendance = lazy(()=> import("./pages/EmployeeAttendance"));
 
 
 /**
@@ -62,6 +63,7 @@ function Layout() {
           <Routes>
             <Route path="/" element={<Dashboard/>} />
             <Route path="/recruitment" element={<EmployeeForm/>}/>
+            <Route path="/attendance" element={<EmployeeAttendance/>} />
             <Route path="/currency" element={<Page title="Currency" />} />
             <Route path="/branch" element={<Page title="Branch" />} />
             <Route path="/journal" element={<Page title="Journal Entry" />} />
