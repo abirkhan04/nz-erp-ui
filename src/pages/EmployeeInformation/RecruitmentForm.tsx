@@ -10,6 +10,8 @@ const RecruitmentForm = () => {
     register,
     watch,
     setValue,
+    handleSubmit,
+    reset,
     formState: { errors },
   } = useFormContext<EmployeeFormValues>();
 
@@ -35,8 +37,16 @@ const RecruitmentForm = () => {
     url: API_ROUTES.DEPARTMENT,
   });
 
+   const onSubmit = (data: EmployeeFormValues) => {
+    console.log(data);
+  };
+
 
   return (
+    <form
+    onSubmit={handleSubmit(onSubmit)}
+    className="max-w-7xl mx-auto bg-white rounded-2xl shadow-md p-6 space-y-8"
+  >
     <div
       className="
             w-full
@@ -627,6 +637,32 @@ const RecruitmentForm = () => {
         />
       </div>
     </div>
+          <div className="flex flex-wrap justify-between items-center pt-6 border-t">
+          <div className="space-x-3">
+            <button
+              type="button"
+              onClick={() => reset()}
+              className="px-5 py-2 border border-gray-300 rounded-lg hover:bg-gray-100"
+            >
+              Clear
+            </button>
+
+            <button
+              type="button"
+              className="px-5 py-2 border border-red-300 text-red-500 rounded-lg hover:bg-red-50"
+            >
+              Cancel
+            </button>
+          </div>
+
+          <button
+            type="submit"
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Save & Next
+          </button>
+        </div>
+  </form>
   );
 };
 
