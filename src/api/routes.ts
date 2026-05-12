@@ -8,5 +8,7 @@ export const API_ROUTES = {
 
   EMPLOYEES: "Employees",
   COMPANY: "Company",
-  LOCATION: "Locations"
+  LOCATION: "Locations",
+
+  ENROLLMENTID: "EmployeeMasters/enrollment-id"
 };

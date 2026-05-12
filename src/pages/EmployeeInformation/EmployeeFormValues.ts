@@ -4,6 +4,7 @@ export type EmployeeFormValues = {
    idNumber: number;
    idType: string;
    guardianType: string;
+   enrollmentId: string;
    /* ======================================================
       EMPLOYEE INFORMATION
    ====================================================== */

@@ -1,11 +1,25 @@
+import { useMemo } from "react";
 import { useFormContext } from "react-hook-form";
+import { useEffect } from "react";
+
+import CommonInputField from "../../components/CommonInputFields";
+
 import { useGet } from "../../hooks/useGet";
 import { API_ROUTES } from "../../api/routes";
-import type { Company, Department, Location } from "../../types/interfaces";
+
+import type {
+  Company,
+  Department,
+  Enrollment,
+  Location,
+  Section,
+} from "../../types/interfaces";
 
 import type { EmployeeFormValues } from "./EmployeeFormValues";
 
 const RecruitmentForm = () => {
+
+
   const {
     register,
     watch,
@@ -15,544 +29,594 @@ const RecruitmentForm = () => {
     formState: { errors },
   } = useFormContext<EmployeeFormValues>();
 
-  const {
-    data: companies = [],
-  } = useGet<Company[]>({
+  // =========================
+  // API DATA
+  // =========================
+
+  const { data: companies = [] } = useGet<Company[]>({
     key: ["company"],
     url: API_ROUTES.COMPANY,
   });
 
+  const { data: locations = [] } = useGet<Location[]>({
+    key: ["location"],
+    url: API_ROUTES.LOCATION,
+  });
 
-  const {
-    data: locations = [] } = useGet<Location[]>({
-      key: ["location"],
-      url: API_ROUTES.LOCATION,
-    });
-
-
-  const {
-    data: departments = [],
-  } = useGet<Department[]>({
+  const { data: departments = [] } = useGet<Department[]>({
     key: ["department"],
     url: API_ROUTES.DEPARTMENT,
   });
 
-   const onSubmit = (data: EmployeeFormValues) => {
+  const { data: sections = [] } = useGet<Section[]>({
+    key: ["section"],
+    url: API_ROUTES.SECTION,
+  });
+
+  const { data: enrollmentData } = useGet<Enrollment>({
+    key: ["enrollment-id"],
+    url: API_ROUTES.ENROLLMENTID,
+  });
+
+
+
+  useEffect(() => {
+    if (enrollmentData?.enrollmentId) {
+      setValue(
+        "enrollmentId",
+        enrollmentData.enrollmentId
+      );
+    }
+  }, [enrollmentData, setValue]);
+
+    // =========================
+  // OPTIONS
+  // =========================
+
+  const companyOptions = useMemo(
+    () =>
+      companies.map((company) => ({
+        label: company.companyName,
+        value: company.companyName,
+      })),
+    [companies]
+  );
+
+  const locationOptions = useMemo(
+    () =>
+      locations.map((location) => ({
+        label: location.locationName,
+        value: location.id,
+      })),
+    [locations]
+  );
+
+  const departmentOptions = useMemo(
+    () =>
+      departments.map((department) => ({
+        label: department.departmentName,
+        value: department.id,
+      })),
+    [departments]
+  );
+
+  const sectionOptions = useMemo(
+    () =>
+      sections.map((section) => ({
+        label: section.sectionName,
+        value: section.sectionName,
+      })),
+    [sections]
+  );
+
+  // =========================
+  // FIELD CONFIGS
+  // =========================
+
+  const jobFields = [
+    {
+      label: "কোম্পানি নাম",
+      name: "companyName",
+      type: "dropdown",
+      options: companyOptions,
+      placeholder: "কোম্পানি নাম",
+      rules: {
+        required: "কোম্পানি নির্বাচন করুন",
+      },
+    },
+
+    {
+      label: "লোকেশন / সাব ইউনিট",
+      name: "companyLocation",
+      type: "dropdown",
+      placeholder: "লোকেশন / সাব ইউনিট",
+      options: locationOptions,
+      rules: {
+        required: "লোকেশন নির্বাচন করুন",
+      },
+    },
+
+    {
+      label: "ডিপার্টমেন্ট",
+      name: "department",
+      type: "dropdown",
+      placeholder: "ডিপার্টমেন্ট",
+      options: departmentOptions,
+      rules: {
+        required: "ডিপার্টমেন্ট নির্বাচন করুন",
+      },
+    },
+
+    {
+      label: "সেকশন",
+      name: "section",
+      type: "dropdown",
+      placeholder: "সেকশন",
+      options: sectionOptions,
+      rules: {
+        required: "সেকশন নির্বাচন করুন",
+      },
+    },
+
+    {
+      label: "সেল",
+      name: "cell",
+      type: "dropdown",
+      placeholder: "সেল",
+      options: [
+        {
+          label: "Recruitment",
+          value: "Recruitment",
+        },
+        {
+          label: "House Keeping",
+          value: "House Keeping",
+        },
+      ],
+    },
+
+    {
+      label: "প্রস্তাবিত বেতন (মাসিক)",
+      name: "grossSalary",
+      type: "number",
+      placeholder: "টাকা",
+      rules: {
+        required: "বেতন লিখুন",
+      },
+    },
+
+    {
+      label: "যোগদানের তারিখ",
+      name: "joiningDate",
+      type: "date",
+      rules: {
+        required: "যোগদানের তারিখ নির্বাচন করুন",
+      },
+    },
+  ] as const;
+
+  const personalFields = [
+    {
+      label: "এনরোলমেন্ট আইডি",
+      name: "enrollmentId",
+      type: "text",
+      placeholder: "NZ-ERP-AUTO",
+      rules: {
+        required: "Employee ID is required",
+      },
+      readOnly: true,
+    },
+
+    {
+      label: "প্রার্থীর পূর্ণ নাম",
+      name: "employeeNameEnglish",
+      type: "text",
+      placeholder: "NID অনুযায়ী লিখুন",
+      rules: {
+        required: "Employee name is required",
+      },
+    },
+
+    {
+      label: "পরিচয়পত্র নম্বর",
+      name: "idNumber",
+      type: "text",
+      placeholder: "তথ্যটি লিখুন",
+    },
+
+    {
+      label: "জন্ম তারিখ",
+      name: "dateOfBirth",
+      type: "date",
+    },
+
+    {
+      label: "পিতা/স্বামীর নাম",
+      name: "fatherNameEnglish",
+      type: "text",
+      placeholder: "তথ্যটি লিখুন",
+    },
+
+    {
+      label: "মাতার নাম",
+      name: "motherNameEnglish",
+      type: "text",
+      placeholder: "তথ্যটি লিখুন",
+    },
+  ] as const;
+
+  const presentAddressFields = [
+    {
+      label: "বর্তমান ঠিকানা",
+      name: "presentVillageRoadHouse",
+      type: "text",
+      placeholder: "গ্রাম / এলাকা / রাস্তা",
+    },
+
+    {
+      label: "ডাকঘর",
+      name: "presentPostOffice",
+      type: "text",
+      placeholder: "ডাকঘর",
+    },
+
+    {
+      label: "থানা / উপজেলা",
+      name: "presentThanaUpazila",
+      type: "text",
+      placeholder: "থানা / উপজেলা",
+    },
+
+    {
+      label: "জেলা / বিভাগ",
+      name: "presentDistrict",
+      type: "text",
+      placeholder: "জেলা / বিভাগ",
+    },
+  ] as const;
+
+  const permanentAddressFields = [
+    {
+      label: "স্থায়ী ঠিকানা",
+      name: "permanentVillageRoadHouse",
+      type: "text",
+      placeholder: "গ্রাম / এলাকা / রাস্তা",
+    },
+
+    {
+      label: "ডাকঘর",
+      name: "permanentPostOffice",
+      type: "text",
+      placeholder: "ডাকঘর",
+    },
+
+    {
+      label: "থানা / উপজেলা",
+      name: "permanentThanaUpazila",
+      type: "text",
+      placeholder: "থানা / উপজেলা",
+    },
+
+    {
+      label: "জেলা / বিভাগ",
+      name: "permanentDistrict",
+      type: "text",
+      placeholder: "জেলা / বিভাগ",
+    },
+  ] as const;
+
+  const referenceFields = [
+    {
+      label: "রেফারেন্স ব্যক্তির নাম",
+      name: "employeeReference",
+      type: "text",
+      placeholder: "তথ্যটি লিখুন",
+    },
+  
+    {
+      label: "রেফারেন্স ব্যক্তির আইডি (Ref ID)",
+      name: "documentNumber",
+      type: "text",
+      placeholder: "তথ্যটি লিখুন",
+    },
+  ] as const;
+  
+  const approvalFields = [
+    {
+      label: "প্রধান গেট - সিকিউরিটি ক্লিয়ারেন্স",
+      name: "securityClearance",
+      type: "text",
+      placeholder: "স্বাক্ষর ও তারিখ",
+    },
+  
+    {
+      label: "এনরোলমেন্ট বাই",
+      name: "enrollmentBy",
+      type: "text",
+      placeholder: "আইডি ও স্বাক্ষর",
+    },
+  
+    {
+      label: "বায়োমেট্রিক এনরোল্ড বাই",
+      name: "biometricEnrolledBy",
+      type: "text",
+      placeholder: "আইডি ও স্বাক্ষর",
+    },
+  ] as const;
+
+  // =========================
+  // SUBMIT
+  // =========================
+
+  const onSubmit = (data: EmployeeFormValues) => {
     console.log(data);
   };
 
+  // =========================
+  // RENDER
+  // =========================
 
   return (
     <form
-    onSubmit={handleSubmit(onSubmit)}
-    className="max-w-7xl mx-auto bg-white rounded-2xl shadow-md p-6 space-y-8"
-  >
-    <div
-      className="
-            w-full
-            max-w-[1200px]
-            mx-auto
-            overflow-x-hidden
-            grid
-            grid-cols-1
-            lg:grid-cols-2
-            gap-x-2
-            gap-y-5
-            px-2
-        "
+      onSubmit={handleSubmit(onSubmit)}
+      className="max-w-7xl mx-auto bg-white rounded-2xl shadow-md p-6 space-y-8"
     >
-      {/* ======================================================
-          ০১. চাকরির তথ্য
-      ====================================================== */}
+      <div
+        className="
+          w-full
+          max-w-[1200px]
+          mx-auto
+          overflow-x-hidden
+          grid
+          grid-cols-1
+          lg:grid-cols-2
+          gap-x-2
+          gap-y-5
+          px-2
+        "
+      >
+        {/* ========================= */}
+        {/* JOB INFO */}
+        {/* ========================= */}
 
-      <div className="lg:col-span-2 min-w-0">
-        <h2 className="text-lg font-semibold border-b pb-2 mb-4">
-          ০১. চাকরির তথ্য
-        </h2>
-      </div>
+        <div className="lg:col-span-2 min-w-0">
+          <h2 className="text-lg font-semibold border-b pb-2 mb-4">
+            ০১. চাকরির তথ্য
+          </h2>
+        </div>
 
-      {/* Factory Location */}
-      <div className="min-w-0">
-        <label className="block text-sm font-medium mb-1">
-          কোম্পানি নাম
-        </label>
+        {jobFields.map((field) => (
+          <CommonInputField<EmployeeFormValues>
+            key={field.name}
+            label={field.label}
+            name={field.name}
+            type={field.type as any}
+            options={field.options}
+            placeholder={field.placeholder}
+            rules={field.rules}
+            register={register}
+            errors={errors}
+          />
+        ))}
 
-        <select
-          {...register("companyName")}
-          className="w-full border rounded-md px-3 py-2"
-        >
-          <option value="">সিলেক্ট করুন</option>
+        {/* ========================= */}
+        {/* PERSONAL INFO */}
+        {/* ========================= */}
 
-          {companies?.map((company) => (
-            <option key={company.id} value={company.companyName}>
-              {company.companyName}
-            </option>
-          ))}
-        </select>
+        <div className="lg:col-span-2 mt-4 min-w-0">
+          <h2 className="text-lg font-semibold border-b pb-2 mb-4">
+            ০২. প্রার্থীর ব্যক্তিগত তথ্য
+          </h2>
+        </div>
 
-        {errors.companyName && (
-          <p className="text-red-500 text-sm mt-1 break-words">
-            {errors.companyName.message}
-          </p>
-        )}
-      </div>
+        {personalFields.map((field) => (
+          <CommonInputField<EmployeeFormValues>
+            key={field.name}
+            label={field.label}
+            name={field.name}
+            type={field.type as any}
+            placeholder={field.placeholder}
+            rules={field.rules}
+            register={register}
+            errors={errors}
+          />
+        ))}
 
-      <div className="min-w-0">
-        <label className="block text-sm font-medium mb-1">
-          লোকেশন / সাব ইউনিট
-        </label>
+        {/* Employee Type */}
 
-        <select
-          {...register("companyLocation")}
-          className="w-full border rounded-md px-3 py-2"
-        >
-          <option value="">সিলেক্ট করুন</option>
-
-          {locations?.map((location: Location) => (
-            <option key={location.id} value={location.id}>
-              {location.locationName}
-            </option>
-          ))}
-        </select>
-
-        {errors.companyName && (
-          <p className="text-red-500 text-sm mt-1 break-words">
-            {errors.companyName.message}
-          </p>
-        )}
-      </div>
-
-      {/* Department */}
-      <div className="min-w-0">
-        <label className="block text-sm font-medium mb-1">
-          ডিপার্টমেন্ট
-        </label>
-        <select
-          {...register("department")}
-          className="w-full border rounded-md px-3 py-2"
-        >
-          <option value="">সিলেক্ট করুন</option>
-
-          {departments?.map((department: Department) => (
-            <option key={department.id} value={department.id}>
-              {department.departmentName}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* Section */}
-      <div className="min-w-0">
-        <label className="block text-sm font-medium mb-1">
-          সেকশন
-        </label>
-
-        <select
-          {...register("section")}
-          className="w-full border rounded-md px-3 py-2"
-        >
-          <option value="">সিলেক্ট করুন</option>
-          <option value="Section A">Section A</option>
-          <option value="Section B">Section B</option>
-        </select>
-      </div>
-
-      <div className="min-w-0">
-        <label className="block text-sm font-medium mb-1">
-          সেল
-        </label>
-
-        <select
-          {...register("section")}
-          className="w-full border rounded-md px-3 py-2"
-        >
-          <option value="">সিলেক্ট করুন</option>
-          <option value="Recruitment">Recuitment</option>
-          <option value="House Keeping">House Keeping</option>
-        </select>
-      </div>
-
-      <div className="min-w-0">
-        <label className="block text-sm font-medium mb-1">
-          প্রস্তাবিত বেতন (মাসিক)
-        </label>
-
-        <input
-          type="number"
-          {...register("grossSalary")}
-          placeholder="টাকা"
-          className="w-full border rounded-md px-3 py-2"
+        <CommonInputField<EmployeeFormValues>
+          label="প্রার্থীর ধরন"
+          name="employeeType"
+          type="dropdown"
+          options={[
+            {
+              label: "ওয়ার্কার",
+              value: "Worker",
+            },
+            {
+              label: "স্টাফ",
+              value: "Staff",
+            },
+          ]}
+          register={register}
+          errors={errors}
         />
-      </div>
 
-      {/* Joining Date */}
-      <div className="min-w-0">
-        <label className="block text-sm font-medium mb-1">
-          যোগদানের তারিখ
-        </label>
+        {/* Gender */}
 
-        <input
-          type="date"
-          {...register("joiningDate")}
-          className="w-full border rounded-md px-3 py-2"
+        <CommonInputField<EmployeeFormValues>
+          label="জেন্ডার / লিঙ্গ"
+          name="gender"
+          type="dropdown"
+          options={[
+            {
+              label: "পুরুষ",
+              value: "Male",
+            },
+            {
+              label: "মহিলা",
+              value: "Female",
+            },
+            {
+              label: "অন্যান্য",
+              value: "Other",
+            },
+          ]}
+          register={register}
+          errors={errors}
         />
-      </div>
 
-      {/* ======================================================
-          ০২. প্রার্থীর ব্যক্তিগত তথ্য
-      ====================================================== */}
+        {/* Blood Group */}
 
-      <div className="lg:col-span-2 mt-4 min-w-0">
-        <h2 className="text-lg font-semibold border-b pb-2 mb-4">
-          ০২. প্রার্থীর ব্যক্তিগত তথ্য
-        </h2>
-      </div>
-
-      {/* Enrollment ID */}
-      <div className="min-w-0">
-        <label className="block text-sm font-medium mb-1">
-          এনরোলমেন্ট আইডি
-        </label>
-
-        <input
-          type="text"
-          {...register("employeeId")}
-          placeholder="NZ-ERP-AUTO"
-          className="w-full border rounded-md px-3 py-2 bg-gray-100"
-          readOnly
+        <CommonInputField<EmployeeFormValues>
+          label="রক্তের গ্রুপ"
+          name="bloodGroup"
+          type="dropdown"
+          options={[
+            { label: "এ পজিটিভ (A+)", value: "A+" },
+            { label: "এ নেগেটিভ (A-)", value: "A-" },
+            { label: "বি পজিটিভ (B+)", value: "B+" },
+            { label: "বি নেগেটিভ (B-)", value: "B-" },
+            { label: "এবি পজিটিভ (AB+)", value: "AB+" },
+            { label: "এবি নেগেটিভ (AB-)", value: "AB-" },
+            { label: "ও পজিটিভ (O+)", value: "O+" },
+            { label: "ও নেগেটিভ (O-)", value: "O-" },
+          ]}
+          register={register}
+          errors={errors}
         />
-      </div>
-      <div className="min-w-0">
-        <label className="block text-sm font-medium mb-1">
-          প্রার্থীর ধরন
-        </label>
 
-        <select
-          {...register("employeeType")}
-          className="w-full border rounded-md px-3 py-2"
-        >
-          <option value="Worker">ওয়ার্কার</option>
-          <option value="Staff">স্টাফ </option>
-          {/* <option value="Production">Production</option> */}
-        </select>
-      </div>
+        {/* ID Type */}
 
-      {/* Candidate Name */}
-      <div className="min-w-0">
-        <label className="block text-sm font-medium mb-1">
-          প্রার্থীর পূর্ণ নাম
-        </label>
-
-        <input
-          type="text"
-          {...register("employeeNameEnglish")}
-          placeholder="NID অনুযায়ী লিখুন"
-          className="w-full border rounded-md px-3 py-2"
+        <CommonInputField<EmployeeFormValues>
+          label="পরিচয়পত্রের ধরন"
+          name="idType"
+          type="dropdown"
+          options={[
+            { label: "এনআইডি", value: "NID" },
+            {
+              label: "জন্ম নিবন্ধন",
+              value: "Birth Certificate",
+            },
+            {
+              label: "পাসপোর্ট",
+              value: "Passport",
+            },
+          ]}
+          register={register}
+          errors={errors}
         />
-      </div>
 
-      {/* ID Type */}
-      <div className="min-w-0">
-        <label className="block text-sm font-medium mb-1">
-          পরিচয়পত্রের ধরন
-        </label>
+        {/* Guardian Type */}
 
-        <select
-          {...register("idType")}
-          className="w-full border rounded-md px-3 py-2"
-        >
-          <option value="">সিলেক্ট করুন</option>
-          <option value="NID">এনআইডি</option>
-          <option value="Birth Certificate">জন্ম নিবন্ধন</option>
-          <option value="Passport">পাসপোর্ট</option>
-        </select>
-      </div>
-
-      {/* ID Number */}
-      <div className="min-w-0">
-        <label className="block text-sm font-medium mb-1">
-          পরিচয়পত্র নম্বর
-        </label>
-
-        <input
-          type="text"
-          {...register("idNumber")}
-          placeholder="তথ্যটি লিখুন"
-          className="w-full border rounded-md px-3 py-2"
-        />
-      </div>
-
-      {/* Gender */}
-      <div className="min-w-0">
-        <label className="block text-sm font-medium mb-1">
-          জেন্ডার / লিঙ্গ
-        </label>
-
-        <select
-          {...register("gender")}
-          className="w-full border rounded-md px-3 py-2"
-        >
-          <option value="">সিলেক্ট করুন</option>
-          <option value="Male">পুরুষ</option>
-          <option value="Female">মহিলা</option>
-          <option value="Other">অন্যান্য</option>
-        </select>
-      </div>
-      <div className="min-w-0">
-        <label className="block text-sm font-medium mb-1">
-          রক্তের গ্রুপ
-        </label>
-        <select
-          {...register("bloodGroup")}
-          className="w-full border rounded-md px-3 py-2"
-        >
-          <option value="">সিলেক্ট করুন</option>
-          <option value="A+">এ পজিটিভ (A+)</option>
-          <option value="A-">এ নেগেটিভ (A-)</option>
-          <option value="B+">বি পজিটিভ (B+)</option>
-          <option value="B-">বি নেগেটিভ (B-)</option>
-          <option value="AB+">এবি পজিটিভ (AB+)</option>
-          <option value="AB-">এবি নেগেটিভ (AB-)</option>
-          <option value="O+">ও পজিটিভ (O+)</option>
-          <option value="O-">ও নেগেটিভ (O-)</option>
-        </select>
-      </div>
-      {/* Date of Birth */}
-      <div className="min-w-0">
-        <label className="block text-sm font-medium mb-1">
-          জন্ম তারিখ
-        </label>
-
-        <input
-          type="date"
-          {...register("dateOfBirth")}
-          className="w-full border rounded-md px-3 py-2"
-        />
-      </div>
-
-
-
-      {/* Father/Husband Type */}
-      <div className="min-w-0">
-        <label className="block text-sm font-medium mb-2">
-          অভিভাবকের ধরন
-        </label>
-
-        <div className="flex items-center gap-6">
-          <label className="flex items-center gap-2">
-            <input
-              type="radio"
-              value="father"
-              {...register("guardianType")}
-            />
-            <span>পিতা</span>
+        <div className="min-w-0">
+          <label className="block text-sm font-medium mb-2">
+            অভিভাবকের ধরন
           </label>
 
-          <label className="flex items-center gap-2">
+          <div className="flex items-center gap-6">
+            <label className="flex items-center gap-2">
+              <input
+                type="radio"
+                value="father"
+                {...register("guardianType")}
+              />
+              <span>পিতা</span>
+            </label>
+
+            <label className="flex items-center gap-2">
+              <input
+                type="radio"
+                value="husband"
+                {...register("guardianType")}
+              />
+              <span>স্বামী</span>
+            </label>
+          </div>
+        </div>
+
+        {/* ========================= */}
+        {/* ADDRESS */}
+        {/* ========================= */}
+
+        <div className="lg:col-span-2 mt-4 min-w-0">
+          <h2 className="text-lg font-semibold border-b pb-2 mb-4">
+            ০৩. প্রার্থীর ঠিকানা
+          </h2>
+        </div>
+
+        <div className="lg:col-span-2">
+          <h3 className="text-md font-semibold mb-2">
+            বর্তমান ঠিকানা
+          </h3>
+        </div>
+
+        {presentAddressFields.map((field) => (
+          <CommonInputField<EmployeeFormValues>
+            key={field.name}
+            label={field.label}
+            name={field.name}
+            type={field.type as any}
+            placeholder={field.placeholder}
+            register={register}
+            errors={errors}
+          />
+        ))}
+
+        {/* Permanent */}
+
+        <div className="lg:col-span-2 flex items-center justify-between mt-6">
+          <h3 className="text-md font-semibold">
+            স্থায়ী ঠিকানা
+          </h3>
+
+          <label className="flex items-center gap-2 text-sm">
             <input
-              type="radio"
-              value="husband"
-              {...register("guardianType")}
+              type="checkbox"
+              onChange={(e) => {
+                if (e.target.checked) {
+                  setValue(
+                    "permanentVillageRoadHouse",
+                    watch("presentVillageRoadHouse")
+                  );
+
+                  setValue(
+                    "permanentPostOffice",
+                    watch("presentPostOffice")
+                  );
+
+                  setValue(
+                    "permanentThanaUpazila",
+                    watch("presentThanaUpazila")
+                  );
+
+                  setValue(
+                    "permanentDistrict",
+                    watch("presentDistrict")
+                  );
+                }
+              }}
             />
-            <span>স্বামী</span>
+
+            বর্তমান ও স্থায়ী ঠিকানা একই
           </label>
         </div>
-      </div>
 
-      {/* Father/Husband Name */}
-      <div className="min-w-0">
-        <label className="block text-sm font-medium mb-1">
-          পিতা/স্বামীর নাম
-        </label>
-
-        <input
-          type="text"
-          {...register("fatherNameEnglish")}
-          placeholder="তথ্যটি লিখুন"
-          className="w-full border rounded-md px-3 py-2"
-        />
-      </div>
-
-      {/* Mother Name */}
-      <div className="min-w-0">
-        <label className="block text-sm font-medium mb-1">
-          মাতার নাম
-        </label>
-
-        <input
-          type="text"
-          {...register("motherNameEnglish")}
-          placeholder="তথ্যটি লিখুন"
-          className="w-full border rounded-md px-3 py-2"
-        />
-      </div>
-
-      {/* ======================================================
-          ০৩. প্রার্থীর ঠিকানা
-      ====================================================== */}
-
-      <div className="lg:col-span-2 mt-4 min-w-0">
-        <h2 className="text-lg font-semibold border-b pb-2 mb-4">
-          ০৩. প্রার্থীর ঠিকানা
-        </h2>
-      </div>
-
-      {/* Present Address Title */}
-      <div className="lg:col-span-2">
-        <h3 className="text-md font-semibold mb-2">
-          বর্তমান ঠিকানা
-        </h3>
-      </div>
-
-      {/* Present Address */}
-      <div className="min-w-0">
-        <label className="block text-sm font-medium mb-1">
-          বর্তমান ঠিকানা
-        </label>
-
-        <input
-          type="text"
-          {...register("presentVillageRoadHouse")}
-          placeholder="গ্রাম / এলাকা / রাস্তা"
-          className="w-full border rounded-md px-3 py-2"
-        />
-      </div>
-
-      {/* Present Post Office */}
-      <div className="min-w-0">
-        <label className="block text-sm font-medium mb-1">
-          ডাকঘর
-        </label>
-
-        <input
-          type="text"
-          {...register("presentPostOffice")}
-          placeholder="ডাকঘর"
-          className="w-full border rounded-md px-3 py-2"
-        />
-      </div>
-
-      {/* Present Thana */}
-      <div className="min-w-0">
-        <label className="block text-sm font-medium mb-1">
-          থানা / উপজেলা
-        </label>
-
-        <input
-          type="text"
-          {...register("presentThanaUpazila")}
-          placeholder="থানা / উপজেলা"
-          className="w-full border rounded-md px-3 py-2"
-        />
-      </div>
-
-      {/* Present District */}
-      <div className="min-w-0">
-        <label className="block text-sm font-medium mb-1">
-          জেলা / বিভাগ
-        </label>
-
-        <input
-          type="text"
-          {...register("presentDistrict")}
-          placeholder="জেলা / বিভাগ"
-          className="w-full border rounded-md px-3 py-2"
-        />
-      </div>
-
-      {/* Permanent Address Header + Checkbox */}
-      <div className="lg:col-span-2 flex items-center justify-between mt-6">
-        <h3 className="text-md font-semibold">
-          স্থায়ী ঠিকানা
-        </h3>
-
-        <label className="flex items-center gap-2 text-sm">
-          <input
-            type="checkbox"
-            onChange={(e) => {
-              if (e.target.checked) {
-                setValue(
-                  "permanentVillageRoadHouse",
-                  watch("presentVillageRoadHouse")
-                );
-                setValue(
-                  "permanentPostOffice",
-                  watch("presentPostOffice")
-                );
-                setValue(
-                  "permanentThanaUpazila",
-                  watch("presentThanaUpazila")
-                );
-                setValue(
-                  "permanentDistrict",
-                  watch("presentDistrict")
-                );
-              }
-            }}
+        {permanentAddressFields.map((field) => (
+          <CommonInputField<EmployeeFormValues>
+            key={field.name}
+            label={field.label}
+            name={field.name}
+            type={field.type as any}
+            placeholder={field.placeholder}
+            register={register}
+            errors={errors}
           />
-          বর্তমান ও স্থায়ী ঠিকানা একই
-        </label>
+        ))}
       </div>
-
-      {/* Permanent Address */}
-      <div className="min-w-0">
-        <label className="block text-sm font-medium mb-1">
-          স্থায়ী ঠিকানা
-        </label>
-
-        <input
-          type="text"
-          {...register("permanentVillageRoadHouse")}
-          placeholder="গ্রাম / এলাকা / রাস্তা"
-          className="w-full border rounded-md px-3 py-2"
-        />
-      </div>
-
-      {/* Permanent Post Office */}
-      <div className="min-w-0">
-        <label className="block text-sm font-medium mb-1">
-          ডাকঘর
-        </label>
-
-        <input
-          type="text"
-          {...register("permanentPostOffice")}
-          placeholder="ডাকঘর"
-          className="w-full border rounded-md px-3 py-2"
-        />
-      </div>
-
-      {/* Permanent Thana */}
-      <div className="min-w-0">
-        <label className="block text-sm font-medium mb-1">
-          থানা / উপজেলা
-        </label>
-
-        <input
-          type="text"
-          {...register("permanentThanaUpazila")}
-          placeholder="থানা / উপজেলা"
-          className="w-full border rounded-md px-3 py-2"
-        />
-      </div>
-
-      {/* Permanent District */}
-      <div className="min-w-0">
-        <label className="block text-sm font-medium mb-1">
-          জেলা / বিভাগ
-        </label>
-
-        <input
-          type="text"
-          {...register("permanentDistrict")}
-          placeholder="জেলা / বিভাগ"
-          className="w-full border rounded-md px-3 py-2"
-        />
-      </div>
-
-      {/* ======================================================
-          ০৪. রেফারেন্স বিবরণ
-      ====================================================== */}
+      {/* ========================= */}
+      {/* REFERENCE */}
+      {/* ========================= */}
 
       <div className="lg:col-span-2 mt-4 min-w-0">
         <h2 className="text-lg font-semibold border-b pb-2 mb-4">
@@ -560,37 +624,21 @@ const RecruitmentForm = () => {
         </h2>
       </div>
 
-      {/* Reference Name */}
-      <div className="min-w-0">
-        <label className="block text-sm font-medium mb-1">
-          রেফারেন্স ব্যক্তির নাম
-        </label>
-
-        <input
-          type="text"
-          {...register("employeeReference")}
-          placeholder="তথ্যটি লিখুন"
-          className="w-full border rounded-md px-3 py-2"
+      {referenceFields.map((field) => (
+        <CommonInputField<EmployeeFormValues>
+          key={field.name}
+          label={field.label}
+          name={field.name}
+          type={field.type as any}
+          placeholder={field.placeholder}
+          register={register}
+          errors={errors}
         />
-      </div>
+      ))}
 
-      {/* Reference ID */}
-      <div className="min-w-0">
-        <label className="block text-sm font-medium mb-1">
-          রেফারেন্স ব্যক্তির আইডি (Ref ID)
-        </label>
-
-        <input
-          type="text"
-          {...register("documentNumber")}
-          placeholder="তথ্যটি লিখুন"
-          className="w-full border rounded-md px-3 py-2"
-        />
-      </div>
-
-      {/* ======================================================
-          ০৫. অনুমোদন ও যাচাইকরণ
-      ====================================================== */}
+      {/* ========================= */}
+      {/* APPROVAL & VERIFICATION */}
+      {/* ========================= */}
 
       <div className="lg:col-span-2 mt-4 min-w-0">
         <h2 className="text-lg font-semibold border-b pb-2 mb-4">
@@ -598,71 +646,46 @@ const RecruitmentForm = () => {
         </h2>
       </div>
 
-      {/* Security Clearance */}
-      <div className="min-w-0">
-        <label className="block text-sm font-medium mb-1">
-          প্রধান গেট - সিকিউরিটি ক্লিয়ারেন্স
-        </label>
-
-        <input
-          type="text"
-          placeholder="স্বাক্ষর ও তারিখ"
-          className="w-full border rounded-md px-3 py-2"
+      {approvalFields.map((field) => (
+        <CommonInputField<EmployeeFormValues>
+          key={field.name}
+          label={field.label}
+          name={field.name as any}
+          type={field.type as any}
+          placeholder={field.placeholder}
+          register={register}
+          errors={errors}
         />
-      </div>
+      ))}
 
-      {/* Enrollment By */}
-      <div className="min-w-0">
-        <label className="block text-sm font-medium mb-1">
-          এনরোলমেন্ট বাই
-        </label>
+      {/* ACTIONS */}
 
-        <input
-          type="text"
-          placeholder="আইডি ও স্বাক্ষর"
-          className="w-full border rounded-md px-3 py-2"
-        />
-      </div>
-
-      {/* Biometric Enrolled By */}
-      <div className="min-w-0">
-        <label className="block text-sm font-medium mb-1">
-          বায়োমেট্রিক এনরোল্ড বাই
-        </label>
-
-        <input
-          type="text"
-          placeholder="আইডি ও স্বাক্ষর"
-          className="w-full border rounded-md px-3 py-2"
-        />
-      </div>
-    </div>
-          <div className="flex flex-wrap justify-between items-center pt-6 border-t">
-          <div className="space-x-3">
-            <button
-              type="button"
-              onClick={() => reset()}
-              className="px-5 py-2 border border-gray-300 rounded-lg hover:bg-gray-100"
-            >
-              Clear
-            </button>
-
-            <button
-              type="button"
-              className="px-5 py-2 border border-red-300 text-red-500 rounded-lg hover:bg-red-50"
-            >
-              Cancel
-            </button>
-          </div>
+      <div className="flex flex-wrap justify-between items-center pt-6 border-t">
+        <div className="space-x-3">
+          <button
+            type="button"
+            onClick={() => reset()}
+            className="px-5 py-2 border border-gray-300 rounded-lg hover:bg-gray-100"
+          >
+            Clear
+          </button>
 
           <button
-            type="submit"
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            type="button"
+            className="px-5 py-2 border border-red-300 text-red-500 rounded-lg hover:bg-red-50"
           >
-            Save & Next
+            Cancel
           </button>
         </div>
-  </form>
+
+        <button
+          type="submit"
+          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+        >
+          Save & Next
+        </button>
+      </div>
+    </form>
   );
 };
 

@@ -61,7 +61,7 @@ const CommonInputField = <T extends FieldValues>({
           className={inputClass}
         >
           <option value="">
-            Select {label}
+            {placeholder || `Select ${label}`} 
           </option>
 
           {options.map((option) => (

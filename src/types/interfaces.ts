@@ -69,3 +69,6 @@ export interface Location {
   isActive: boolean;
 }
 
+export interface Enrollment {
+  enrollmentId: string;
+}
