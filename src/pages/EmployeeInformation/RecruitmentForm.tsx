@@ -613,7 +613,7 @@ const RecruitmentForm = () => {
             errors={errors}
           />
         ))}
-      </div>
+
       {/* ========================= */}
       {/* REFERENCE */}
       {/* ========================= */}
@@ -657,6 +657,7 @@ const RecruitmentForm = () => {
           errors={errors}
         />
       ))}
+      </div>
 
       {/* ACTIONS */}
 
