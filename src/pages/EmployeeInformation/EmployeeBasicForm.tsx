@@ -441,6 +441,7 @@ const EmployeeForm: React.FC<Props> = ({
       label: "Email Address",
       name: "emailAddress",
       type: "email",
+      placeholder: "Email Address",
       rules: {
         pattern: {
           value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
