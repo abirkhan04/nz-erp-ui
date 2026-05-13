@@ -244,6 +244,7 @@ const EmployeeForm: React.FC<Props> = ({
       label: "Employee Name (English) *",
       name: "employeeNameEnglish",
       type: "text",
+      placeholder: "Employee Name (English)",
       rules: {
         required: "Employee name is required",
       },
@@ -253,6 +254,7 @@ const EmployeeForm: React.FC<Props> = ({
       label: "Employee Name (Bangla)",
       name: "employeeNameBangla",
       type: "text",
+      placeholder: "Employee Name (Bangla)",
     },
   
     {
@@ -305,6 +307,12 @@ const EmployeeForm: React.FC<Props> = ({
       rules: {
         required: "Grade ID is required",
       },
+    },
+    {
+      label: "Designation",
+      name: "designation",
+      type: "text",
+      placeholder: "Designation",
     },
   
     {
@@ -458,6 +466,7 @@ const EmployeeForm: React.FC<Props> = ({
       label: "Document Number *",
       name: "documentNumber",
       type: "text",
+      placeholder: "Document Number",
       rules: {
         required: "Document number is required",
       },
@@ -500,6 +509,7 @@ const EmployeeForm: React.FC<Props> = ({
       label: "Father's Name (English) *",
       name: "fatherNameEnglish",
       type: "text",
+      placeholder: "Father's Name (English)",
       rules: {
         required: "Father's name (English) is required",
       },
@@ -509,12 +519,14 @@ const EmployeeForm: React.FC<Props> = ({
       label: "Father's Name (Bangla)",
       name: "fatherNameBangla",
       type: "text",
+      placeholder: "Father's Name (Bangla)",
     },
   
     {
       label: "Mother's Name (English) *",
       name: "motherNameEnglish",
       type: "text",
+      placeholder: "Mother's Name (English)",
       rules: {
         required: "Mother's name (English) is required",
       },
@@ -524,30 +536,35 @@ const EmployeeForm: React.FC<Props> = ({
       label: "Mother's Name (Bangla)",
       name: "motherNameBangla",
       type: "text",
+      placeholder: "Mother's Name (Bangla)",
     },
   
     {
       label: "Spouse Name",
       name: "spouseName",
       type: "text",
+      placeholder: "Spouse Name",
     },
   
     {
       label: "Spouse Mobile",
       name: "spouseMobile",
       type: "number",
+      placeholder: "Spouse Mobile",
     },
   
     {
       label: "TIN Number",
       name: "tinNumber",
       type: "text",
+      placeholder: "TIN Number",
     },
   
     {
       label: "Employee Reference",
       name: "employeeReference",
       type: "text",
+      placeholder: "Employee Reference",
     },
   ];
 
@@ -561,6 +578,7 @@ const EmployeeForm: React.FC<Props> = ({
         key={field.name}
         label={field.label}
         name={field.name}
+        placeholder={field.placeholder}
         register={register}
         errors={errors}
         type={field.type}

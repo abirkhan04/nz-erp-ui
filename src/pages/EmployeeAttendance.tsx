@@ -67,7 +67,8 @@ const AttendanceTable = () => {
         pDateTo: form.pDateTo,
       });
 
-      const API_URL = `http://172.16.1.190:8000/virdi/api.php?${queryParams.toString()}`;
+      const API_URL = `http://175.29.147.115:8000/virdi/api.php?${queryParams.toString()}`;
+      // const API_URL = "http://175.29.147.115:8000/virdi/api.php?apikey=Nz@2025&pUnit=textile&pPunchID=51430046&pDateFrom=01/05/2026&pDateTo=31/05/2026";
 
       const response = await fetch(API_URL);
 
