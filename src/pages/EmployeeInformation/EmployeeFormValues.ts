@@ -18,6 +18,7 @@ export type EmployeeFormValues = {
    employeeNameBangla: string;
 
    companyName: string;
+   companyId: String;
    department: string;
    section: string;
    grade: string;

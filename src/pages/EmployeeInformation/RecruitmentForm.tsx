@@ -382,9 +382,9 @@ const RecruitmentForm: React.FC<Props>  = ({
     };
   
     const genderMap: Record<string, number> = {
-      Male: 1,
-      Female: 2,
-      Other: 3,
+      Male: 0,
+      Female: 1,
+      Other: 2,
     };
   
     const bloodGroupMap: Record<string, number> = {

@@ -24,7 +24,6 @@ const EmployeeForm: React.FC<Props> = ({
     register,
     handleSubmit,
     reset,
-    setValue,
     watch,
     formState: { errors },
   } = useFormContext<EmployeeFormValues>();
@@ -80,18 +79,18 @@ const EmployeeForm: React.FC<Props> = ({
     if (!Employee) return;
 
     reset({
-      employeeId: Employee.employeeId || "",
+      employeeId: Employee.id || "",
       employeeNameEnglish:
         Employee.employeeNameEnglish || "",
 
       employeeNameBangla:
         Employee.employeeNameBangla || "",
 
-      companyName: Employee.companyName || "",
+      companyId: Employee.companyId || "",
 
-      department: Employee.department || "",
+      department: Employee.departmentId || "",
 
-      section: Employee.section || "",
+      section: Employee.sectionId || "",
 
       grade: Employee.grade || "",
 
@@ -118,7 +117,7 @@ const EmployeeForm: React.FC<Props> = ({
         ? Employee.dateOfBirth.split("T")[0]
         : "",
 
-      gender: Employee.gender || "",
+      gender: Employee.gender ?? "",
 
       maritalStatus:
         Employee.maritalStatus || "",
@@ -177,7 +176,7 @@ const EmployeeForm: React.FC<Props> = ({
       employeeNameEnglish: data.employeeNameEnglish,
       employeeNameBangla: data.employeeNameBangla,
     
-      companyId: data.companyName,
+      companyId: data.companyId,
       departmentId: data.department,
       sectionId: data.section,
       gradeId: data.grade,
@@ -258,7 +257,7 @@ const EmployeeForm: React.FC<Props> = ({
   
     {
       label: "Company Name *",
-      name: "companyName",
+      name: "companyId",
       type: "dropdown",
       options: companies.map((company) => ({
         label: company.companyName,
@@ -399,8 +398,8 @@ const EmployeeForm: React.FC<Props> = ({
       name: "gender",
       type: "dropdown",
       options: [
-        { label: "Male", value: 1 },
-        { label: "Female", value: 2 },
+        { label: "Male", value: 0 },
+        { label: "Female", value: 1 },
       ],
     },
   
