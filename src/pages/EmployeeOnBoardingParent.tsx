@@ -48,6 +48,7 @@ const steps: StepItem[] = [
 const EmployeeOnboardingParent: React.FC = () => {
   const [activeStep, setActiveStep] = useState<number>(1);
   const [formData] = useState({});
+  const [employeeId, setEmployeeId] = useState<string>("");
 
   const methods = useForm({
     mode: "onChange",
@@ -68,10 +69,10 @@ const EmployeeOnboardingParent: React.FC = () => {
   const renderStepComponent = () => {
     switch (activeStep) {
       case 1:
-        return <RecruitmentForm />;
+        return <RecruitmentForm setActiveStep={setActiveStep} setEmployeeId={setEmployeeId}/>;
 
       case 2:
-        return <EmployeeInformationForm setActiveStep={setActiveStep} />;
+        return <EmployeeInformationForm setActiveStep={setActiveStep} employeeId={employeeId}/>;
 
       case 3:
         return <FinancialDetailsForm />;

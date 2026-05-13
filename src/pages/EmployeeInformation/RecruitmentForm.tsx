@@ -1,11 +1,13 @@
 import { useMemo } from "react";
 import { useFormContext } from "react-hook-form";
 import { useEffect } from "react";
+import toast from "react-hot-toast";
 
 import CommonInputField from "../../components/CommonInputFields";
 
 import { useGet } from "../../hooks/useGet";
 import { API_ROUTES } from "../../api/routes";
+import { usePost } from "../../hooks/usePost";
 
 import type {
   Company,
@@ -17,7 +19,22 @@ import type {
 
 import type { EmployeeFormValues } from "./EmployeeFormValues";
 
-const RecruitmentForm = () => {
+type Props = {
+  setActiveStep: React.Dispatch<React.SetStateAction<number>>;
+  setEmployeeId: React.Dispatch<React.SetStateAction<string>>;
+};
+
+
+const RecruitmentForm: React.FC<Props>  = ({
+  setActiveStep,
+  setEmployeeId
+  }) => {
+  
+  const { mutate: EmployeeRecruitmentPost } =
+    usePost<{ message: string }, any>(
+      API_ROUTES.EMPLOYEE_RECRUITMENT
+    );
+  
 
 
   const {
@@ -53,6 +70,11 @@ const RecruitmentForm = () => {
     url: API_ROUTES.SECTION,
   });
 
+  const { data: cells = [] } = useGet<Section[]>({
+    key: ["cell"],
+    url: API_ROUTES.CELL,
+  });
+
   const { data: enrollmentData } = useGet<Enrollment>({
     key: ["enrollment-id"],
     url: API_ROUTES.ENROLLMENTID,
@@ -77,7 +99,7 @@ const RecruitmentForm = () => {
     () =>
       companies.map((company) => ({
         label: company.companyName,
-        value: company.companyName,
+        value: company.id,
       })),
     [companies]
   );
@@ -104,7 +126,7 @@ const RecruitmentForm = () => {
     () =>
       sections.map((section) => ({
         label: section.sectionName,
-        value: section.sectionName,
+        value: section.id,
       })),
     [sections]
   );
@@ -228,6 +250,9 @@ const RecruitmentForm = () => {
       label: "জন্ম তারিখ",
       name: "dateOfBirth",
       type: "date",
+      rules: {
+        required: "Date of birth is required",
+      }
     },
 
     {
@@ -349,7 +374,154 @@ const RecruitmentForm = () => {
   // =========================
 
   const onSubmit = (data: EmployeeFormValues) => {
-    console.log(data);
+    console.log("recruitment data:-->", data);
+
+    const employeeTypeMap: Record<string, number> = {
+      Worker: 1,
+      Staff: 2,
+    };
+  
+    const genderMap: Record<string, number> = {
+      Male: 1,
+      Female: 2,
+      Other: 3,
+    };
+  
+    const bloodGroupMap: Record<string, number> = {
+      "A+": 1,
+      "A-": 2,
+      "B+": 3,
+      "B-": 4,
+      "AB+": 5,
+      "AB-": 6,
+      "O+": 7,
+      "O-": 8,
+    };
+  
+    const idTypeMap: Record<string, number> = {
+      NID: 1,
+      "Birth Certificate": 2,
+      Passport: 3,
+    };
+  
+    const guardianTypeMap: Record<string, number> = {
+      father: 1,
+      husband: 2,
+    };
+  
+    const employeeRecruitmentPost = {
+      employeeEnrollmentId: data.enrollmentId || "",
+  
+      // API field says Bangla but form has English field
+      employeeNameBangla: data.employeeNameEnglish || "",
+  
+      employeeType:
+        employeeTypeMap[data.employeeType] || 0,
+  
+      companyId: data.companyName || "",
+  
+      departmentId: data.department || "",
+  
+      locationId: data.companyLocation || "",
+  
+      sectionId: data.section || "",
+  
+      cellId: data.cell || null,
+  
+      proposedMonthlySalary: Number(
+        data.grossSalary || 0
+      ),
+  
+      joiningDate: data.joiningDate
+        ? new Date(data.joiningDate).toISOString()
+        : null,
+  
+      confirmationDate: null,
+  
+      dateOfBirth: data.dateOfBirth
+        ? new Date(data.dateOfBirth).toISOString()
+        : null,
+  
+      gender: genderMap[data.gender] || 0,
+  
+      bloodGroup:
+        bloodGroupMap[data.bloodGroup] || 0,
+  
+      idType: idTypeMap[data.idType] || 0,
+  
+      idNumber: data.idNumber || "",
+  
+      guardianType:
+        guardianTypeMap[data.guardianType || ""] || 0,
+  
+      guardianName: data.fatherNameEnglish || "",
+  
+      motherNameBangla:
+        data.motherNameEnglish || "",
+  
+      employeeReference:
+        data.employeeReference || "",
+  
+      referencePersonId:
+        data.documentNumber || "",
+  
+      permanentVillageAreaRoad:
+        data.permanentVillageRoadHouse || "",
+  
+      permanentPostOffice:
+        data.permanentPostOffice || "",
+  
+      permanentThana:
+        data.permanentThanaUpazila || "",
+  
+      permanentDistrict:
+        data.permanentDistrict || "",
+  
+      permanentDivision: "",
+  
+      presentVillageAreaRoad:
+        data.presentVillageRoadHouse || "",
+  
+      presentPostOffice:
+        data.presentPostOffice || "",
+  
+      presentThana:
+        data.presentThanaUpazila || "",
+  
+      presentDistrict:
+        data.presentDistrict || "",
+  
+      presentDivision: "",
+  
+      securityClearanceBy:
+        data.securityClearance || "",
+  
+      securityClearanceDate:
+        new Date().toISOString(),
+  
+      enrolledBy: data.enrollmentBy || "",
+  
+      enrolledDate: new Date().toISOString(),
+  
+      biometricEnrolledBy:
+        data.biometricEnrolledBy || "",
+  
+      biometricEnrolledDate:
+        new Date().toISOString(),
+    };
+  
+    console.log(
+      "employeeRecruitmentPost -->",
+      employeeRecruitmentPost
+    );
+  
+    EmployeeRecruitmentPost(employeeRecruitmentPost,  {
+      onSuccess: (response) => {
+        toast.success(response.message);
+        setActiveStep(2);
+        setEmployeeId(response.id);
+      },
+    });
   };
 
   // =========================

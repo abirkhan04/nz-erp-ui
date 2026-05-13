@@ -5,6 +5,10 @@ export type EmployeeFormValues = {
    idType: string;
    guardianType: string;
    enrollmentId: string;
+   securityClearance: string;
+   cell: string;
+   enrollmentBy: string;
+   biometricEnrolledBy: string;
    /* ======================================================
       EMPLOYEE INFORMATION
    ====================================================== */

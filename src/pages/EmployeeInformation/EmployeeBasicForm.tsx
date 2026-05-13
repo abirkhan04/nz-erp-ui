@@ -1,4 +1,4 @@
-import React from "react";
+import React , { useEffect } from "react";
 import { useFormContext } from "react-hook-form";
 import toast from "react-hot-toast";
 import { useGet } from "../../hooks/useGet";
@@ -13,15 +13,18 @@ import { API_ROUTES } from "../../api/routes";
 
 type Props = {
   setActiveStep: React.Dispatch<React.SetStateAction<number>>;
+  employeeId: string;
 };
 
 const EmployeeForm: React.FC<Props> = ({
   setActiveStep,
+  employeeId
   }) => {
   const {
     register,
     handleSubmit,
     reset,
+    setValue,
     watch,
     formState: { errors },
   } = useFormContext<EmployeeFormValues>();
@@ -29,6 +32,11 @@ const EmployeeForm: React.FC<Props> = ({
   /* ======================================================
       API CALLS
   ====================================================== */
+
+  const {data: Employee} = useGet<EmployeeFormValues>({
+     key: ["employee", employeeId],
+     url: `${API_ROUTES.EMPLOYEES}/${employeeId}`,
+  })
 
   const {
     data: companies = [],
@@ -67,6 +75,98 @@ const EmployeeForm: React.FC<Props> = ({
     API_ROUTES.EMPLOYEES
   );
 
+
+  useEffect(() => {
+    if (!Employee) return;
+
+    reset({
+      employeeId: Employee.employeeId || "",
+      employeeNameEnglish:
+        Employee.employeeNameEnglish || "",
+
+      employeeNameBangla:
+        Employee.employeeNameBangla || "",
+
+      companyName: Employee.companyName || "",
+
+      department: Employee.department || "",
+
+      section: Employee.section || "",
+
+      grade: Employee.grade || "",
+
+      employeeType:
+        Employee.employeeType || "",
+
+      shift: Employee.shift || "",
+
+      employeeNature:
+        Employee.employeeNature || "",
+
+      holiday: Employee.holiday || "",
+
+      joiningDate: Employee.joiningDate
+        ? Employee.joiningDate.split("T")[0]
+        : "",
+
+      confirmationDate:
+        Employee.confirmationDate
+          ? Employee.confirmationDate.split("T")[0]
+          : "",
+
+      dateOfBirth: Employee.dateOfBirth
+        ? Employee.dateOfBirth.split("T")[0]
+        : "",
+
+      gender: Employee.gender || "",
+
+      maritalStatus:
+        Employee.maritalStatus || "",
+
+      mobileNumber:
+        Employee.mobileNumber || "",
+
+      emailAddress:
+        Employee.emailAddress || "",
+
+      documentType:
+        Employee.documentType || "",
+
+      documentNumber:
+        Employee.documentNumber || "",
+
+      bloodGroup:
+        Employee.bloodGroup || "",
+
+      religion: Employee.religion || "",
+
+      nationality:
+        Employee.nationality || "",
+
+      fatherNameEnglish:
+        Employee.fatherNameEnglish || "",
+
+      fatherNameBangla:
+        Employee.fatherNameBangla || "",
+
+      motherNameEnglish:
+        Employee.motherNameEnglish || "",
+
+      motherNameBangla:
+        Employee.motherNameBangla || "",
+
+      spouseName:
+        Employee.spouseName || "",
+
+      spouseMobile:
+        Employee.spouseMobile || "",
+
+      tinNumber: Employee.tinNumber || "",
+
+      employeeReference:
+        Employee.employeeReference || "",
+    });
+  }, [Employee, reset]);
   /* ======================================================
       SUBMIT
   ====================================================== */
