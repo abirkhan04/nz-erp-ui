@@ -600,6 +600,7 @@ const RecruitmentForm: React.FC<Props>  = ({
           label="প্রার্থীর ধরন"
           name="employeeType"
           type="dropdown"
+          placeholder="প্রার্থীর ধরন"
           options={[
             {
               label: "ওয়ার্কার",
@@ -620,6 +621,7 @@ const RecruitmentForm: React.FC<Props>  = ({
           label="জেন্ডার / লিঙ্গ"
           name="gender"
           type="dropdown"
+          placeholder="জেন্ডার / লিঙ্গ"
           options={[
             {
               label: "পুরুষ",
@@ -644,6 +646,7 @@ const RecruitmentForm: React.FC<Props>  = ({
           label="রক্তের গ্রুপ"
           name="bloodGroup"
           type="dropdown"
+          placeholder="রক্তের গ্রুপ"
           options={[
             { label: "এ পজিটিভ (A+)", value: "A+" },
             { label: "এ নেগেটিভ (A-)", value: "A-" },
@@ -664,6 +667,7 @@ const RecruitmentForm: React.FC<Props>  = ({
           label="পরিচয়পত্রের ধরন"
           name="idType"
           type="dropdown"
+          placeholder="পরিচয়পত্রের ধরন"
           options={[
             { label: "এনআইডি", value: "NID" },
             {
