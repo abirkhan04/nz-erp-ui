@@ -185,7 +185,10 @@ const EmployeeForm: React.FC<Props> = ({
       departmentId: data.department,
       sectionId: data.section,
       gradeId: data.grade,
-      designationId: data.designation,
+      designationId:  data.designation === "" ||
+      data.designation === undefined
+        ? null
+        : data.designation,
       holidayId: data.holiday,
     
       employeeType: data.employeeType,
