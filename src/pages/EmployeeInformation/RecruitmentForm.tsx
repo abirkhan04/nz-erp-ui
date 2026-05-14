@@ -234,7 +234,7 @@ const RecruitmentForm: React.FC<Props>  = ({
 
     {
       label: "প্রার্থীর পূর্ণ নাম",
-      name: "employeeNameEnglish",
+      name: "employeeNameBangla",
       type: "text",
       placeholder: "NID অনুযায়ী লিখুন",
       rules: {
@@ -446,7 +446,7 @@ const RecruitmentForm: React.FC<Props>  = ({
       employeeEnrollmentId: data.enrollmentId || "",
   
       // API field says Bangla but form has English field
-      employeeNameBangla: data.employeeNameEnglish || "",
+      employeeNameBangla: data.employeeNameBangla || "",
   
       employeeType:
         employeeTypeMap[data.employeeType] || 0,
