@@ -72,3 +72,16 @@ export interface Location {
 export interface Enrollment {
   enrollmentId: string;
 }
+
+
+export interface Designation {
+  id: string;
+  designationName: string;
+  designationCode: string;
+  parentId: string;
+  createdOn: string;
+  createdBy: string;
+  updatedOn: string;
+  updatedBy: string;
+  isActive: boolean;
+}

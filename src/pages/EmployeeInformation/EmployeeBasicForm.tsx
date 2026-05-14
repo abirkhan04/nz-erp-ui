@@ -7,7 +7,7 @@ import { usePost } from "../../hooks/usePost";
 import CommonInputField from "./../../components/CommonInputFields";
 
 import type { EmployeeFormValues } from "./EmployeeFormValues";
-import type { Company, Department, Grade, Section } from "../../types/interfaces";
+import type { Company, Department, Designation, Grade, Section } from "../../types/interfaces";
 
 import { API_ROUTES } from "../../api/routes";
 
@@ -61,6 +61,11 @@ const EmployeeForm: React.FC<Props> = ({
     url: `${API_ROUTES.SECTION}?includeInactive=true&departmentId=${selectedDepartment}`,
     enabled: !!selectedDepartment,
   });
+
+  const {data: designations = []} = useGet<Designation[]>({
+    key: ["designations"],
+    url: `${API_ROUTES.DESIGNATION}?includeInactive=true`,
+  })
 
   const {
     data: grades = [],
@@ -180,6 +185,7 @@ const EmployeeForm: React.FC<Props> = ({
       departmentId: data.department,
       sectionId: data.section,
       gradeId: data.grade,
+      designationId: data.designation,
       holidayId: data.holiday,
     
       employeeType: data.employeeType,
@@ -223,6 +229,11 @@ const EmployeeForm: React.FC<Props> = ({
         toast.success(response.message);
         setActiveStep(3);
       },
+      onError: (error) => {
+        console.log(error.message);
+        toast.error(error.message);
+      },
+
     });
   };
 
@@ -311,8 +322,12 @@ const EmployeeForm: React.FC<Props> = ({
     {
       label: "Designation",
       name: "designation",
-      type: "text",
+      type: "dropdown",
       placeholder: "Designation",
+      options: designations.map((designation) => ({
+        label: designation.designationName,
+        value: designation.id,
+      }))
     },
   
     {

@@ -22,6 +22,7 @@ export type EmployeeFormValues = {
    department: string;
    section: string;
    grade: string;
+   designation: string;
 
    employeeType: string;
    shift: string;

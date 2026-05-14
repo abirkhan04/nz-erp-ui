@@ -11,6 +11,7 @@ export const API_ROUTES = {
   COMPANY: "Company",
   LOCATION: "Locations",
   CELL: "Cells",
+  DESIGNATION: "Designations",
 
   ENROLLMENTID: "EmployeeMasters/enrollment-id"
 };
