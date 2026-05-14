@@ -85,3 +85,16 @@ export interface Designation {
   updatedBy: string;
   isActive: boolean;
 }
+
+export interface Cell {
+  id: string;
+  nameEnglish: string;
+  nameBangla: string;
+  sectionId: string;
+  sectionName: string;
+  createdOn: string;
+  createdBy: string;
+  updatedOn: string;
+  updatedBy: string;
+  isActive: boolean;
+}

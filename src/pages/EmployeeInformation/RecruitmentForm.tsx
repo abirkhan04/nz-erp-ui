@@ -10,6 +10,7 @@ import { API_ROUTES } from "../../api/routes";
 import { usePost } from "../../hooks/usePost";
 
 import type {
+  Cell,
   Company,
   Department,
   Enrollment,
@@ -70,7 +71,7 @@ const RecruitmentForm: React.FC<Props>  = ({
     url: API_ROUTES.SECTION,
   });
 
-  const { data: cells = [] } = useGet<Section[]>({
+  const { data: cells = [] } = useGet<Cell[]>({
     key: ["cell"],
     url: API_ROUTES.CELL,
   });
@@ -131,6 +132,15 @@ const RecruitmentForm: React.FC<Props>  = ({
     [sections]
   );
 
+  const cellOptions = useMemo(
+    () =>
+      cells.map((cell) => ({
+        label: cell.nameEnglish,
+        value: cell.id,
+      })),
+    [cells]
+  );
+
   // =========================
   // FIELD CONFIGS
   // =========================
@@ -185,16 +195,7 @@ const RecruitmentForm: React.FC<Props>  = ({
       name: "cell",
       type: "dropdown",
       placeholder: "সেল",
-      options: [
-        // {
-        //   label: "Recruitment",
-        //   value: "Recruitment",
-        // },
-        // {
-        //   label: "House Keeping",
-        //   value: "House Keeping",
-        // },
-      ],
+      options: cellOptions,
     },
 
     {
