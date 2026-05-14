@@ -551,6 +551,10 @@ const RecruitmentForm: React.FC<Props>  = ({
         setActiveStep(2);
         setEmployeeId(response.id);
       },
+      onError: (error) => {
+        console.log(error.message);
+        toast.error(error.message);
+      },
     });
   };
 
