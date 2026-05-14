@@ -455,13 +455,14 @@ const EmployeeForm: React.FC<Props> = ({
     {
       label: "Email Address",
       name: "emailAddress",
-      type: "email",
+      type: "text",
       placeholder: "Email Address",
       rules: {
         pattern: {
           value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
           message: "Invalid email format",
         },
+        required: "Email address is required",
       },
     },
   
