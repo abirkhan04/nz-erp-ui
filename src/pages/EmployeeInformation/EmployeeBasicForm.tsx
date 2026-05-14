@@ -133,11 +133,11 @@ const EmployeeForm: React.FC<Props> = ({
       emailAddress:
         Employee.emailAddress || "",
 
-      documentType:
-        Employee.documentType || "",
+      idType:
+        Employee.idType || "",
 
-      documentNumber:
-        Employee.documentNumber || "",
+      idNumber:
+        Employee.idNumber ?? 0,
 
       bloodGroup:
         Employee.bloodGroup || "",
@@ -206,8 +206,8 @@ const EmployeeForm: React.FC<Props> = ({
       mobileNumber: data.mobileNumber,
       emailAddress: data.emailAddress,
     
-      documentType: Number(data.documentType),
-      documentNumber: data.documentNumber,
+      idType: Number(data.idType),
+      idNumber: data.idNumber,
     
       bloodGroup: Number(data.bloodGroup),
       religion: Number(data.religion),
@@ -466,12 +466,13 @@ const EmployeeForm: React.FC<Props> = ({
     },
   
     {
-      label: "Document Type *",
-      name: "documentType",
+      label: "ID Type *",
+      name: "idType",
       type: "dropdown",
       options: [
         { label: "NID", value: 1 },
-        { label: "Passport", value: 2 },
+        { label: "Birth Certificate", value: 2},
+        { label: "Passport", value: 3 },
       ],
       rules: {
         required: "Document type is required",
@@ -479,8 +480,8 @@ const EmployeeForm: React.FC<Props> = ({
     },
   
     {
-      label: "Document Number *",
-      name: "documentNumber",
+      label: "ID Number *",
+      name: "idNumber",
       type: "text",
       placeholder: "Document Number",
       rules: {

@@ -9,7 +9,7 @@ export const API_ROUTES = {
   EMPLOYEES: "Employees",
   EMPLOYEE_RECRUITMENT: "Employees/Recruitment",
   COMPANY: "Company",
-  LOCATION: "Locations",
+  LOCATION: "Locations/Company",
   CELL: "Cells",
   DESIGNATION: "Designations",
 

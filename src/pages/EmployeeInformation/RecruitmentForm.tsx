@@ -56,9 +56,11 @@ const RecruitmentForm: React.FC<Props>  = ({
     url: API_ROUTES.COMPANY,
   });
 
+  const selectedCompany = watch("companyName");
+
   const { data: locations = [] } = useGet<Location[]>({
-    key: ["location"],
-    url: API_ROUTES.LOCATION,
+    key: ["location", selectedCompany],
+    url: `${API_ROUTES.LOCATION}/${selectedCompany}`,
   });
 
   const { data: departments = [] } = useGet<Department[]>({
