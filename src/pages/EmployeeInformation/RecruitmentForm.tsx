@@ -186,14 +186,14 @@ const RecruitmentForm: React.FC<Props>  = ({
       type: "dropdown",
       placeholder: "সেল",
       options: [
-        {
-          label: "Recruitment",
-          value: "Recruitment",
-        },
-        {
-          label: "House Keeping",
-          value: "House Keeping",
-        },
+        // {
+        //   label: "Recruitment",
+        //   value: "Recruitment",
+        // },
+        // {
+        //   label: "House Keeping",
+        //   value: "House Keeping",
+        // },
       ],
     },
 
