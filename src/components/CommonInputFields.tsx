@@ -18,7 +18,13 @@ type CommonInputFieldProps<T extends FieldValues> = {
   register: UseFormRegister<T>;
   errors: FieldErrors<T>;
 
-  type?: "text" | "number" | "date" | "email" | "dropdown";
+  type?:
+    | "text"
+    | "number"
+    | "date"
+    | "email"
+    | "dropdown"
+    | "radio";
 
   options?: Option[];
 
@@ -61,7 +67,7 @@ const CommonInputField = <T extends FieldValues>({
           className={inputClass}
         >
           <option value="">
-            {placeholder || `Select ${label}`} 
+            {placeholder || `Select ${label}`}
           </option>
 
           {options.map((option) => (
@@ -73,6 +79,22 @@ const CommonInputField = <T extends FieldValues>({
             </option>
           ))}
         </select>
+      ) : type === "radio" ? (
+        <div className="flex gap-4">
+          {options.map((option) => (
+            <label
+              key={option.value}
+              className="flex items-center gap-2 text-sm"
+            >
+              <input
+                type="radio"
+                value={option.value}
+                {...register(name, rules)}
+              />
+              {option.label}
+            </label>
+          ))}
+        </div>
       ) : (
         <input
           type={type}

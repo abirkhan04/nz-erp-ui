@@ -237,8 +237,24 @@ const RecruitmentForm: React.FC<Props>  = ({
       rules: {
         required: "Employee name is required",
       },
+    }, 
+    {
+       label: "পরিচয়পত্রের ধরন",
+       name: "idType",
+       type: "dropdown",
+       placeholder: "পরিচয়পত্রের ধরন",
+       options : [
+        { label: "এনআইডি", value: "NID" },
+        {
+          label: "জন্ম নিবন্ধন",
+          value: "Birth Certificate",
+        },
+        {
+          label: "পাসপোর্ট",
+          value: "Passport",
+        },
+      ]
     },
-
     {
       label: "পরিচয়পত্র নম্বর",
       name: "idNumber",
@@ -254,7 +270,21 @@ const RecruitmentForm: React.FC<Props>  = ({
         required: "Date of birth is required",
       }
     },
-
+    {
+      label: "অভিভাবকের ধরন",
+      name: "guardianType",
+      type: "radio",
+      options: [
+        {
+          label: "পিতা",
+          value: "father",
+        },
+        {
+          label: "স্বামী",
+          value: "husband",
+        },
+      ],
+    },
     {
       label: "পিতা/স্বামীর নাম",
       name: "fatherNameEnglish",
@@ -588,6 +618,7 @@ const RecruitmentForm: React.FC<Props>  = ({
             name={field.name}
             type={field.type as any}
             placeholder={field.placeholder}
+            options={field.options}
             rules={field.rules}
             register={register}
             errors={errors}
@@ -660,56 +691,6 @@ const RecruitmentForm: React.FC<Props>  = ({
           register={register}
           errors={errors}
         />
-
-        {/* ID Type */}
-
-        <CommonInputField<EmployeeFormValues>
-          label="পরিচয়পত্রের ধরন"
-          name="idType"
-          type="dropdown"
-          placeholder="পরিচয়পত্রের ধরন"
-          options={[
-            { label: "এনআইডি", value: "NID" },
-            {
-              label: "জন্ম নিবন্ধন",
-              value: "Birth Certificate",
-            },
-            {
-              label: "পাসপোর্ট",
-              value: "Passport",
-            },
-          ]}
-          register={register}
-          errors={errors}
-        />
-
-        {/* Guardian Type */}
-
-        <div className="min-w-0">
-          <label className="block text-sm font-medium mb-2">
-            অভিভাবকের ধরন
-          </label>
-
-          <div className="flex items-center gap-6">
-            <label className="flex items-center gap-2">
-              <input
-                type="radio"
-                value="father"
-                {...register("guardianType")}
-              />
-              <span>পিতা</span>
-            </label>
-
-            <label className="flex items-center gap-2">
-              <input
-                type="radio"
-                value="husband"
-                {...register("guardianType")}
-              />
-              <span>স্বামী</span>
-            </label>
-          </div>
-        </div>
 
         {/* ========================= */}
         {/* ADDRESS */}
