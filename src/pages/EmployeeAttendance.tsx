@@ -186,11 +186,20 @@ const AttendanceTable = () => {
   const buildAttendance = (
     rawData: string[],
     fromDate: string,
-   toDate: string
+    toDate: string
   ): AttendanceRow[] => {
     const grouped: Record<string, Date[]> = {};
   
+    /**
+     * CONFIG
+     */
     const ATTENDANCE_BOUNDARY_HOUR = 7;
+  
+    /**
+     * Max allowed work span
+     * 2 shifts + 2h buffer
+     */
+    const MAX_GROUPING_HOURS = 18;
   
     /**
      * Convert DD/MM/YYYY -> Date
@@ -209,7 +218,7 @@ const AttendanceTable = () => {
     };
   
     /**
-     * Format YYYY-MM-DD
+     * YYYY-MM-DD formatter
      */
     const getDateKey = (date: Date) => {
       const year = date.getFullYear();
@@ -226,8 +235,22 @@ const AttendanceTable = () => {
     };
   
     /**
+     * Hours difference
+     */
+    const getHoursDiff = (
+      start: Date,
+      end: Date
+    ) => {
+      return (
+        (end.getTime() -
+          start.getTime()) /
+        (1000 * 60 * 60)
+      );
+    };
+  
+    /**
      * STEP 1
-     * Group by actual calendar date
+     * Group by actual calendar day
      */
     rawData.forEach((item) => {
       const date = new Date(item);
@@ -243,19 +266,38 @@ const AttendanceTable = () => {
     });
   
     /**
-     * STEP 2
-     * Move early morning punches (<7AM)
-     * to previous day ONLY IF
-     * current day has no normal punches
+     * Sort all groups
      */
     Object.keys(grouped).forEach(
-      (dateKey) => {
-        const punches = grouped[
-          dateKey
-        ].sort(
+      (key) => {
+        grouped[key].sort(
           (a, b) =>
             a.getTime() - b.getTime()
         );
+      }
+    );
+  
+    /**
+     * STEP 2
+     *
+     * Morning punches handling
+     *
+     * RULE:
+     * 1. Try grouping with PREVIOUS DAY first
+     * 2. If impossible (>18h),
+     *    keep with CURRENT DAY
+     */
+    Object.keys(grouped).forEach(
+      (dateKey) => {
+        const punches =
+          grouped[dateKey];
+  
+        if (
+          !punches ||
+          punches.length === 0
+        ) {
+          return;
+        }
   
         const earlyPunches =
           punches.filter(
@@ -264,6 +306,15 @@ const AttendanceTable = () => {
               ATTENDANCE_BOUNDARY_HOUR
           );
   
+        if (
+          earlyPunches.length === 0
+        ) {
+          return;
+        }
+  
+        /**
+         * Current day's normal punches
+         */
         const normalPunches =
           punches.filter(
             (p) =>
@@ -272,41 +323,94 @@ const AttendanceTable = () => {
           );
   
         /**
-         * Example:
-         *
-         * 16 May 21:49
-         * 17 May 06:01
-         *
-         * 06:01 should become logout
-         * of 16 May
+         * Previous day
          */
-        if (
-          earlyPunches.length > 0 &&
-          normalPunches.length === 0
-        ) {
-          const prevDate =
-            new Date(dateKey);
+        const prevDate =
+          new Date(dateKey);
   
-          prevDate.setDate(
-            prevDate.getDate() - 1
+        prevDate.setDate(
+          prevDate.getDate() - 1
+        );
+  
+        const prevDateKey =
+          getDateKey(prevDate);
+  
+        const prevPunches =
+          (
+            grouped[
+              prevDateKey
+            ] || []
+          ).sort(
+            (a, b) =>
+              a.getTime() -
+              b.getTime()
           );
   
-          const prevDateKey =
-            getDateKey(prevDate);
+        let canGroupWithPrevious =
+          false;
+  
+        /**
+         * TOP PRIORITY:
+         * Try grouping with previous day
+         */
+        if (
+          prevPunches.length > 0
+        ) {
+          const firstPrevPunch =
+            prevPunches[0];
+  
+          const lastEarlyPunch =
+            earlyPunches[
+              earlyPunches.length -
+                1
+            ];
+  
+          const totalSpanHours =
+            getHoursDiff(
+              firstPrevPunch,
+              lastEarlyPunch
+            );
   
           if (
-            !grouped[prevDateKey]
+            totalSpanHours <=
+            MAX_GROUPING_HOURS
           ) {
-            grouped[prevDateKey] =
-              [];
+            canGroupWithPrevious =
+              true;
           }
+        }
   
+        /**
+         * Group with previous day
+         */
+        if (
+          canGroupWithPrevious
+        ) {
           grouped[prevDateKey].push(
             ...earlyPunches
           );
   
-          grouped[dateKey] = [];
+          grouped[dateKey] =
+            normalPunches;
+  
+          return;
         }
+  
+        /**
+         * OTHERWISE:
+         * Keep with current day
+         *
+         * Example:
+         * 06:01 -> 06:06 next day
+         * should stay separate
+         */
+        grouped[dateKey] = [
+          ...earlyPunches,
+          ...normalPunches,
+        ].sort(
+          (a, b) =>
+            a.getTime() - b.getTime()
+        );
       }
     );
   
@@ -325,7 +429,7 @@ const AttendanceTable = () => {
   
     /**
      * STEP 3
-     * Generate attendance rows
+     * Generate final rows
      */
     while (current <= endDate) {
       const currentDate =
