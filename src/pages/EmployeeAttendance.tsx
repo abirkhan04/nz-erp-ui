@@ -63,8 +63,8 @@ const AttendanceTable = () => {
         apikey: form.apikey,
         pUnit: form.pUnit,
         pPunchID: form.pPunchID,
-        pDateFrom: form.pDateFrom,
-        pDateTo: form.pDateTo,
+        pDateFrom: formatDateForApi(form.pDateFrom),
+        pDateTo: formatDateForApi(form.pDateTo),
       });
 
       const API_URL = `http://175.29.147.115:8000/virdi/api.php?${queryParams.toString()}`;
@@ -78,8 +78,8 @@ const AttendanceTable = () => {
       if (result.status === "success") {
         const processed = buildAttendance(
           result.data,
-          form.pDateFrom,
-          form.pDateTo
+          formatDateForApi(form.pDateFrom),
+          formatDateForApi(form.pDateTo)
         );
 
         setRows(processed);
@@ -172,6 +172,12 @@ const AttendanceTable = () => {
       .padStart(2, "0");
 
     return `${hours}:${minutes}`;
+  };
+
+  const formatDateForApi = (date: string) => {
+    const [year, month, day] = date.split("-");
+  
+    return `${day}/${month}/${year}`;
   };
 
   /**
@@ -395,13 +401,12 @@ const AttendanceTable = () => {
             </label>
 
             <input
-              type="text"
-              name="pDateFrom"
-              value={form.pDateFrom}
-              onChange={handleChange}
-              placeholder="DD/MM/YYYY"
-              className="w-full border rounded p-2"
-            />
+                type="date"
+                name="pDateFrom"
+                value={form.pDateFrom}
+                onChange={handleChange}
+                className="w-full border rounded p-2"
+              />
           </div>
 
           <div>
@@ -410,13 +415,12 @@ const AttendanceTable = () => {
             </label>
 
             <input
-              type="text"
-              name="pDateTo"
-              value={form.pDateTo}
-              onChange={handleChange}
-              placeholder="DD/MM/YYYY"
-              className="w-full border rounded p-2"
-            />
+                type="date"
+                name="pDateTo"
+                value={form.pDateTo}
+                onChange={handleChange}
+                className="w-full border rounded p-2"
+              />
           </div>
 
           <div className="flex items-end">
