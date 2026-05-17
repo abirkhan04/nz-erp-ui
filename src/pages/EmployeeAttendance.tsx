@@ -186,73 +186,174 @@ const AttendanceTable = () => {
   const buildAttendance = (
     rawData: string[],
     fromDate: string,
-    toDate: string
+   toDate: string
   ): AttendanceRow[] => {
     const grouped: Record<string, Date[]> = {};
-
-    rawData.forEach((item) => {
-      const date = new Date(item);
-
-      const dateKey = item.split(" ")[0];
-
-      if (!grouped[dateKey]) {
-        grouped[dateKey] = [];
-      }
-
-      grouped[dateKey].push(date);
-    });
-
-    const finalRows: AttendanceRow[] = [];
-
+  
+    const ATTENDANCE_BOUNDARY_HOUR = 7;
+  
     /**
      * Convert DD/MM/YYYY -> Date
      */
-    const convertToDate = (dateString: string) => {
+    const convertToDate = (
+      dateString: string
+    ) => {
       const [day, month, year] =
         dateString.split("/");
-
+  
       return new Date(
         Number(year),
         Number(month) - 1,
         Number(day)
       );
     };
-
-    const startDate = convertToDate(fromDate);
-
-    const endDate = convertToDate(toDate);
-
-    const current = new Date(startDate);
-
-    while (current <= endDate) {
-      const year = current.getFullYear();
-
+  
+    /**
+     * Format YYYY-MM-DD
+     */
+    const getDateKey = (date: Date) => {
+      const year = date.getFullYear();
+  
       const month = String(
-        current.getMonth() + 1
+        date.getMonth() + 1
       ).padStart(2, "0");
-
-      const day = String(current.getDate()).padStart(
-        2,
-        "0"
+  
+      const day = String(
+        date.getDate()
+      ).padStart(2, "0");
+  
+      return `${year}-${month}-${day}`;
+    };
+  
+    /**
+     * STEP 1
+     * Group by actual calendar date
+     */
+    rawData.forEach((item) => {
+      const date = new Date(item);
+  
+      const dateKey =
+        getDateKey(date);
+  
+      if (!grouped[dateKey]) {
+        grouped[dateKey] = [];
+      }
+  
+      grouped[dateKey].push(date);
+    });
+  
+    /**
+     * STEP 2
+     * Move early morning punches (<7AM)
+     * to previous day ONLY IF
+     * current day has no normal punches
+     */
+    Object.keys(grouped).forEach(
+      (dateKey) => {
+        const punches = grouped[
+          dateKey
+        ].sort(
+          (a, b) =>
+            a.getTime() - b.getTime()
+        );
+  
+        const earlyPunches =
+          punches.filter(
+            (p) =>
+              p.getHours() <
+              ATTENDANCE_BOUNDARY_HOUR
+          );
+  
+        const normalPunches =
+          punches.filter(
+            (p) =>
+              p.getHours() >=
+              ATTENDANCE_BOUNDARY_HOUR
+          );
+  
+        /**
+         * Example:
+         *
+         * 16 May 21:49
+         * 17 May 06:01
+         *
+         * 06:01 should become logout
+         * of 16 May
+         */
+        if (
+          earlyPunches.length > 0 &&
+          normalPunches.length === 0
+        ) {
+          const prevDate =
+            new Date(dateKey);
+  
+          prevDate.setDate(
+            prevDate.getDate() - 1
+          );
+  
+          const prevDateKey =
+            getDateKey(prevDate);
+  
+          if (
+            !grouped[prevDateKey]
+          ) {
+            grouped[prevDateKey] =
+              [];
+          }
+  
+          grouped[prevDateKey].push(
+            ...earlyPunches
+          );
+  
+          grouped[dateKey] = [];
+        }
+      }
+    );
+  
+    const finalRows: AttendanceRow[] =
+      [];
+  
+    const startDate =
+      convertToDate(fromDate);
+  
+    const endDate =
+      convertToDate(toDate);
+  
+    const current = new Date(
+      startDate
+    );
+  
+    /**
+     * STEP 3
+     * Generate attendance rows
+     */
+    while (current <= endDate) {
+      const currentDate =
+        getDateKey(current);
+  
+      const punches = (
+        grouped[currentDate] || []
+      ).sort(
+        (a, b) =>
+          a.getTime() - b.getTime()
       );
-
-      const currentDate = `${year}-${month}-${day}`;
-
-      const punches = grouped[currentDate] || [];
-
-      const filteredPunches = filterPunches(
-        punches.sort(
-          (a, b) => a.getTime() - b.getTime()
-        )
-      );
-
+  
+      const filteredPunches =
+        filterPunches(punches);
+  
       const weekDay =
-        current.toLocaleDateString("en-GB", {
-          weekday: "short",
-        });
-
-      const displayDate = `${day}/${month}/${year}`;
-
+        current.toLocaleDateString(
+          "en-GB",
+          {
+            weekday: "short",
+          }
+        );
+  
+      const displayDate =
+        current.toLocaleDateString(
+          "en-GB"
+        );
+  
       /**
        * Holiday
        */
@@ -260,21 +361,26 @@ const AttendanceTable = () => {
         finalRows.push({
           date: displayDate,
           day: weekDay,
-          status: HOLIDAYS[currentDate],
+          status:
+            HOLIDAYS[currentDate],
           login: "",
           logout: "",
           duration: "",
         });
-
-        current.setDate(current.getDate() + 1);
-
+  
+        current.setDate(
+          current.getDate() + 1
+        );
+  
         continue;
       }
-
+  
       /**
        * Absent
        */
-      if (filteredPunches.length === 0) {
+      if (
+        filteredPunches.length === 0
+      ) {
         finalRows.push({
           date: displayDate,
           day: weekDay,
@@ -283,21 +389,29 @@ const AttendanceTable = () => {
           logout: "",
           duration: "",
         });
-
-        current.setDate(current.getDate() + 1);
-
+  
+        current.setDate(
+          current.getDate() + 1
+        );
+  
         continue;
       }
-
-      const firstIn = filteredPunches[0];
-
+  
+      const firstIn =
+        filteredPunches[0];
+  
       const lastOut =
-        filteredPunches[filteredPunches.length - 1];
-
+        filteredPunches[
+          filteredPunches.length -
+            1
+        ];
+  
       const hasLogout =
-        filteredPunches.length > 1 &&
-        firstIn.getTime() !== lastOut.getTime();
-
+        filteredPunches.length >
+          1 &&
+        firstIn.getTime() !==
+          lastOut.getTime();
+  
       finalRows.push({
         date: displayDate,
         day: weekDay,
@@ -307,13 +421,18 @@ const AttendanceTable = () => {
           ? formatTime(lastOut)
           : "",
         duration: hasLogout
-          ? formatDuration(firstIn, lastOut)
+          ? formatDuration(
+              firstIn,
+              lastOut
+            )
           : "",
       });
-
-      current.setDate(current.getDate() + 1);
+  
+      current.setDate(
+        current.getDate() + 1
+      );
     }
-
+  
     return finalRows;
   };
 
