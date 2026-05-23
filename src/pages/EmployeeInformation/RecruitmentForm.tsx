@@ -795,6 +795,7 @@ const RecruitmentForm: React.FC<Props> = ({
               errors={errors}
             />
 
+
             <div className="bg-green-50 border border-green-200 rounded-xl p-4">
               <p className="text-xs text-gray-500 mb-1">
                 অস্থায়ী প্রার্থী আইডি
