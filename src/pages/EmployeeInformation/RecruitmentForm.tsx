@@ -708,25 +708,6 @@ const RecruitmentForm: React.FC<Props> = ({
             ))}
 
             <CommonInputField<EmployeeFormValues>
-              label="প্রার্থীর ধরন"
-              name="employeeType"
-              type="dropdown"
-              placeholder="প্রার্থীর ধরন"
-              options={[
-                {
-                  label: "ওয়ার্কার",
-                  value: "Worker",
-                },
-                {
-                  label: "স্টাফ",
-                  value: "Staff",
-                },
-              ]}
-              register={register}
-              errors={errors}
-            />
-
-            <CommonInputField<EmployeeFormValues>
               label="লিঙ্গ"
               name="gender"
               type="dropdown"
@@ -793,6 +774,26 @@ const RecruitmentForm: React.FC<Props> = ({
                 errors={errors}
               />
             ))}
+
+
+            <CommonInputField<EmployeeFormValues>
+              label="প্রার্থীর ধরন"
+              name="employeeType"
+              type="dropdown"
+              placeholder="প্রার্থীর ধরন"
+              options={[
+                {
+                  label: "ওয়ার্কার",
+                  value: "Worker",
+                },
+                {
+                  label: "স্টাফ",
+                  value: "Staff",
+                },
+              ]}
+              register={register}
+              errors={errors}
+            />
 
             <div className="bg-green-50 border border-green-200 rounded-xl p-4">
               <p className="text-xs text-gray-500 mb-1">
