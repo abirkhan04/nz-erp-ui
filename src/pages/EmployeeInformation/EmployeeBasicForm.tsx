@@ -215,7 +215,7 @@ const EmployeeForm: React.FC<Props> = ({
       maritalStatus: Number(data.maritalStatus),
     
       mobileNumber: data.mobileNumber,
-      emailAddress: data.emailAddress,
+      emailAddress: data.emailAddress || null,
     
       idType: Number(data.idType),
       idNumber: data.idNumber,
@@ -321,6 +321,7 @@ const EmployeeForm: React.FC<Props> = ({
       label: "Employee Nature *",
       name: "employeeNature",
       type: "dropdown",
+      placeholder: "Employee Nature",
       rules: {
         required: "Employee Nature is required",
         valueAsNumber: true,
@@ -357,6 +358,7 @@ const EmployeeForm: React.FC<Props> = ({
       label: "Employee Type *",
       name: "employeeType",
       type: "dropdown",
+      placeholder: "Employee Type",
       rules: {
         required: "Employee Type is required",
       },
@@ -479,7 +481,6 @@ const EmployeeForm: React.FC<Props> = ({
           value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
           message: "Invalid email format",
         },
-        required: "Email address is required",
       },
     },
   
