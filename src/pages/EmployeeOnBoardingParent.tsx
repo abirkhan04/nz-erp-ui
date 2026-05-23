@@ -17,7 +17,7 @@ type StepItem = {
 const steps: StepItem[] = [
   {
     id: 1,
-    title: "Recruitment Form",
+    title: "Gate Entry",
   },
   {
     id: 2,

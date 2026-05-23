@@ -67,11 +67,14 @@ const EmployeeForm: React.FC<Props> = ({
     url: `${API_ROUTES.DESIGNATION}?includeInactive=true`,
   })
 
+  const selectedEmployeeNature = watch("employeeNature");
+
   const {
     data: grades = [],
   } = useGet<Grade[]>({
-    key: ["grades"],
-    url: `${API_ROUTES.GRADE}?includeInactive=false`,
+    key: ["grades", selectedEmployeeNature],
+    url: `${API_ROUTES.GRADE}?includeInactive=false&employeeNature=${selectedEmployeeNature}`,
+    enabled: !!selectedEmployeeNature,
   });
 
   const { mutate: EmployeePost } =
@@ -84,7 +87,7 @@ const EmployeeForm: React.FC<Props> = ({
     if (!Employee) return;
 
     reset({
-      employeeId: Employee.id || "",
+      employeeCode: Employee.employeeCode || "",
       employeeNameEnglish:
         Employee.employeeNameEnglish || "",
 
@@ -176,11 +179,16 @@ const EmployeeForm: React.FC<Props> = ({
   ====================================================== */
 
   const onSubmit = (data: EmployeeFormValues) => {
+    const employeeTypeMap: Record<string, number> = {
+      Worker: 1,
+      Staff: 2,
+      Management: 3
+    };
+
     EmployeePost({
-      employeeCode: data.employeeId,
+      employeeCode: data.employeeCode,
       employeeNameEnglish: data.employeeNameEnglish,
       employeeNameBangla: data.employeeNameBangla,
-    
       companyId: data.companyId,
       departmentId: data.department,
       sectionId: data.section,
@@ -191,7 +199,7 @@ const EmployeeForm: React.FC<Props> = ({
         : data.designation,
       holidayId: data.holiday,
     
-      employeeType: data.employeeType,
+      employeeType: employeeTypeMap[data.employeeType] || 0,
       shiftId: data.shift,
       employeeNature: Number(data.employeeNature),
     
@@ -246,14 +254,14 @@ const EmployeeForm: React.FC<Props> = ({
 
   const basicEmploymentFields = [
     {
-      label: "Employee ID *",
-      name: "employeeId",
+      label: "Employee Id *",
+      name: "employeeCode",
       type: "text",
+      placeholder: "Employee Id is requried",
       rules: {
-        required: "Employee ID is required",
+        required: "Employee Id is required",
       },
     },
-  
     {
       label: "Employee Name (English) *",
       name: "employeeNameEnglish",
@@ -309,7 +317,19 @@ const EmployeeForm: React.FC<Props> = ({
         required: "Section ID is required",
       },
     },
-  
+    {
+      label: "Employee Nature *",
+      name: "employeeNature",
+      type: "dropdown",
+      rules: {
+        required: "Employee Nature is required",
+        valueAsNumber: true,
+      },
+      options: [
+        { label: "Provision", value: 1 },
+        { label: "Permanent", value: 2 },
+      ],
+    },
     {
       label: "Grade *",
       name: "grade",
@@ -339,16 +359,20 @@ const EmployeeForm: React.FC<Props> = ({
       type: "dropdown",
       rules: {
         required: "Employee Type is required",
-        valueAsNumber: true,
       },
       options: [
-        { label: "Worker", value: 1 },
-        { label: "Staff", value: 2 },
-        { label: "Officer", value: 3 },
-        { label: "Manager", value: 4 },
-        { label: "Supervisor", value: 5 },
-        { label: "Operator", value: 6 },
-        { label: "Helper", value: 7 },
+        {
+          label: "Worker",
+          value: "Worker",
+        },
+        {
+          label: "Staff",
+          value: "Staff",
+        },
+        {
+          label: "Management",
+          value: "Management",
+        }
       ],
     },
   
@@ -358,35 +382,25 @@ const EmployeeForm: React.FC<Props> = ({
       type: "dropdown",
       options: [
         { label: "Day Shift", value: "12313" },
-        // { label: "Night Shift", value: "213" },
+        { label: "Night Shift", value: "213" },
       ],
       rules: {
         required: "Shift is required",
         valueAsNumber: false,
       }
     },
-  
-    {
-      label: "Employee Nature *",
-      name: "employeeNature",
-      type: "dropdown",
-      rules: {
-        required: "Employee Nature is required",
-        valueAsNumber: true,
-      },
-      options: [
-        { label: "Provision", value: 1 },
-        { label: "Permanent", value: 2 },
-      ],
-    },
-  
     {
       label: "Holiday *",
       name: "holiday",
       type: "dropdown",
       options: [
-        { label: "Friday", value: "123" },
-        { label: "Saturday", value: "213" },
+        { label: "Sunday", value: "1" },
+        { label: "Monday", value: "2" },
+        { label: "Tuesday", value: "3" },
+        { label: "Wednesday", value: "4" },
+        { label: "Thursday", value: "5" },
+        { label: "Friday", value: "6" },
+        { label: "Saturday", value: "7" },
       ],
     },
   

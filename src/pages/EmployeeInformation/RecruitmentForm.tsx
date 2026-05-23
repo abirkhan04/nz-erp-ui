@@ -141,9 +141,14 @@ const RecruitmentForm: React.FC<Props> = ({
     url: API_ROUTES.DEPARTMENT,
   });
 
-  const { data: sections = [] } = useGet<Section[]>({
-    key: ["section"],
-    url: API_ROUTES.SECTION,
+  const selectedDepartment = watch("department");
+
+  const {
+    data: sections = [],
+  } = useGet<Section[]>({
+    key: ["sections", selectedDepartment],
+    url: `${API_ROUTES.SECTION}?includeInactive=true&departmentId=${selectedDepartment}`,
+    enabled: !!selectedDepartment,
   });
 
   const { data: cells = [] } = useGet<Cell[]>({
@@ -336,16 +341,6 @@ const RecruitmentForm: React.FC<Props> = ({
       type: "text",
       placeholder: "তথ্য লিখুন",
     },
-
-    {
-      label: "জন্ম তারিখ",
-      name: "dateOfBirth",
-      type: "date",
-      rules: {
-        required: "তারিখ নির্বাচন করুন",
-      },
-    },
-
     {
       label: "অভিভাবকের ধরন",
       name: "guardianType",
@@ -361,14 +356,20 @@ const RecruitmentForm: React.FC<Props> = ({
         },
       ],
     },
-
     {
       label: "পিতা / স্বামীর নাম",
       name: "fatherNameEnglish",
       type: "text",
       placeholder: "তথ্য লিখুন",
     },
-
+    {
+      label: "জন্ম তারিখ",
+      name: "dateOfBirth",
+      type: "date",
+      rules: {
+        required: "তারিখ নির্বাচন করুন",
+      },
+    },
     {
       label: "মাতার নাম",
       name: "motherNameEnglish",
@@ -486,6 +487,7 @@ const RecruitmentForm: React.FC<Props> = ({
     const employeeTypeMap: Record<string, number> = {
       Worker: 1,
       Staff: 2,
+      Management: 3
     };
     
     const genderMap: Record<string, number> = {
@@ -790,6 +792,10 @@ const RecruitmentForm: React.FC<Props> = ({
                   label: "স্টাফ",
                   value: "Staff",
                 },
+                {
+                  label: "ম্যানেজমেন্ট",
+                  value: "Management"
+                }
               ]}
               register={register}
               errors={errors}

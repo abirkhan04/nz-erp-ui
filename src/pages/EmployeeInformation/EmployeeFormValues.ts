@@ -6,6 +6,7 @@ export type EmployeeFormValues = {
    guardianType: string;
    enrollmentId: string;
    securityClearance: string;
+   employeeCode: string;
    cell: string;
    enrollmentBy: string;
    biometricEnrolledBy: string;
