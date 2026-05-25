@@ -13,5 +13,7 @@ export const API_ROUTES = {
   CELL: "Cells",
   DESIGNATION: "Designations",
 
-  ENROLLMENTID: "EmployeeMasters/enrollment-id"
+  ENROLLMENTID: "EmployeeMasters/enrollment-id",
+
+  MEDICAL_FITNESS_CHECK: "MedicalFitnessChecks",
 };

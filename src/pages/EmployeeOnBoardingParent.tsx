@@ -8,6 +8,7 @@ import AddressDetailsForm from "./EmployeeInformation/AddressDetailsForm";
 import FamilyNomineeForm from "./EmployeeInformation/FamilyAndNomineeForm";
 import DocumentsForm from "./EmployeeInformation/DocumentsForm";
 import ReviewSubmitForm from "./EmployeeInformation/ReviewAndSubmit";
+import DoctorFitnessCheck from "./EmployeeInformation/DoctorFitnessCheck";
 
 type StepItem = {
   id: number;
@@ -21,26 +22,30 @@ const steps: StepItem[] = [
   },
   {
     id: 2,
-    title: "Employee Information",
+    title: "Doctor's Fitness Check",
   },
   {
     id: 3,
-    title: "Financial Details",
+    title: "Employee Information",
   },
   {
     id: 4,
-    title: "Address Details",
+    title: "Financial Details",
   },
   {
     id: 5,
-    title: "Family & Nominee",
+    title: "Address Details",
   },
   {
     id: 6,
-    title: "Documents",
+    title: "Family & Nominee",
   },
   {
     id: 7,
+    title: "Documents",
+  },
+  {
+    id: 8,
     title: "Review & Submit",
   },
 ];
@@ -69,31 +74,50 @@ const EmployeeOnboardingParent: React.FC = () => {
   const renderStepComponent = () => {
     switch (activeStep) {
       case 1:
-        return <RecruitmentForm setActiveStep={setActiveStep} setEmployeeId={setEmployeeId}/>;
-
+        return (
+          <RecruitmentForm
+            setActiveStep={setActiveStep}
+            setEmployeeId={setEmployeeId}
+          />
+        );
+  
       case 2:
-        return <EmployeeInformationForm setActiveStep={setActiveStep} employeeId={employeeId}/>;
-
+        return (
+          <DoctorFitnessCheck
+            setActiveStep={setActiveStep}
+            setEmployeeId={setEmployeeId}
+            employeeId={employeeId}
+          />
+        );
+  
       case 3:
-        return <FinancialDetailsForm />;
-
+        return (
+          <EmployeeInformationForm
+            setActiveStep={setActiveStep}
+            employeeId={employeeId}
+          />
+        );
+  
       case 4:
-        return <AddressDetailsForm />;
-
+        return <FinancialDetailsForm />;
+  
       case 5:
-        return <FamilyNomineeForm />;
-
+        return <AddressDetailsForm />;
+  
       case 6:
-        return <DocumentsForm />;
-
+        return <FamilyNomineeForm />;
+  
       case 7:
+        return <DocumentsForm />;
+  
+      case 8:
         return (
           <ReviewSubmitForm
             onEditStep={setActiveStep}
             formData={formData}
           />
         );
-
+  
       default:
         return null;
     }

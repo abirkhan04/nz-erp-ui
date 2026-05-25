@@ -18,89 +18,14 @@ import type {
 } from "../../types/interfaces";
 
 import type { EmployeeFormValues } from "./EmployeeFormValues";
+import { SectionCard } from "../../components/SectionCard";
+import { bloodGroupMap } from "./types";
 
 type Props = {
   setActiveStep: React.Dispatch<React.SetStateAction<number>>;
   setEmployeeId: React.Dispatch<React.SetStateAction<string>>;
 };
 
-const SectionCard = ({
-  title,
-  children,
-  className = "",
-  color = "blue",
-}: any) => {
-
-  const colorVariants: any = {
-    blue: {
-      bg: "bg-blue-50",
-      border: "border-blue-100",
-      text: "text-blue-700",
-      line: "bg-blue-600",
-    },
-
-    green: {
-      bg: "bg-green-50",
-      border: "border-green-100",
-      text: "text-green-700",
-      line: "bg-green-600",
-    },
-
-    orange: {
-      bg: "bg-orange-50",
-      border: "border-orange-100",
-      text: "text-orange-700",
-      line: "bg-orange-500",
-    },
-
-    purple: {
-      bg: "bg-purple-50",
-      border: "border-purple-100",
-      text: "text-purple-700",
-      line: "bg-purple-600",
-    },
-  };
-
-  const selected = colorVariants[color];
-
-  return (
-    <div
-      className={`bg-white rounded-2xl border border-gray-200 shadow-sm ${className}`}
-    >
-
-      {/* Header */}
-
-      <div
-        className={`
-          px-5
-          py-4
-          border-b
-          rounded-t-2xl
-          flex
-          items-center
-          gap-3
-          ${selected.bg}
-          ${selected.border}
-        `}
-      >
-
-        {/* Title */}
-
-        <h2
-          className={`font-semibold text-[15px] ${selected.text}`}
-        >
-          {title}
-        </h2>
-      </div>
-
-      {/* Body */}
-
-      <div className="p-5">
-        {children}
-      </div>
-    </div>
-  );
-};
 
 const RecruitmentForm: React.FC<Props> = ({
   setActiveStep,
@@ -494,17 +419,6 @@ const RecruitmentForm: React.FC<Props> = ({
       Male: 0,
       Female: 1,
       Other: 2,
-    };
-    
-    const bloodGroupMap: Record<string, number> = {
-      "A+": 1,
-      "A-": 2,
-      "B+": 3,
-      "B-": 4,
-      "AB+": 5,
-      "AB-": 6,
-      "O+": 7,
-      "O-": 8,
     };
     
     const idTypeMap: Record<string, number> = {
