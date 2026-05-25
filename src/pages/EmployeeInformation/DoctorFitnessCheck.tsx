@@ -13,6 +13,8 @@ import type { EmployeeFormValues } from "./EmployeeFormValues";
 import { API_ROUTES } from "../../api/routes";
 import { useGet } from "../../hooks/useGet";
 import { usePost } from "../../hooks/usePost";
+import { Controller } from "react-hook-form";
+import SearchableDropdown from "../../components/SearchableDropdown";
 
 
 type PhysicalExaminationData = {
@@ -37,6 +39,9 @@ type FitnessFormValues = {
 };
 
 const DoctorFitnessCheck:React.FC<Props> = ({employeeId, setActiveStep, setEmployeeId}) => {
+
+  const [selectedEmployee, setSelectedEmployee] = React.useState<string>("");
+  const [employees, setEmployees] = React.useState<Array<EmployeeFormValues>>([])
 
   const {data: Employee} = useGet<EmployeeFormValues>({
       key: ["employee", employeeId],
@@ -83,6 +88,7 @@ const DoctorFitnessCheck:React.FC<Props> = ({employeeId, setActiveStep, setEmplo
   const onSubmit = (data: FitnessFormValues) => {
     const fitnessPost: any = {...data};
     fitnessPost.bloodGroup = Number(data.bloodGroup);
+    fitnessPost.enrollmentId = Employee?.enrollmentId;
     fitnessPost.physicalExaminationDataJson = JSON.stringify(data.physicalExaminationDataJson);
     EmployeeFitnessPost(fitnessPost, {
         onSuccess: (response) => {
@@ -108,6 +114,39 @@ const DoctorFitnessCheck:React.FC<Props> = ({employeeId, setActiveStep, setEmplo
     },
   ];
 
+  const [
+    loading,
+    setLoading,
+  ] = React.useState(false);
+
+  const fetchEmployee = async (text: string) => {
+
+    setLoading(true);
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/Employees/search?searchText=${encodeURIComponent(text)}`
+      );
+
+      setLoading(false);
+  
+      if (!response.ok) {
+        throw new Error("Failed to fetch employees");
+      }
+  
+      const data = await response.json();
+  
+      const employeeOptions = data?.map((employee: any) => ({
+        label: employee.employeeNameBangla,
+        value: employee.id,
+      }));
+  
+      setEmployees(employeeOptions);
+    } catch (error) {
+      console.error("Employee fetch error:", error);
+      setEmployees([]);
+    }
+  };
+
   return (
     <div className="bg-gray-50 min-h-screen p-6">
       <form
@@ -121,16 +160,22 @@ const DoctorFitnessCheck:React.FC<Props> = ({employeeId, setActiveStep, setEmplo
 
           <SectionCard title="Search Candidate">
             <div className="grid grid-cols-12 gap-4 items-end">
-              <CommonInputField<FitnessFormValues>
-                label="Temporary Candidate ID"
-                name="employeeId"
-                register={register}
-                errors={errors}
-                placeholder="Enter Candidate ID"
-                className="col-span-12 md:col-span-4"
+            <div className = "col-span-9 md:col-span-4">
+            <SearchableDropdown
+                value={selectedEmployee}
+                options={employees}
+                isLoading={loading}
+                placeholder="Search Employee"
+                debounceDelay={300}
+                onSearch={(text) => {
+                  fetchEmployee(text);
+                }}
+                onChange={(option) => {
+                  setEmployeeId(String(option.value));
+                }}
               />
-
-              <div className="col-span-12 md:col-span-2">
+              </div>
+              <div className="col-span-2 md:col-span-4">
                 <button
                   type="button"
                   className="
@@ -150,54 +195,6 @@ const DoctorFitnessCheck:React.FC<Props> = ({employeeId, setActiveStep, setEmplo
                 >
                   <Search size={16} />
                   Search
-                </button>
-              </div>
-
-              <div className="col-span-12 md:col-span-1 flex justify-center">
-                <div
-                  className="
-                    h-10
-                    w-10
-                    rounded-full
-                    border
-                    border-gray-300
-                    flex
-                    items-center
-                    justify-center
-                    text-xs
-                    font-semibold
-                    text-gray-500
-                  "
-                >
-                  OR
-                </div>
-              </div>
-
-              <CommonInputField<FitnessFormValues>
-                label="Candidate Name / Mobile"
-                name="candidateSearch"
-                register={register}
-                errors={errors}
-                placeholder="Enter name or mobile"
-                className="col-span-12 md:col-span-4"
-              />
-
-              <div className="col-span-12 md:col-span-1">
-                <button
-                  type="button"
-                  className="
-                    h-[42px]
-                    w-full
-                    rounded-lg
-                    border
-                    border-gray-300
-                    bg-white
-                    hover:bg-gray-100
-                    text-sm
-                    font-medium
-                  "
-                >
-                  Clear
                 </button>
               </div>
             </div>
@@ -237,7 +234,7 @@ const DoctorFitnessCheck:React.FC<Props> = ({employeeId, setActiveStep, setEmplo
                 <div className="col-span-12 md:col-span-4 space-y-2 text-sm">
                 <InfoRow
                     label="Employee ID"
-                    value={Employee?.id || ""}
+                    value={Employee?.enrollmentId || ""}
                 />
 
                 <InfoRow
