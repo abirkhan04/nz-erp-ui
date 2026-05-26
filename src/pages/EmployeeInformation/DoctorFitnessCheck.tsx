@@ -59,7 +59,7 @@ const DoctorFitnessCheck:React.FC<Props> = ({employeeId, setActiveStep, setEmplo
     formState: { errors },
   } = useForm<FitnessFormValues>({
     defaultValues: {
-        employeeId: "TEMP-NZT-2026-0158",
+        employeeId: employeeId,
       
         enrollmentId: "",
       
@@ -88,6 +88,7 @@ const DoctorFitnessCheck:React.FC<Props> = ({employeeId, setActiveStep, setEmplo
   const onSubmit = (data: FitnessFormValues) => {
     const fitnessPost: any = {...data};
     fitnessPost.bloodGroup = Number(data.bloodGroup);
+    fitnessPost.employeeId = employeeId;
     fitnessPost.enrollmentId = Employee?.enrollmentId;
     fitnessPost.physicalExaminationDataJson = JSON.stringify(data.physicalExaminationDataJson);
     EmployeeFitnessPost(fitnessPost, {
