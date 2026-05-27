@@ -221,3 +221,12 @@ export interface Employee {
   idType: number;
   idNumber: string;
 }
+
+export type PhysicalExaminationSetting = {
+  id: string;
+  fieldName: string;
+  displayOrder: number;
+  fieldType: number;
+  optionValuesJson: string | null;
+  isActive: boolean;
+};

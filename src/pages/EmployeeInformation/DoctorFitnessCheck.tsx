@@ -5,7 +5,7 @@ import {
   Search,
   CalendarDays,
 } from "lucide-react";
-import type { Employee } from "../../types/interfaces";
+import type { Employee, PhysicalExaminationSetting } from "../../types/interfaces";
 
 import CommonInputField from "./../../components/CommonInputFields";
 import { SectionCard } from "../../components/SectionCard";
@@ -46,7 +46,13 @@ const DoctorFitnessCheck: React.FC<Props> = ({ employeeId, setActiveStep, setEmp
   const { data: Employee } = useGet<Employee>({
     key: ["employee", employeeId],
     url: `${API_ROUTES.EMPLOYEES}/${employeeId}`,
-  })
+    enabled: !!employeeId,
+  });
+
+  const { data: physicalExaminationSettings } = useGet<PhysicalExaminationSetting[]>({
+    key: ["physicalExaminationSettings"],
+    url: API_ROUTES.PHYSICAL_EXAMINATION_SETTINGS,
+  });
 
   const { mutate: EmployeeFitnessPost } =
     usePost<{ message: string; id: string }, any>(
@@ -464,41 +470,79 @@ const DoctorFitnessCheck: React.FC<Props> = ({ employeeId, setActiveStep, setEmp
                   Physical Examination
                 </h3>
 
-                <CommonInputField<FitnessFormValues>
-                  label="Vision"
-                  name="physicalExaminationDataJson.vision"
-                  register={register}
-                  errors={errors}
-                  type="radio"
-                  options={examinationOptions}
-                />
+                {
+                  physicalExaminationSettings
+                    ?.filter((item) => item.isActive)
+                    ?.sort((a, b) => a.displayOrder - b.displayOrder)
+                    ?.map((item) => {
+                      const fieldKey = item.fieldName
+                        .replace(/[^\w\s]/gi, "")
+                        .replace(/\s+/g, "")
+                        .replace(/^./, (str) => str.toLowerCase());
 
-                <CommonInputField<FitnessFormValues>
-                  label="Hearing"
-                  name="physicalExaminationDataJson.hearing"
-                  register={register}
-                  errors={errors}
-                  type="radio"
-                  options={examinationOptions}
-                />
+                      const options =
+                        item.optionValuesJson
+                          ?.split(",")
+                          ?.map((value) => ({
+                            label: value.trim(),
+                            value: value.trim(),
+                          })) || [];
 
-                <CommonInputField<FitnessFormValues>
-                  label="Heart"
-                  name="physicalExaminationDataJson.heart"
-                  register={register}
-                  errors={errors}
-                  type="radio"
-                  options={examinationOptions}
-                />
+                      if (item.fieldType === 2) {
+                        return (
+                          <CommonInputField<any>
+                            key={item.id}
+                            label={item.fieldName}
+                            name={`physicalExaminationDataJson.${fieldKey}`}
+                            register={register}
+                            errors={errors}
+                            type="radio"
+                            options={options}
+                          />
+                        );
+                      }
 
-                <CommonInputField<FitnessFormValues>
-                  label="Chest / Lungs"
-                  name="physicalExaminationDataJson.chestLungs"
-                  register={register}
-                  errors={errors}
-                  type="radio"
-                  options={examinationOptions}
-                />
+                      if (item.fieldType === 3) {
+                        return (
+                          <div key={item.id}>
+                            <label
+                              className="
+                block
+                text-sm
+                font-medium
+                text-gray-700
+                mb-1
+              "
+                            >
+                              {item.fieldName}
+                            </label>
+
+                            <textarea
+                              rows={3}
+                              {...register(
+                                `physicalExaminationDataJson.${fieldKey}` as any
+                              )}
+                              placeholder={`Enter ${item.fieldName}`}
+                              className="
+                w-full
+                border
+                border-gray-300
+                rounded-lg
+                px-3
+                py-2
+                text-sm
+                focus:outline-none
+                focus:ring-2
+                focus:ring-blue-500
+              "
+                            />
+                          </div>
+                        );
+                      }
+
+                      return null;
+                    })
+                }
               </div>
 
               {/* RIGHT */}
