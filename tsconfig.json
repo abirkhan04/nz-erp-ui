@@ -5,6 +5,11 @@
     { "path": "./tsconfig.node.json" }
   ],
     "compilerOptions": {
-    "strict": false
+    "strict": false,
+    "noImplicitAny": false,
+    "strictNullChecks": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "skipLibCheck": true
   }
 }
