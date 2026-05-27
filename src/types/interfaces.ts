@@ -1,7 +1,7 @@
 import type { Path } from "react-hook-form";
 
 export interface MenuItemType {
-  name: string;
+  name?: string;
   label?: string;
   icon?: any;
   url?: string;
