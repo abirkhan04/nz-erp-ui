@@ -56,7 +56,7 @@ const Dashboard: React.FC = () => {
                 color: style.color,
                 url: item.url || "#",
                 btn: style.btn,
-                name:  item.label || "Menu",
+                name:  item.name || "Menu",
                 iconComponent: getIcon(item.icon),
             };
         });
