@@ -42,7 +42,7 @@ export default function Login() {
         error?.message ||
         "Login failed";
 
-      // alert(message);
+      alert(message);
     }
   };
 
