@@ -110,17 +110,6 @@ const DoctorFitnessCheck: React.FC<Props> = ({ employeeId, setActiveStep, setEmp
     });
   };
 
-  const examinationOptions = [
-    {
-      label: "Normal",
-      value: "Normal",
-    },
-    {
-      label: "Abnormal",
-      value: "Abnormal",
-    },
-  ];
-
   const [
     loading,
     setLoading,
