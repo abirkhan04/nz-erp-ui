@@ -5,16 +5,15 @@ import {
   Search,
   CalendarDays,
 } from "lucide-react";
+import type { Employee } from "../../types/interfaces";
 
 import CommonInputField from "./../../components/CommonInputFields";
 import { SectionCard } from "../../components/SectionCard";
 import { bloodGroupMap, type Props } from "./types";
-import type { EmployeeFormValues } from "./EmployeeFormValues";
 import { API_ROUTES } from "../../api/routes";
 import { useGet } from "../../hooks/useGet";
 import { usePost } from "../../hooks/usePost";
-import SearchableDropdown from "../../components/SearchableDropdown";
-import type { PhysicalExaminationSetting } from "./types";
+import SearchableDropdown, { type SearchableDropdownOption } from "../../components/SearchableDropdown";
 
 
 type PhysicalExaminationData = {
@@ -36,23 +35,18 @@ type FitnessFormValues = {
   remarks: string;
   examinedByDoctor: string;
   examinationDateTime: string;
+  examinationDate: string;
+  fitnessDecision: string;
 };
 
 const DoctorFitnessCheck: React.FC<Props> = ({ employeeId, setActiveStep, setEmployeeId }) => {
 
-  const [selectedEmployee, setSelectedEmployee] = React.useState<string>("");
-  const [employees, setEmployees] = React.useState<Array<EmployeeFormValues>>([])
+  const [employees, setEmployees] = React.useState<Array<SearchableDropdownOption>>([])
 
-  const { data: Employee } = useGet<EmployeeFormValues>({
+  const { data: Employee } = useGet<Employee>({
     key: ["employee", employeeId],
     url: `${API_ROUTES.EMPLOYEES}/${employeeId}`,
-    enabled: !!employeeId
-  });
-
-  const { data: PhysicalExaminationSettings } = useGet<PhysicalExaminationSetting[]>({
-    key: ["physicalExaminationSettings"],
-    url: API_ROUTES.PHYSICAL_EXAMINATION_SETTINGS,
-  });
+  })
 
   const { mutate: EmployeeFitnessPost } =
     usePost<{ message: string; id: string }, any>(
@@ -87,7 +81,7 @@ const DoctorFitnessCheck: React.FC<Props> = ({ employeeId, setActiveStep, setEmp
 
       examinedByDoctor: "Dr. S. Rahman",
 
-      examinationDateTime: new Date().toISOString(),
+      examinationDate: new Date().toISOString(),
     },
   });
 
@@ -169,7 +163,7 @@ const DoctorFitnessCheck: React.FC<Props> = ({ employeeId, setActiveStep, setEmp
             <div className="grid grid-cols-12 gap-4 items-end">
               <div className="col-span-9 md:col-span-4">
                 <SearchableDropdown
-                  value={selectedEmployee}
+                  value={employeeId}
                   options={employees}
                   isLoading={loading}
                   placeholder="Search Employee"
@@ -470,39 +464,41 @@ const DoctorFitnessCheck: React.FC<Props> = ({ employeeId, setActiveStep, setEmp
                   Physical Examination
                 </h3>
 
-                {PhysicalExaminationSettings
-                  ?.filter((item) => item.isActive)
-                  ?.sort((a, b) => a.displayOrder - b.displayOrder)
-                  ?.map((item) => {
-                    const fieldName = item.fieldName
-                      .replace(/\//g, "")
-                      .replace(/\s+/g, "")
-                      .replace(/^./, (str) => str.toLowerCase());
+                <CommonInputField<FitnessFormValues>
+                  label="Vision"
+                  name="physicalExaminationDataJson.vision"
+                  register={register}
+                  errors={errors}
+                  type="radio"
+                  options={examinationOptions}
+                />
 
-                    const options =
-                      item.optionValuesJson
-                        ?.split(",")
-                        ?.map((option) => ({
-                          label: option.trim(),
-                          value: option.trim(),
-                        })) || [];
+                <CommonInputField<FitnessFormValues>
+                  label="Hearing"
+                  name="physicalExaminationDataJson.hearing"
+                  register={register}
+                  errors={errors}
+                  type="radio"
+                  options={examinationOptions}
+                />
 
-                    return (
-                      <CommonInputField<FitnessFormValues>
-                        key={item.id}
-                        label={item.fieldName}
-                        name={`physicalExaminationDataJson.${fieldName}` as any}
-                        register={register}
-                        errors={errors}
-                        type={
-                          item.fieldType === 2
-                            ? "radio"
-                            : "text"
-                        }
-                        options={options}
-                      />
-                    );
-                  })}
+                <CommonInputField<FitnessFormValues>
+                  label="Heart"
+                  name="physicalExaminationDataJson.heart"
+                  register={register}
+                  errors={errors}
+                  type="radio"
+                  options={examinationOptions}
+                />
+
+                <CommonInputField<FitnessFormValues>
+                  label="Chest / Lungs"
+                  name="physicalExaminationDataJson.chestLungs"
+                  register={register}
+                  errors={errors}
+                  type="radio"
+                  options={examinationOptions}
+                />
               </div>
 
               {/* RIGHT */}

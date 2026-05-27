@@ -1,9 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import Sidebar from "./components/Sidebar";
-import { useGet } from "./hooks/useGet";
 import { Toaster } from "react-hot-toast";
-import { fetchMenu } from "./mock/Api";
-import type { MenuItemType } from "./types/interfaces";
 import Topbar from "./components/Topbar";
 import { lazy } from "react";
 
@@ -23,7 +19,7 @@ const isAuthenticated = () => {
 /**
  * 🔐 Protected Route Wrapper
  */
-const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   if (!isAuthenticated()) {
     return <Navigate to="/login" replace />;
   }
@@ -31,14 +27,6 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
 };
 
 function Layout() {
-  const {
-    data: menu,
-    isLoading,
-    isError,
-  } = useGet<MenuItemType[]>({
-    key: ["menu"],
-    queryFn: fetchMenu,
-  });
 
   return (
     <div className="flex h-screen w-full overflow-hidden">

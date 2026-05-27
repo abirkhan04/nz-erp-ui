@@ -7,6 +7,7 @@ import {
 import CommonInputField from "./../../components/CommonInputFields";
 
 import type { EmployeeFormValues } from "./EmployeeFormValues";
+import type { FieldConfig } from "../../types/interfaces";
 
 const FinancialDetailsForm: React.FC = () => {
   const {
@@ -36,7 +37,7 @@ const FinancialDetailsForm: React.FC = () => {
   const labelClass =
     "block text-sm font-medium text-gray-700 mb-1";
 
-  const salaryInformationFields = [
+  const salaryInformationFields : FieldConfig<EmployeeFormValues>[] = [
     {
       label: "Gross Salary (BDT) *",
       name: "grossSalary",
@@ -79,7 +80,7 @@ const FinancialDetailsForm: React.FC = () => {
     },
   ];
 
-  const paymentInformationFields = [
+  const paymentInformationFields: FieldConfig<EmployeeFormValues>[] = [
     {
       label: "Payment Method *",
       name: "paymentMethod",
@@ -154,7 +155,7 @@ const FinancialDetailsForm: React.FC = () => {
     },
   ];
 
-  const taxInformationFields = [
+  const taxInformationFields: FieldConfig<EmployeeFormValues>[] = [
     {
       label: "TIN Number",
       name: "tinNumber",
@@ -185,7 +186,7 @@ const FinancialDetailsForm: React.FC = () => {
     },
   ];
 
-  const otherFinancialFields = [
+  const otherFinancialFields: FieldConfig<EmployeeFormValues>[]  = [
     {
       label: "PF Account No.",
       name: "pfAccountNo",

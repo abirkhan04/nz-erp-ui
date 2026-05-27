@@ -14,6 +14,7 @@ import type {
   Company,
   Department,
   Enrollment,
+  FieldConfig,
   Location,
   Section,
 } from "../../types/interfaces";
@@ -154,7 +155,7 @@ const RecruitmentForm: React.FC<Props> = ({
   // FIELD CONFIGS
   // =========================
 
-  const jobFields = [
+  const jobFields:FieldConfig<EmployeeFormValues>[] = [
     {
       label: "কোম্পানি / ইউনিট",
       name: "companyName",
@@ -227,7 +228,7 @@ const RecruitmentForm: React.FC<Props> = ({
     },
   ] as const;
 
-  const personalFields = [
+  const personalFields: FieldConfig<EmployeeFormValues>[]  = [
     {
       label: "অস্থায়ী প্রার্থী আইডি",
       name: "enrollmentId",
@@ -309,7 +310,7 @@ const RecruitmentForm: React.FC<Props> = ({
     },
   ] as const;
 
-  const presentAddressFields = [
+  const presentAddressFields: FieldConfig<EmployeeFormValues>[] = [
     {
       label: "ঠিকানা",
       name: "presentVillageRoadHouse",
@@ -385,7 +386,7 @@ const RecruitmentForm: React.FC<Props> = ({
     },
   ] as const;
 
-  const approvalFields = [
+  const approvalFields: FieldConfig<EmployeeFormValues>[]  = [
     {
       label: "গেট সিকিউরিটি অনুমোদন",
       name: "securityClearance",

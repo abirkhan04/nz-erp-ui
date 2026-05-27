@@ -1,3 +1,4 @@
+import type { Path } from "react-hook-form";
 
 export interface MenuItemType {
   label: string;
@@ -97,4 +98,125 @@ export interface Cell {
   updatedOn: string;
   updatedBy: string;
   isActive: boolean;
+}
+
+interface FieldRules {
+  required?: string;
+}
+
+export interface FieldConfig<T> {
+  label: string;
+  name: Path<T>;
+  type: string;
+  placeholder?: string;
+  readOnly?: boolean;
+  options?: any[];
+  rules?: FieldRules;
+  className?: string;
+}
+
+export interface Employee {
+  id: string;
+  enrollmentId: string;
+  employeeCode: string;
+  employeeNameEnglish: string;
+  employeeNameBangla: string;
+
+  companyId: string;
+  companyName: string;
+
+  departmentId: string;
+  departmentName: string;
+
+  sectionId: string;
+  sectionName: string;
+
+  gradeId: string | null;
+  gradeName: string;
+
+  designationId: string | null;
+  designationName: string;
+
+  employeeType: number;
+
+  shiftId: string | null;
+  shiftName: string;
+
+  employeeNatureId: string | null;
+  employeeNatureName: string;
+
+  holiday: string | null;
+
+  proposedMonthlySalary: number;
+
+  joiningDate: string;
+  confirmationDate: string | null;
+
+  status: number;
+
+  personalInfoId: string;
+
+  dateOfBirth: string;
+
+  gender: number;
+  maritalStatus: number | null;
+
+  mobileNumber: string;
+  emailAddress: string | null;
+
+  documentType: number | null;
+  documentNumber: string | null;
+
+  bloodGroup: number;
+
+  religion: string | null;
+  nationality: string | null;
+
+  fatherNameEnglish: string;
+  fatherNameBangla: string | null;
+
+  motherNameEnglish: string;
+  motherNameBangla: string | null;
+
+  spouseName: string | null;
+  spouseMobile: string | null;
+
+  tinNumber: string;
+
+  employeeReference: string;
+  referencePersonId: string;
+
+  permanentVillageAreaRoad: string;
+  permanentPostOffice: string;
+  permanentThana: string;
+  permanentDistrict: string;
+  permanentDivision: string;
+
+  presentVillageAreaRoad: string;
+  presentPostOffice: string;
+  presentThana: string;
+  presentDistrict: string;
+  presentDivision: string;
+
+  verificationInfoId: string;
+
+  securityClearanceBy: string;
+  securityClearanceDate: string;
+
+  enrolledBy: string;
+  enrolledDate: string;
+
+  biometricEnrolledBy: string;
+  biometricEnrolledDate: string;
+
+  createdOn: string;
+  createdBy: string;
+
+  updatedOn: string;
+  updatedBy: string;
+
+  isActive: boolean;
+
+  idType: number;
+  idNumber: string;
 }

@@ -1,4 +1,4 @@
-import type { Company, MenuItemType } from "../types/interfaces";
+import type { MenuItemType } from "../types/interfaces";
 
 export const fetchMenu = async (): Promise<MenuItemType[]> => {
     return new Promise((resolve) => {
@@ -37,7 +37,7 @@ export const fetchMenu = async (): Promise<MenuItemType[]> => {
   };
 
 
- export const  fetchCompany = async (): Promise<Company[]> => {
+ export const  fetchCompany = async (): Promise<any[]> => {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve([

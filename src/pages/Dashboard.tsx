@@ -38,12 +38,6 @@ const Dashboard: React.FC = () => {
     }, []);
     // ✅ Get token once
 
-    // ✅ Stable URL (won’t change on re-render)
-    const url = useMemo(() => {
-        if (!token) return null;
-        return API_ROUTES.MENU;
-    }, [token]);
-
     // ✅ Call API only when url is stable
     const { data: menu, isLoading, error } = useGet<MenuItemType[]>({
         key: ["menu", token],
@@ -60,7 +54,9 @@ const Dashboard: React.FC = () => {
             return {
                 ...item,
                 color: style.color,
+                url: item.url || "#",
                 btn: style.btn,
+                name:  item.label || "Menu",
                 iconComponent: getIcon(item.icon),
             };
         });

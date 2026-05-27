@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { User, MapPin, ChevronDown, Building2 } from "lucide-react";
+import { User, ChevronDown, Building2 } from "lucide-react";
 
 export default function Topbar() {
   const [userOpen, setUserOpen] = useState(false);
@@ -8,8 +8,7 @@ export default function Topbar() {
   const [companyOpen, setCompanyOpen] = useState(false);
   const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
 
-  const [locationOpen, setLocationOpen] = useState(false);
-  const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
+  const [, setLocationOpen] = useState(false);
 
   const navigate = useNavigate();
 
@@ -19,7 +18,6 @@ export default function Topbar() {
 
   // Data
   const companies = ["Textile", "Fabric", "Denim", "DyFlax", "Apparels"];
-  const locations = ["Vulta", "Araihazar", "Head Office"];
 
   // Outside click handler
   useEffect(() => {
@@ -45,14 +43,6 @@ export default function Topbar() {
       prev.includes(company)
         ? prev.filter((c) => c !== company)
         : [...prev, company]
-    );
-  };
-
-  const toggleLocation = (loc: string) => {
-    setSelectedLocations((prev) =>
-      prev.includes(loc)
-        ? prev.filter((l) => l !== loc)
-        : [...prev, loc]
     );
   };
 

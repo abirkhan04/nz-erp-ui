@@ -1,5 +1,5 @@
 export type EmployeeFormValues = {
-
+   id: string;
    companyLocation: string;
    idNumber: number;
    idType: string;
@@ -21,7 +21,9 @@ export type EmployeeFormValues = {
    companyName: string;
    companyId: String;
    department: string;
+   departmentId: string;
    section: string;
+   sectionId: string;
    grade: string;
    designation: string;
 

@@ -172,7 +172,7 @@ const AddressDetailsForm: React.FC = () => {
     },
   ];
 
-  const permanentAddressFields = [
+  const permanentAddressFields: any[] = [
     {
       label: "Village / Road / House *",
       name: "permanentVillageRoadHouse",

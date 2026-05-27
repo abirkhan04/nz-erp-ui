@@ -4,7 +4,6 @@ import type { EmployeeFormValues } from "./EmployeeFormValues";
 import {
     CheckCircle,
     Pencil,
-    Clock3,
 } from "lucide-react";
 
 type ReviewAndSubmitProps = {

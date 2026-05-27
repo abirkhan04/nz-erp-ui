@@ -9,6 +9,7 @@ import { Trash2, Plus } from "lucide-react";
 import CommonInputField from "../../components/CommonInputFields";
 
 import type { EmployeeFormValues } from "./EmployeeFormValues";
+import type { FieldConfig } from "../../types/interfaces";
 
 const FamilyAndNomineeForm: React.FC = () => {
   const {
@@ -116,7 +117,7 @@ const FamilyAndNomineeForm: React.FC = () => {
     },
   ];
 
-  const nomineeFieldsRight = [
+  const nomineeFieldsRight: FieldConfig<EmployeeFormValues>[] = [
     {
       label:
         "Post Office (Bangla) *",
