@@ -13,45 +13,51 @@ import type { EmployeeFormValues } from "./EmployeeFormValues";
 import { API_ROUTES } from "../../api/routes";
 import { useGet } from "../../hooks/useGet";
 import { usePost } from "../../hooks/usePost";
-import { Controller } from "react-hook-form";
 import SearchableDropdown from "../../components/SearchableDropdown";
+import type { PhysicalExaminationSetting } from "./types";
 
 
 type PhysicalExaminationData = {
-    vision: string;
-    hearing: string;
-    heart: string;
-    chestLungs: string;
-  };
-
-type FitnessFormValues = {
-    employeeId: string;
-    enrollmentId: string;
-    bloodGroup: number;
-    heightCm: number;
-    weightKg: number;
-    identificationMarks: string;
-    physicalExaminationDataJson: PhysicalExaminationData;
-    isFit: boolean;
-    remarks: string;
-    examinedByDoctor: string;
-    examinationDateTime: string;
+  vision: string;
+  hearing: string;
+  heart: string;
+  chestLungs: string;
 };
 
-const DoctorFitnessCheck:React.FC<Props> = ({employeeId, setActiveStep, setEmployeeId}) => {
+type FitnessFormValues = {
+  employeeId: string;
+  enrollmentId: string;
+  bloodGroup: number;
+  heightCm: number;
+  weightKg: number;
+  identificationMarks: string;
+  physicalExaminationDataJson: PhysicalExaminationData;
+  isFit: boolean;
+  remarks: string;
+  examinedByDoctor: string;
+  examinationDateTime: string;
+};
+
+const DoctorFitnessCheck: React.FC<Props> = ({ employeeId, setActiveStep, setEmployeeId }) => {
 
   const [selectedEmployee, setSelectedEmployee] = React.useState<string>("");
   const [employees, setEmployees] = React.useState<Array<EmployeeFormValues>>([])
 
-  const {data: Employee} = useGet<EmployeeFormValues>({
-      key: ["employee", employeeId],
-      url: `${API_ROUTES.EMPLOYEES}/${employeeId}`,
-  })
+  const { data: Employee } = useGet<EmployeeFormValues>({
+    key: ["employee", employeeId],
+    url: `${API_ROUTES.EMPLOYEES}/${employeeId}`,
+    enabled: !!employeeId
+  });
+
+  const { data: PhysicalExaminationSettings } = useGet<PhysicalExaminationSetting[]>({
+    key: ["physicalExaminationSettings"],
+    url: API_ROUTES.PHYSICAL_EXAMINATION_SETTINGS,
+  });
 
   const { mutate: EmployeeFitnessPost } =
     usePost<{ message: string; id: string }, any>(
       API_ROUTES.MEDICAL_FITNESS_CHECK
-  );
+    );
 
   const {
     register,
@@ -59,49 +65,49 @@ const DoctorFitnessCheck:React.FC<Props> = ({employeeId, setActiveStep, setEmplo
     formState: { errors },
   } = useForm<FitnessFormValues>({
     defaultValues: {
-        employeeId: employeeId,
-      
-        enrollmentId: "",
-      
-        bloodGroup: 1,
-      
-        heightCm: 165,
-      
-        weightKg: 58,
-      
-        physicalExaminationDataJson:{
-          vision: "Normal",
-          hearing: "Normal",
-          heart: "Normal",
-          chestLungs: "Normal",
-        },
-        isFit: true,
-      
-        remarks: "",
-      
-        examinedByDoctor: "Dr. S. Rahman",
-      
-        examinationDateTime: new Date().toISOString(),
+      employeeId: employeeId,
+
+      enrollmentId: "",
+
+      bloodGroup: 1,
+
+      heightCm: 165,
+
+      weightKg: 58,
+
+      physicalExaminationDataJson: {
+        vision: "Normal",
+        hearing: "Normal",
+        heart: "Normal",
+        chestLungs: "Normal",
       },
+      isFit: true,
+
+      remarks: "",
+
+      examinedByDoctor: "Dr. S. Rahman",
+
+      examinationDateTime: new Date().toISOString(),
+    },
   });
 
   const onSubmit = (data: FitnessFormValues) => {
-    const fitnessPost: any = {...data};
+    const fitnessPost: any = { ...data };
     fitnessPost.bloodGroup = Number(data.bloodGroup);
     fitnessPost.employeeId = employeeId;
     fitnessPost.enrollmentId = Employee?.enrollmentId;
     fitnessPost.physicalExaminationDataJson = JSON.stringify(data.physicalExaminationDataJson);
     EmployeeFitnessPost(fitnessPost, {
-        onSuccess: (response) => {
-          toast.success(response.message);
-          setActiveStep(3);
-          setEmployeeId(employeeId);
-        },
-  
-        onError: (error) => {
-          toast.error(error.message);
-        },
-      });
+      onSuccess: (response) => {
+        toast.success(response.message);
+        setActiveStep(3);
+        setEmployeeId(employeeId);
+      },
+
+      onError: (error) => {
+        toast.error(error.message);
+      },
+    });
   };
 
   const examinationOptions = [
@@ -129,18 +135,18 @@ const DoctorFitnessCheck:React.FC<Props> = ({employeeId, setActiveStep, setEmplo
       );
 
       setLoading(false);
-  
+
       if (!response.ok) {
         throw new Error("Failed to fetch employees");
       }
-  
+
       const data = await response.json();
-  
+
       const employeeOptions = data?.map((employee: any) => ({
         label: employee.employeeNameBangla,
         value: employee.id,
       }));
-  
+
       setEmployees(employeeOptions);
     } catch (error) {
       console.error("Employee fetch error:", error);
@@ -161,20 +167,20 @@ const DoctorFitnessCheck:React.FC<Props> = ({employeeId, setActiveStep, setEmplo
 
           <SectionCard title="Search Candidate">
             <div className="grid grid-cols-12 gap-4 items-end">
-            <div className = "col-span-9 md:col-span-4">
-            <SearchableDropdown
-                value={selectedEmployee}
-                options={employees}
-                isLoading={loading}
-                placeholder="Search Employee"
-                debounceDelay={300}
-                onSearch={(text) => {
-                  fetchEmployee(text);
-                }}
-                onChange={(option) => {
-                  setEmployeeId(String(option.value));
-                }}
-              />
+              <div className="col-span-9 md:col-span-4">
+                <SearchableDropdown
+                  value={selectedEmployee}
+                  options={employees}
+                  isLoading={loading}
+                  placeholder="Search Employee"
+                  debounceDelay={300}
+                  onSearch={(text) => {
+                    fetchEmployee(text);
+                  }}
+                  onChange={(option) => {
+                    setEmployeeId(String(option.value));
+                  }}
+                />
               </div>
               <div className="col-span-2 md:col-span-4">
                 <button
@@ -206,13 +212,13 @@ const DoctorFitnessCheck:React.FC<Props> = ({employeeId, setActiveStep, setEmplo
           <SectionCard
             title="Candidate Information"
             color="blue"
-            >
+          >
             <div className="grid grid-cols-12 gap-6">
-                {/* IMAGE */}
+              {/* IMAGE */}
 
-                <div className="col-span-12 md:col-span-2">
+              <div className="col-span-12 md:col-span-2">
                 <div
-                    className="
+                  className="
                     w-28
                     h-32
                     rounded-xl
@@ -226,154 +232,154 @@ const DoctorFitnessCheck:React.FC<Props> = ({employeeId, setActiveStep, setEmplo
                     text-sm
                     "
                 >
-                    Candidate
+                  Candidate
                 </div>
-                </div>
+              </div>
 
-                {/* PERSONAL */}
+              {/* PERSONAL */}
 
-                <div className="col-span-12 md:col-span-4 space-y-2 text-sm">
+              <div className="col-span-12 md:col-span-4 space-y-2 text-sm">
                 <InfoRow
-                    label="Employee ID"
-                    value={Employee?.enrollmentId || ""}
+                  label="Employee ID"
+                  value={Employee?.enrollmentId || ""}
                 />
 
                 <InfoRow
-                    label="Employee Code"
-                    value={Employee?.employeeCode || ""}
+                  label="Employee Code"
+                  value={Employee?.employeeCode || ""}
                 />
 
                 <InfoRow
-                    label="Candidate Name"
-                    value={
+                  label="Candidate Name"
+                  value={
                     Employee?.employeeNameEnglish ||
                     Employee?.employeeNameBangla ||
                     ""
-                    }
+                  }
                 />
 
                 <InfoRow
-                    label="Father's Name"
-                    value={Employee?.fatherNameEnglish || ""}
+                  label="Father's Name"
+                  value={Employee?.fatherNameEnglish || ""}
                 />
 
                 <InfoRow
-                    label="Mother's Name"
-                    value={
+                  label="Mother's Name"
+                  value={
                     Employee?.motherNameEnglish ||
                     Employee?.motherNameBangla ||
                     ""
-                    }
+                  }
                 />
 
                 <InfoRow
-                    label="Date of Birth"
-                    value={
+                  label="Date of Birth"
+                  value={
                     Employee?.dateOfBirth
-                        ? new Date(
-                            Employee.dateOfBirth
-                        ).toLocaleDateString()
-                        : ""
-                    }
+                      ? new Date(
+                        Employee.dateOfBirth
+                      ).toLocaleDateString()
+                      : ""
+                  }
                 />
 
                 <InfoRow
-                    label="Gender"
-                    value={
+                  label="Gender"
+                  value={
                     Employee?.gender === 1
-                        ? "Male"
-                        : Employee?.gender === 2
+                      ? "Male"
+                      : Employee?.gender === 2
                         ? "Female"
                         : "Other"
-                    }
+                  }
                 />
 
                 <InfoRow
-                    label="Blood Group"
-                    value={Object.keys(bloodGroupMap).find(
-                        (key) =>
-                          bloodGroupMap[key] === Number(Employee?.bloodGroup)
-                      ) || ""}
+                  label="Blood Group"
+                  value={Object.keys(bloodGroupMap).find(
+                    (key) =>
+                      bloodGroupMap[key] === Number(Employee?.bloodGroup)
+                  ) || ""}
                 />
 
                 <InfoRow
-                    label="Mobile Number"
-                    value={Employee?.mobileNumber || ""}
+                  label="Mobile Number"
+                  value={Employee?.mobileNumber || ""}
                 />
-                </div>
+              </div>
 
-                {/* ADDRESS */}
+              {/* ADDRESS */}
 
-                <div className="col-span-12 md:col-span-3 space-y-2 text-sm">
+              <div className="col-span-12 md:col-span-3 space-y-2 text-sm">
                 <InfoRow
-                    label="Village / Road"
-                    value={
+                  label="Village / Road"
+                  value={
                     Employee?.presentVillageAreaRoad || ""
-                    }
+                  }
                 />
 
                 <InfoRow
-                    label="Post Office"
-                    value={Employee?.presentPostOffice || ""}
+                  label="Post Office"
+                  value={Employee?.presentPostOffice || ""}
                 />
 
                 <InfoRow
-                    label="Thana"
-                    value={Employee?.presentThana || ""}
+                  label="Thana"
+                  value={Employee?.presentThana || ""}
                 />
 
                 <InfoRow
-                    label="District"
-                    value={Employee?.presentDistrict || ""}
+                  label="District"
+                  value={Employee?.presentDistrict || ""}
                 />
 
                 <InfoRow
-                    label="Division"
-                    value={Employee?.presentDivision || ""}
+                  label="Division"
+                  value={Employee?.presentDivision || ""}
                 />
-                </div>
+              </div>
 
-                {/* JOB */}
+              {/* JOB */}
 
-                <div className="col-span-12 md:col-span-3 space-y-2 text-sm">
+              <div className="col-span-12 md:col-span-3 space-y-2 text-sm">
                 <InfoRow
-                    label="Company"
-                    value={Employee?.companyName || ""}
-                />
-
-                <InfoRow
-                    label="Department"
-                    value={Employee?.departmentName || ""}
+                  label="Company"
+                  value={Employee?.companyName || ""}
                 />
 
                 <InfoRow
-                    label="Section"
-                    value={Employee?.sectionName || ""}
+                  label="Department"
+                  value={Employee?.departmentName || ""}
                 />
 
                 <InfoRow
-                    label="Designation"
-                    value={Employee?.designationName || ""}
+                  label="Section"
+                  value={Employee?.sectionName || ""}
                 />
 
                 <InfoRow
-                    label="Employee Type"
-                    value={String(Employee?.employeeType || "")}
+                  label="Designation"
+                  value={Employee?.designationName || ""}
                 />
 
                 <InfoRow
-                    label="Joining Date"
-                    value={
+                  label="Employee Type"
+                  value={String(Employee?.employeeType || "")}
+                />
+
+                <InfoRow
+                  label="Joining Date"
+                  value={
                     Employee?.joiningDate
-                        ? new Date(
-                            Employee.joiningDate
-                        ).toLocaleDateString()
-                        : ""
-                    }
+                      ? new Date(
+                        Employee.joiningDate
+                      ).toLocaleDateString()
+                      : ""
+                  }
                 />
-                </div>
+              </div>
             </div>
-            </SectionCard>
+          </SectionCard>
 
           {/* MEDICAL EXAMINATION */}
 
@@ -464,41 +470,39 @@ const DoctorFitnessCheck:React.FC<Props> = ({employeeId, setActiveStep, setEmplo
                   Physical Examination
                 </h3>
 
-                <CommonInputField<FitnessFormValues>
-                  label="Vision"
-                  name="physicalExaminationDataJson.vision"
-                  register={register}
-                  errors={errors}
-                  type="radio"
-                  options={examinationOptions}
-                />
+                {PhysicalExaminationSettings
+                  ?.filter((item) => item.isActive)
+                  ?.sort((a, b) => a.displayOrder - b.displayOrder)
+                  ?.map((item) => {
+                    const fieldName = item.fieldName
+                      .replace(/\//g, "")
+                      .replace(/\s+/g, "")
+                      .replace(/^./, (str) => str.toLowerCase());
 
-                <CommonInputField<FitnessFormValues>
-                  label="Hearing"
-                  name="physicalExaminationDataJson.hearing"
-                  register={register}
-                  errors={errors}
-                  type="radio"
-                  options={examinationOptions}
-                />
+                    const options =
+                      item.optionValuesJson
+                        ?.split(",")
+                        ?.map((option) => ({
+                          label: option.trim(),
+                          value: option.trim(),
+                        })) || [];
 
-                <CommonInputField<FitnessFormValues>
-                  label="Heart"
-                  name="physicalExaminationDataJson.heart"
-                  register={register}
-                  errors={errors}
-                  type="radio"
-                  options={examinationOptions}
-                />
-
-                <CommonInputField<FitnessFormValues>
-                  label="Chest / Lungs"
-                  name="physicalExaminationDataJson.chestLungs"
-                  register={register}
-                  errors={errors}
-                  type="radio"
-                  options={examinationOptions}
-                />
+                    return (
+                      <CommonInputField<FitnessFormValues>
+                        key={item.id}
+                        label={item.fieldName}
+                        name={`physicalExaminationDataJson.${fieldName}` as any}
+                        register={register}
+                        errors={errors}
+                        type={
+                          item.fieldType === 2
+                            ? "radio"
+                            : "text"
+                        }
+                        options={options}
+                      />
+                    );
+                  })}
               </div>
 
               {/* RIGHT */}

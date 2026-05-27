@@ -15,4 +15,13 @@ export  const bloodGroupMap: Record<string, number> = {
     "O+": 7,
     "O-": 8,
   };
+
+export type PhysicalExaminationSetting = {
+  id: string;
+  fieldName: string;
+  displayOrder: number;
+  fieldType: number;
+  optionValuesJson: string | null;
+  isActive: boolean;
+};
   

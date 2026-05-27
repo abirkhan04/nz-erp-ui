@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import CommonInputField from "../../components/CommonInputFields";
 
 import { useGet } from "../../hooks/useGet";
+import { useWatch } from "react-hook-form";
 import { API_ROUTES } from "../../api/routes";
 import { usePost } from "../../hooks/usePost";
 
@@ -54,11 +55,16 @@ const RecruitmentForm: React.FC<Props> = ({
     url: API_ROUTES.COMPANY,
   });
 
-  const selectedCompany = watch("companyName");
+  const selectedCompany = useWatch({
+    name: "companyName",
+  });
+
+  console.log("Selected Company: ", selectedCompany);
 
   const { data: locations = [] } = useGet<Location[]>({
     key: ["location", selectedCompany],
     url: `${API_ROUTES.LOCATION}/${selectedCompany}`,
+    enabled: selectedCompany !== undefined && selectedCompany !== "",
   });
 
   const { data: departments = [] } = useGet<Department[]>({
@@ -252,7 +258,7 @@ const RecruitmentForm: React.FC<Props> = ({
         },
         {
           label: "জন্ম নিবন্ধন",
-          value:  "Birth Certificate",
+          value: "Birth Certificate",
         },
         {
           label: "পাসপোর্ট",
@@ -414,162 +420,162 @@ const RecruitmentForm: React.FC<Props> = ({
       Staff: 2,
       Management: 3
     };
-    
+
     const genderMap: Record<string, number> = {
       Male: 0,
       Female: 1,
       Other: 2,
     };
-    
+
     const idTypeMap: Record<string, number> = {
       NID: 1,
       "Birth Certificate": 2,
       Passport: 3,
     };
-    
+
     const guardianTypeMap: Record<string, number> = {
       father: 1,
       husband: 2,
     };
-    
+
     const employeeRecruitmentPost = {
       // =========================
       // BASIC INFO
       // =========================
-    
+
       employeeEnrollmentId:
         data.enrollmentId || "",
-    
+
       employeeNameBangla:
         data.employeeNameBangla || "",
-    
+
       employeeType:
         employeeTypeMap[data.employeeType] || 0,
-    
+
       // =========================
       // JOB INFO
       // =========================
-    
+
       companyId:
         data.companyName || "",
-    
+
       departmentId:
         data.department || "",
-    
+
       locationId:
         data.companyLocation || "",
-    
+
       sectionId:
         data.section || "",
-    
+
       cellId:
         data.cell || "",
-    
+
       proposedMonthlySalary:
         Number(data.grossSalary || 0),
-    
+
       joiningDate:
         data.joiningDate
           ? new Date(data.joiningDate).toISOString()
           : null,
-    
+
       confirmationDate: null,
-    
+
       // =========================
       // PERSONAL INFO
       // =========================
-    
+
       dateOfBirth:
         data.dateOfBirth
           ? new Date(data.dateOfBirth).toISOString()
           : null,
-    
+
       gender:
         genderMap[data.gender] || 0,
-    
+
       bloodGroup:
         bloodGroupMap[data.bloodGroup] || 0,
-    
+
       idType:
         idTypeMap[data.idType] || 0,
-    
+
       idNumber:
         data.idNumber || "",
-    
+
       guardianType:
         guardianTypeMap[data.guardianType] || 0,
-    
+
       guardianName:
         data.fatherNameEnglish || "",
-    
+
       motherNameBangla:
         data.motherNameEnglish || "",
-    
+
       // =========================
       // REFERENCE INFO
       // =========================
-    
+
       employeeReference:
         data.employeeReference || "",
-    
+
       referencePersonId:
         data.documentNumber || "",
-    
+
       // =========================
       // PERMANENT ADDRESS
       // =========================
-    
+
       permanentVillageAreaRoad:
         data.permanentVillageRoadHouse || "",
-    
+
       permanentPostOffice:
         data.permanentPostOffice || "",
-    
+
       permanentThana:
         data.permanentThanaUpazila || "",
-    
+
       permanentDistrict:
         data.permanentDistrict || "",
-    
+
       permanentDivision: "",
-    
+
       // =========================
       // PRESENT ADDRESS
       // =========================
-    
+
       presentVillageAreaRoad:
         data.presentVillageRoadHouse || "",
-    
+
       presentPostOffice:
         data.presentPostOffice || "",
-    
+
       presentThana:
         data.presentThanaUpazila || "",
-    
+
       presentDistrict:
         data.presentDistrict || "",
-    
+
       presentDivision: "",
-    
+
       // =========================
       // HR / SECURITY
       // =========================
-    
+
       securityClearanceBy:
         data.securityClearance || "",
-    
+
       securityClearanceDate:
         new Date().toISOString(),
-    
+
       enrolledBy:
         data.enrollmentBy || "",
-    
+
       enrolledDate:
         new Date().toISOString(),
-    
+
       biometricEnrolledBy:
         data.biometricEnrolledBy || "",
-    
+
       biometricEnrolledDate:
         new Date().toISOString(),
     };
@@ -603,9 +609,9 @@ const RecruitmentForm: React.FC<Props> = ({
         {/* ========================= */}
 
         <SectionCard
-         title="১. ব্যক্তিগত তথ্য"
-         color="blue"
-         className="xl:col-span-6"
+          title="১. ব্যক্তিগত তথ্য"
+          color="blue"
+          className="xl:col-span-6"
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
@@ -666,15 +672,15 @@ const RecruitmentForm: React.FC<Props> = ({
             />
           </div>
         </SectionCard>
-                {/* ========================= */}
+        {/* ========================= */}
         {/* JOB INFO */}
         {/* ========================= */}
 
         <SectionCard
-            title="২. চাকরির তথ্য"
-            color="green"
-            className="xl:col-span-3"
-          >
+          title="২. চাকরির তথ্য"
+          color="green"
+          className="xl:col-span-3"
+        >
           <div className="grid grid-cols-1 gap-4">
 
             {jobFields.map((field) => (
@@ -733,10 +739,10 @@ const RecruitmentForm: React.FC<Props> = ({
         {/* ========================= */}
 
         <SectionCard
-            title="৩. রেফারেন্স তথ্য"
-            color="orange"
-            className="xl:col-span-3"
-          >
+          title="৩. রেফারেন্স তথ্য"
+          color="orange"
+          className="xl:col-span-3"
+        >
           <div className="grid grid-cols-1 gap-4">
 
             {referenceFields.map((field) => (
@@ -762,10 +768,10 @@ const RecruitmentForm: React.FC<Props> = ({
         {/* ========================= */}
 
         <SectionCard
-            title="৪. ঠিকানার তথ্য"
-            color="blue"
-            className="xl:col-span-8"
-          >
+          title="৪. ঠিকানার তথ্য"
+          color="blue"
+          className="xl:col-span-8"
+        >
           <div className="space-y-8">
 
             {/* Present Address */}
@@ -857,10 +863,10 @@ const RecruitmentForm: React.FC<Props> = ({
         {/* ========================= */}
 
         <SectionCard
-            title="৫. এইচআর যাচাইকরণ"
-            color="purple"
-            className="xl:col-span-4"
-          >
+          title="৫. এইচআর যাচাইকরণ"
+          color="purple"
+          className="xl:col-span-4"
+        >
           <div className="grid grid-cols-1 gap-4">
 
             {approvalFields.map((field) => (

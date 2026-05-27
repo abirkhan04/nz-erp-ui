@@ -29,5 +29,12 @@ export const useGet = <T = any>({
       throw new Error("Either url or queryFn must be provided");
     },
     enabled,
+        // ✅ Important
+    staleTime: Infinity, // 5 minutes
+
+    // ✅ Prevent unnecessary refetch
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    refetchOnMount: false,
   });
 };

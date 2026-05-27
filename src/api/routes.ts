@@ -16,4 +16,5 @@ export const API_ROUTES = {
   ENROLLMENTID: "EmployeeMasters/enrollment-id",
 
   MEDICAL_FITNESS_CHECK: "MedicalFitnessChecks",
+  PHYSICAL_EXAMINATION_SETTINGS: "PhysicalExaminationSettings",
 };
