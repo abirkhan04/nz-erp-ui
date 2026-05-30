@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Controller,
   useFormContext,
@@ -8,19 +8,114 @@ import CommonInputField from "./../../components/CommonInputFields";
 
 import type { EmployeeFormValues } from "./EmployeeFormValues";
 import type { FieldConfig } from "../../types/interfaces";
+import { API_ROUTES } from "../../api/routes";
+import { useGet } from "../../hooks/useGet";
+import { SectionCard } from "../../components/SectionCard";
+import EmployeeSearchSection from "./EmployeeSearchSection";
 
-const FinancialDetailsForm: React.FC = () => {
+
+type Props = {
+  setActiveStep: React.Dispatch<React.SetStateAction<number>>;
+  employeeId: string;
+  setEmployeeId: React.Dispatch<React.SetStateAction<string>>;
+};
+
+const FinancialDetailsForm: React.FC<Props> = ({ setActiveStep, employeeId, setEmployeeId }) => {
+
+  const { data: Employee } = useGet<EmployeeFormValues>({
+    key: ["employee", employeeId],
+    url: `${API_ROUTES.EMPLOYEES}/${employeeId}`,
+    enabled: !!employeeId,
+  });
+
+  const { data: Location } = useGet<Location>({
+    key: ["location", employeeId],
+    url: `${API_ROUTES.EMPLOYEE_LOCATION}/${employeeId}`,
+    enabled: !!employeeId,
+  });
   const {
     register,
     handleSubmit,
     watch,
     control,
+    setValue,
+    reset,
     formState: { errors },
-  } = useFormContext<EmployeeFormValues>();
+  } = useFormContext<any>();
 
   const onSubmit = (data: EmployeeFormValues) => {
     console.log("Financial Details:", data);
   };
+
+  useEffect(() => {
+    if (!Employee) return;
+
+    const fetchTaxInformation = async () => {
+      try {
+        const dob = Employee.dateOfBirth
+          ? new Date(Employee.dateOfBirth).toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          }).replace(/ /g, "-")
+          : "";
+
+        const gender =
+          Number(Employee.gender) === 1
+            ? "Male"
+            : Number(Employee.gender) === 2
+              ? "Female"
+              : "Male";
+
+        const url = new URL(
+          "http://175.29.147.115:8000/tax/api.php"
+        );
+
+        url.searchParams.append("apikey", "Nz@2026");
+        url.searchParams.append(
+          "pMonthlyGross",
+          String(Employee.proposedMonthlySalary || 0)
+        );
+        url.searchParams.append("pType", "HO");
+        url.searchParams.append("pDOB", dob);
+        url.searchParams.append("pTaxExempted", "no");
+        url.searchParams.append("pGender", gender);
+
+        const response = await fetch(url.toString());
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch tax data");
+        }
+
+        const taxData = await response.json();
+        setValue("monthlyTax", Number(taxData.data[0].MonthlyTax));
+
+        // optionally update form values
+        // reset({
+        //   ...watch(),
+        //   annualTax: taxData.taxAmount,
+        // });
+      } catch (error) {
+        console.error("Tax API Error:", error);
+      }
+    };
+
+    fetchTaxInformation();
+  }, [Employee, setValue]);
+
+  useEffect(() => {
+    if (!Employee) return;
+
+    reset({
+      ...watch(),
+      grossSalary: Employee.proposedMonthlySalary || 0,
+      tinNumber: Employee.tinNumber || "",
+      idNumber: Employee.idNumber || "",
+      salaryEffectiveFrom: Employee.joiningDate
+        ? Employee.joiningDate.split("T")[0]
+        : "",
+    });
+  }, [Employee, reset]);
 
   const salarySummary = {
     basicSalary: watch("basicSalary") || 0,
@@ -37,7 +132,7 @@ const FinancialDetailsForm: React.FC = () => {
   const labelClass =
     "block text-sm font-medium text-gray-700 mb-1";
 
-  const salaryInformationFields : FieldConfig<EmployeeFormValues>[] = [
+  const salaryInformationFields: FieldConfig<EmployeeFormValues>[] = [
     {
       label: "Gross Salary (BDT) *",
       name: "grossSalary",
@@ -161,7 +256,12 @@ const FinancialDetailsForm: React.FC = () => {
       name: "tinNumber",
       type: "text",
     },
-
+    {
+      label: "Monthly Tax Amount (BDT)",
+      name: "monthlyTax",
+      type: "number",
+      disabled: true,
+    },
     {
       label: "Tax Exempted (If any)",
       name: "taxExempted",
@@ -186,7 +286,7 @@ const FinancialDetailsForm: React.FC = () => {
     },
   ];
 
-  const otherFinancialFields: FieldConfig<EmployeeFormValues>[]  = [
+  const otherFinancialFields: FieldConfig<EmployeeFormValues>[] = [
     {
       label: "PF Account No.",
       name: "pfAccountNo",
@@ -212,7 +312,18 @@ const FinancialDetailsForm: React.FC = () => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
+
+      <div className="mb-6">
+        <SectionCard title="Search Candidate">
+          <EmployeeSearchSection
+            employeeId={employeeId}
+            setEmployeeId={setEmployeeId}
+          />
+        </SectionCard>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+
         {/* LEFT SECTION */}
         <div className="lg:col-span-3 space-y-6">
           {/* SALARY INFORMATION */}
@@ -232,14 +343,15 @@ const FinancialDetailsForm: React.FC = () => {
                     }
                     type={
                       field.type as
-                        | "text"
-                        | "number"
-                        | "date"
-                        | "email"
-                        | "dropdown"
+                      | "text"
+                      | "number"
+                      | "date"
+                      | "email"
+                      | "dropdown"
                     }
                     register={register}
                     errors={errors}
+                    disabled={field.disabled}
                     rules={field.rules}
                     options={field.options}
                     placeholder={
@@ -271,11 +383,11 @@ const FinancialDetailsForm: React.FC = () => {
                     }
                     type={
                       field.type as
-                        | "text"
-                        | "number"
-                        | "date"
-                        | "email"
-                        | "dropdown"
+                      | "text"
+                      | "number"
+                      | "date"
+                      | "email"
+                      | "dropdown"
                     }
                     register={register}
                     errors={errors}
@@ -307,16 +419,17 @@ const FinancialDetailsForm: React.FC = () => {
                     }
                     type={
                       field.type as
-                        | "text"
-                        | "number"
-                        | "date"
-                        | "email"
-                        | "dropdown"
+                      | "text"
+                      | "number"
+                      | "date"
+                      | "email"
+                      | "dropdown"
                     }
                     register={register}
                     errors={errors}
                     rules={field.rules}
                     options={field.options}
+                    disabled={field.disabled}
                     placeholder={
                       field.placeholder
                     }
@@ -532,11 +645,11 @@ const FinancialDetailsForm: React.FC = () => {
                     }
                     type={
                       field.type as
-                        | "text"
-                        | "number"
-                        | "date"
-                        | "email"
-                        | "dropdown"
+                      | "text"
+                      | "number"
+                      | "date"
+                      | "email"
+                      | "dropdown"
                     }
                     register={register}
                     errors={errors}

@@ -70,11 +70,13 @@ export type EmployeeFormValues = {
    ====================================================== */
 
    basicSalary: string;
+   monthlyTax: number,
    houseRentAllowance: string;
    medicalAllowance: string;
    conveyanceAllowance: string;
    foodAllowance: string;
    grossSalary: string;
+   proposedMonthlySalary: string;
 
    paymentMethod: string;
 

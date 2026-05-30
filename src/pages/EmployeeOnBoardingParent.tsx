@@ -100,7 +100,11 @@ const EmployeeOnboardingParent: React.FC = () => {
         );
   
       case 4:
-        return <FinancialDetailsForm />;
+        return <FinancialDetailsForm 
+            setActiveStep={setActiveStep}
+            employeeId={employeeId}
+            setEmployeeId={setEmployeeId}
+        />;
   
       case 5:
         return <AddressDetailsForm />;

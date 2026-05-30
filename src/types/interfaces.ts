@@ -114,6 +114,7 @@ export interface FieldConfig<T> {
   options?: any[];
   rules?: FieldRules;
   className?: string;
+  disabled?: boolean;
 }
 
 export interface Employee {
