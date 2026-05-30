@@ -13,6 +13,8 @@ import { API_ROUTES } from "../../api/routes";
 import { useGet } from "../../hooks/useGet";
 import { usePost } from "../../hooks/usePost";
 import EmployeeSearchSection from "./EmployeeSearchSection";
+import { api } from "../../api/client";
+import { generateMedicalFitnessSlip } from "./GenerateMedicalFitnessSlip";
 
 
 type PhysicalExaminationData = {
@@ -106,6 +108,27 @@ const DoctorFitnessCheck: React.FC<Props> = ({ employeeId, setActiveStep, setEmp
         toast.error(error.message);
       },
     });
+  };
+
+  const handlePrintDoctorSlip = async () => {
+    try {
+      const response = await api.get(
+        `${API_ROUTES.MEDICAL_FITNESS_CHECK}/report/employee/${employeeId}`
+      );
+
+      const data = response.data;
+
+      console.log(data);
+      generateMedicalFitnessSlip(data);
+
+      // Generate PDF here
+    } catch (error: any) {
+      toast.error(
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to load report"
+      );
+    }
   };
 
 
@@ -538,6 +561,21 @@ const DoctorFitnessCheck: React.FC<Props> = ({ employeeId, setActiveStep, setEmp
                   "
                 >
                   Save Fitness Report
+                </button>
+                <button
+                  type="button"
+                  onClick={handlePrintDoctorSlip}
+                  className="
+                    w-full
+                    h-11
+                    rounded-lg
+                    bg-green-600
+                    hover:bg-green-700
+                    text-white
+                    font-medium
+                  "
+                >
+                  Print Doctors Slip
                 </button>
               </div>
             </div>
