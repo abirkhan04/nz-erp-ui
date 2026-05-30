@@ -28,6 +28,6 @@ jobs:
 
             npm run build
 
-            pm2 restart nz-erp-ui || pm2 start "serve -s dist -l tcp://0.0.0.0:4173" --name nz-erp-ui
+            pm2 restart nz-erp-ui || pm2 start "serve -s dist -l tcp://0.0.0.0:5173" --name nz-erp-ui
 
             pm2 save

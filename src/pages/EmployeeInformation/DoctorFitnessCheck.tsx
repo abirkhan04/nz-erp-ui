@@ -13,7 +13,7 @@ import { bloodGroupMap, type Props } from "./types";
 import { API_ROUTES } from "../../api/routes";
 import { useGet } from "../../hooks/useGet";
 import { usePost } from "../../hooks/usePost";
-import SearchableDropdown, { type SearchableDropdownOption } from "../../components/SearchableDropdown";
+import EmployeeSearchSection from "./EmployeeSearchSection";
 
 
 type PhysicalExaminationData = {
@@ -41,7 +41,6 @@ type FitnessFormValues = {
 
 const DoctorFitnessCheck: React.FC<Props> = ({ employeeId, setActiveStep, setEmployeeId }) => {
 
-  const [employees, setEmployees] = React.useState<Array<SearchableDropdownOption>>([])
 
   const { data: Employee } = useGet<Employee>({
     key: ["employee", employeeId],
@@ -110,38 +109,6 @@ const DoctorFitnessCheck: React.FC<Props> = ({ employeeId, setActiveStep, setEmp
     });
   };
 
-  const [
-    loading,
-    setLoading,
-  ] = React.useState(false);
-
-  const fetchEmployee = async (text: string) => {
-
-    setLoading(true);
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/Employees/search?searchText=${encodeURIComponent(text)}`
-      );
-
-      setLoading(false);
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch employees");
-      }
-
-      const data = await response.json();
-
-      const employeeOptions = data?.map((employee: any) => ({
-        label: employee.employeeNameBangla,
-        value: employee.id,
-      }));
-
-      setEmployees(employeeOptions);
-    } catch (error) {
-      console.error("Employee fetch error:", error);
-      setEmployees([]);
-    }
-  };
 
   return (
     <div className="bg-gray-50 min-h-screen p-6">
@@ -153,47 +120,11 @@ const DoctorFitnessCheck: React.FC<Props> = ({ employeeId, setActiveStep, setEmp
 
         <div className="col-span-12 xl:col-span-9 space-y-6">
           {/* SEARCH */}
-
           <SectionCard title="Search Candidate">
-            <div className="grid grid-cols-12 gap-4 items-end">
-              <div className="col-span-9 md:col-span-4">
-                <SearchableDropdown
-                  value={employeeId}
-                  options={employees}
-                  isLoading={loading}
-                  placeholder="Search Employee"
-                  debounceDelay={300}
-                  onSearch={(text) => {
-                    fetchEmployee(text);
-                  }}
-                  onChange={(option) => {
-                    setEmployeeId(String(option.value));
-                  }}
-                />
-              </div>
-              <div className="col-span-2 md:col-span-4">
-                <button
-                  type="button"
-                  className="
-                    h-[42px]
-                    w-full
-                    rounded-lg
-                    bg-blue-600
-                    hover:bg-blue-700
-                    text-white
-                    text-sm
-                    font-medium
-                    flex
-                    items-center
-                    justify-center
-                    gap-2
-                  "
-                >
-                  <Search size={16} />
-                  Search
-                </button>
-              </div>
-            </div>
+            <EmployeeSearchSection
+              employeeId={employeeId}
+              setEmployeeId={setEmployeeId}
+            />
           </SectionCard>
 
           {/* CANDIDATE INFORMATION */}

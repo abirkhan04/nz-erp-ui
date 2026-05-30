@@ -10,15 +10,19 @@ import type { EmployeeFormValues } from "./EmployeeFormValues";
 import type { Company, Department, Designation, Grade, Section } from "../../types/interfaces";
 
 import { API_ROUTES } from "../../api/routes";
+import { SectionCard } from "../../components/SectionCard";
+import EmployeeSearchSection from "./EmployeeSearchSection";
 
 type Props = {
   setActiveStep: React.Dispatch<React.SetStateAction<number>>;
   employeeId: string;
+  setEmployeeId: React.Dispatch<React.SetStateAction<string>>;
 };
 
 const EmployeeForm: React.FC<Props> = ({
   setActiveStep,
-  employeeId
+  employeeId,
+  setEmployeeId
   }) => {
   const {
     register,
@@ -35,6 +39,7 @@ const EmployeeForm: React.FC<Props> = ({
   const {data: Employee} = useGet<EmployeeFormValues>({
      key: ["employee", employeeId],
      url: `${API_ROUTES.EMPLOYEES}/${employeeId}`,
+     enabled: !!employeeId,
   })
 
   const {
@@ -624,7 +629,13 @@ const EmployeeForm: React.FC<Props> = ({
     ));
   };
 
-  return (
+  return (<React.Fragment>
+           <SectionCard title="Search Candidate">
+            <EmployeeSearchSection
+              employeeId={employeeId}
+              setEmployeeId={setEmployeeId}
+            />
+          </SectionCard>
     <div className="min-h-screen bg-gray-100 p-6">
       <form
         onSubmit={handleSubmit(onSubmit)}
@@ -695,7 +706,7 @@ const EmployeeForm: React.FC<Props> = ({
         </div>
       </form>
     </div>
-  );
+  </React.Fragment>);
 };
 
 export default EmployeeForm;

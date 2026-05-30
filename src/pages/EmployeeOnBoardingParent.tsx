@@ -95,6 +95,7 @@ const EmployeeOnboardingParent: React.FC = () => {
           <EmployeeInformationForm
             setActiveStep={setActiveStep}
             employeeId={employeeId}
+            setEmployeeId={setEmployeeId}
           />
         );
   
