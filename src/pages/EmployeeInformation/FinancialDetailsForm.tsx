@@ -12,6 +12,8 @@ import { API_ROUTES } from "../../api/routes";
 import { useGet } from "../../hooks/useGet";
 import { SectionCard } from "../../components/SectionCard";
 import EmployeeSearchSection from "./EmployeeSearchSection";
+import { usePost } from "../../hooks/usePost";
+import toast from "react-hot-toast";
 
 
 type Props = {
@@ -28,11 +30,16 @@ const FinancialDetailsForm: React.FC<Props> = ({ setActiveStep, employeeId, setE
     enabled: !!employeeId,
   });
 
-  const { data: Location } = useGet<Location>({
-    key: ["location", employeeId],
-    url: `${API_ROUTES.EMPLOYEE_LOCATION}/${employeeId}`,
-    enabled: !!employeeId,
-  });
+  // const { data: Location } = useGet<Location>({
+  //   key: ["location", employeeId],
+  //   url: `${API_ROUTES.EMPLOYEE_LOCATION}/${employeeId}`,
+  //   enabled: !!employeeId,
+  // });
+
+  const { mutate: FinancialDetailsPost } =
+    usePost<{ message: string }, any>(
+      API_ROUTES.FINANCIAL_DETAILS
+    );
   const {
     register,
     handleSubmit,
@@ -43,8 +50,59 @@ const FinancialDetailsForm: React.FC<Props> = ({ setActiveStep, employeeId, setE
     formState: { errors },
   } = useFormContext<any>();
 
-  const onSubmit = (data: EmployeeFormValues) => {
-    console.log("Financial Details:", data);
+  const onSubmit = (data: any) => {
+    const payload = {
+      employeeId: employeeId,
+
+      basicSalary: Number(data.basicSalary || 0),
+      houseRentAllowance: Number(data.houseRentAllowance || 0),
+      medicalAllowance: Number(data.medicalAllowance || 0),
+      conveyanceAllowance: Number(data.conveyanceAllowance || 0),
+      otherAllowance: Number(data.otherAllowance || 0),
+      grossSalary: Number(data.grossSalary || 0),
+
+      paymentMethod: data.paymentMethod || "",
+      bankName: data.bankName || "",
+      bankAccountNo: data.bankAccountNo || "",
+      accountType: data.accountType || "",
+      branch: data.branch || "",
+
+      tinNumber: data.tinNumber || "",
+
+      isTaxable: data.taxStatus === "Taxable",
+
+      taxExempted: data.taxExempted || "",
+
+      nidNumber: data.nidNumber || "",
+
+      isProvidentFundApplicable:
+        data.providentFund === "Yes",
+
+      pfAccountNo: data.pfAccountNo || "",
+
+      isGratuityApplicable:
+        data.gratuityApplicable === "Yes",
+
+      isEsiApplicable:
+        data.esiApplicable === "Yes",
+
+      salaryEffectiveFrom: data.salaryEffectiveFrom
+        ? new Date(data.salaryEffectiveFrom).toISOString()
+        : null,
+
+      remarks: data.remarks || "",
+    };
+
+    FinancialDetailsPost(payload,  {
+      onSuccess: (response) => {
+        toast.success(response.message);
+        setActiveStep(5);
+      },
+      onError: (error) => {
+        console.log(error.message);
+        toast.error(error.message);
+      },
+    });
   };
 
   useEffect(() => {
@@ -180,6 +238,9 @@ const FinancialDetailsForm: React.FC<Props> = ({ setActiveStep, employeeId, setE
       label: "Payment Method *",
       name: "paymentMethod",
       type: "dropdown",
+      rules: {
+        required: "Payment method is required",
+      },
       options: [
         {
           label: "Bank",
@@ -200,6 +261,9 @@ const FinancialDetailsForm: React.FC<Props> = ({ setActiveStep, employeeId, setE
       label: "Bank Name *",
       name: "bankName",
       type: "dropdown",
+      rules: {
+        required: "Basic name is required",
+      },
       options: [
         {
           label:
@@ -224,6 +288,9 @@ const FinancialDetailsForm: React.FC<Props> = ({ setActiveStep, employeeId, setE
       label: "Bank Account No. *",
       name: "bankAccountNo",
       type: "text",
+      rules: {
+        required: "Bank Account Number is required",
+      },
     },
 
     {
@@ -669,7 +736,7 @@ const FinancialDetailsForm: React.FC<Props> = ({ setActiveStep, employeeId, setE
 
           {/* ACTION BUTTONS */}
           <div className="flex justify-end gap-4">
-            <button
+            {/* <button
               type="button"
               className="
                 px-6 py-2
@@ -679,7 +746,7 @@ const FinancialDetailsForm: React.FC<Props> = ({ setActiveStep, employeeId, setE
               "
             >
               Save as Draft
-            </button>
+            </button> */}
 
             <button
               type="submit"
@@ -691,7 +758,7 @@ const FinancialDetailsForm: React.FC<Props> = ({ setActiveStep, employeeId, setE
                 hover:bg-blue-700
               "
             >
-              Next
+              Save & Continue
             </button>
           </div>
         </div>

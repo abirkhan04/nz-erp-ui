@@ -38,7 +38,6 @@ const imageToBase64 = (src: string): Promise<string> => {
 
 export const generateMedicalFitnessSlip = async (
     report: any,
-    employee?: any,
     employeePhoto?: string
 ) => {
 

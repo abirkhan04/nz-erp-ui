@@ -7,6 +7,7 @@ export const API_ROUTES = {
 
 
   EMPLOYEES: "Employees",
+  FINANCIAL_DETAILS: "FinancialDetails",
   EMPLOYEE_RECRUITMENT: "Employees/Recruitment",
   COMPANY: "Company",
   LOCATION: "Locations/Company",
