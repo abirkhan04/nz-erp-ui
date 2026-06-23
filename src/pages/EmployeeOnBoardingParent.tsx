@@ -43,7 +43,7 @@ interface ProcessStep {
 const EmployeeOnBoardingParent = () => {
 
   const navigate = useNavigate();
-  const summaryCards = [
+  const summaryCards:SummaryCard[] = [
     {
       title: "TOTAL RECRUITED",
       value: "1,248",
@@ -78,7 +78,7 @@ const EmployeeOnBoardingParent = () => {
     },
   ];
 
-  const companies = [
+  const companies:CompanyRecruitment[] = [
     {
       company: "NZ Textile Limited",
       workers: 420,
@@ -109,7 +109,7 @@ const EmployeeOnBoardingParent = () => {
     },
   ];
 
-  const processFlow = [
+  const processFlow: ProcessStep[] = [
     {
       step: 1,
       title: "Gate Registration",
