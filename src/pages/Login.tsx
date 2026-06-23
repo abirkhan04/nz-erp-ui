@@ -127,7 +127,7 @@ export default function Login() {
           }}
         />
 
-        <div className="relative z-10 flex flex-col justify-between p-14 w-full">
+        <div className="relative z-10 flex flex-col justify-between p-4 w-full">
 
           {/* Logo */}
           <div>
@@ -210,12 +210,48 @@ export default function Login() {
               NZ TEX GROUP
             </h3>
 
-            <div className="mt-3 flex flex-wrap gap-4 text-xs">
-              <span>NZ Textile</span>
-              <span>NZ Fabrics</span>
-              <span>NZ Denim</span>
-              <span>NZ Spinning</span>
-              <span>Dy Flax</span>
+            <div className="flex items-start justify-between mt-4">
+              {/* Left */}
+              <div className="flex items-center gap-3 min-w-fit">
+                {/* <img
+                  src={groupLogo}
+                  alt="NZ Tex Group"
+                  className="h-6 w-auto"
+                /> */}
+
+                <span className="text-[15px] font-semibold tracking-wide">
+                  NZ TEX GROUP
+                </span>
+              </div>
+
+              {/* Right */}
+              <div className="text-[11px] text-gray-200">
+                <div className="flex gap-3">
+                  <span>NZ Textile</span>
+                  <span>|</span>
+
+                  <span>NZ Fabrics</span>
+                  <span>|</span>
+
+                  <span>NZ Denim</span>
+                  <span>|</span>
+
+                  <span>NZ Spinning</span>
+                  <span>|</span>
+
+                  <span>Dy Flax</span>
+                </div>
+
+                <div className="flex gap-3 mt-1">
+                  <span>Head Office</span>
+                  <span>|</span>
+
+                  <span>GHRACS</span>
+                  <span>|</span>
+
+                  <span>CHRACS</span>
+                </div>
+              </div>
             </div>
 
             <p className="mt-6 text-xs text-gray-400">
