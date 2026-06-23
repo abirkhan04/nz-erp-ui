@@ -4,9 +4,7 @@ import {
   User,
   Lock,
   Eye,
-  EyeOff,
-  Building2,
-  Shield,
+  EyeOff
 } from "lucide-react";
 import logo from "../assets/logo.png";
 
