@@ -14,6 +14,7 @@ import logo from "../assets/logo.png";
 import { useState } from "react";
 import { usePost } from "../hooks/usePost";
 import { API_ROUTES } from "../api/routes";
+import bgImage from "../assets/app-background.jpeg";
 
 import {
   Users,
@@ -122,8 +123,7 @@ export default function Login() {
         <div
           className="absolute inset-0 bg-cover bg-center opacity-30"
           style={{
-            backgroundImage:
-              "url('https://images.unsplash.com/photo-1517048676732-d65bc937f952')",
+            backgroundImage: `url(${bgImage})`,
           }}
         />
 
