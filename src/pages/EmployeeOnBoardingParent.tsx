@@ -1,305 +1,403 @@
-import React, { useState } from "react";
-import { useForm, FormProvider } from "react-hook-form";
+import React from "react";
+import {
+  Users,
+  Briefcase,
+  UserCheck,
+  Building2,
+  ChevronRight,
+  Stethoscope,
+  Fingerprint,
+  UserRound,
+  Monitor,
+  FileText,
+  // LucideIcon,
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import type { LucideIcon } from "lucide-react";
 
-import RecruitmentForm from "./EmployeeInformation/RecruitmentForm";
-import EmployeeInformationForm from "./EmployeeInformation/EmployeeBasicForm";
-import FinancialDetailsForm from "./EmployeeInformation/FinancialDetailsForm";
-import AddressDetailsForm from "./EmployeeInformation/AddressDetailsForm";
-import FamilyNomineeForm from "./EmployeeInformation/FamilyAndNomineeForm";
-import DocumentsForm from "./EmployeeInformation/DocumentsForm";
-import ReviewSubmitForm from "./EmployeeInformation/ReviewAndSubmit";
-import DoctorFitnessCheck from "./EmployeeInformation/DoctorFitnessCheck";
-
-type StepItem = {
-  id: number;
+interface SummaryCard {
   title: string;
-};
+  value: string;
+  subtitle: string;
+  icon: LucideIcon;
+  color: string;
+  bg: string;
+}
 
-const steps: StepItem[] = [
-  {
-    id: 1,
-    title: "Gate Entry",
-  },
-  {
-    id: 2,
-    title: "Doctor's Fitness Check",
-  },
-  {
-    id: 3,
-    title: "Employee Information",
-  },
-  {
-    id: 4,
-    title: "Financial Details",
-  },
-  {
-    id: 5,
-    title: "Address Details",
-  },
-  {
-    id: 6,
-    title: "Family & Nominee",
-  },
-  {
-    id: 7,
-    title: "Documents",
-  },
-  {
-    id: 8,
-    title: "Review & Submit",
-  },
-];
+interface CompanyRecruitment {
+  company: string;
+  workers: number;
+  staffs: number;
+  management: number;
+  total: number;
+}
 
-const EmployeeOnboardingParent: React.FC = () => {
-  const [activeStep, setActiveStep] = useState<number>(1);
-  const [formData] = useState({});
-  const [employeeId, setEmployeeId] = useState<string>("");
+interface ProcessStep {
+  step: number;
+  title: string;
+  icon: LucideIcon;
+  color: string;
+  status: string;
+}
 
-  const methods = useForm({
-    mode: "onChange",
-  });
+const EmployeeOnBoardingParent = () => {
 
-  const handleNext = () => {
-    if (activeStep < steps.length) {
-      setActiveStep((prev) => prev + 1);
-    }
-  };
+  const navigate = useNavigate();
+  const summaryCards = [
+    {
+      title: "TOTAL RECRUITED",
+      value: "1,248",
+      subtitle: "Up to May 20, 2025",
+      icon: Users,
+      color: "text-blue-600",
+      bg: "bg-blue-50",
+    },
+    {
+      title: "WORKERS",
+      value: "1,012",
+      subtitle: "81.09% of Total",
+      icon: Briefcase,
+      color: "text-green-600",
+      bg: "bg-green-50",
+    },
+    {
+      title: "STAFFS",
+      value: "186",
+      subtitle: "14.90% of Total",
+      icon: UserCheck,
+      color: "text-purple-600",
+      bg: "bg-purple-50",
+    },
+    {
+      title: "MANAGEMENT",
+      value: "50",
+      subtitle: "4.01% of Total",
+      icon: Building2,
+      color: "text-orange-600",
+      bg: "bg-orange-50",
+    },
+  ];
 
-  const handlePrevious = () => {
-    if (activeStep > 1) {
-      setActiveStep((prev) => prev - 1);
-    }
-  };
+  const companies = [
+    {
+      company: "NZ Textile Limited",
+      workers: 420,
+      staffs: 72,
+      management: 30,
+      total: 522,
+    },
+    {
+      company: "NZ Fabrics Limited",
+      workers: 250,
+      staffs: 48,
+      management: 20,
+      total: 318,
+    },
+    {
+      company: "NZ Denim Limited",
+      workers: 200,
+      staffs: 34,
+      management: 12,
+      total: 246,
+    },
+    {
+      company: "NZ Dyeing Limited",
+      workers: 142,
+      staffs: 32,
+      management: 8,
+      total: 162,
+    },
+  ];
 
-  const renderStepComponent = () => {
-    switch (activeStep) {
-      case 1:
-        return (
-          <RecruitmentForm
-            setActiveStep={setActiveStep}
-            setEmployeeId={setEmployeeId}
-          />
-        );
-  
-      case 2:
-        return (
-          <DoctorFitnessCheck
-            setActiveStep={setActiveStep}
-            setEmployeeId={setEmployeeId}
-            employeeId={employeeId}
-          />
-        );
-  
-      case 3:
-        return (
-          <EmployeeInformationForm
-            setActiveStep={setActiveStep}
-            employeeId={employeeId}
-            setEmployeeId={setEmployeeId}
-          />
-        );
-  
-      case 4:
-        return <FinancialDetailsForm 
-            setActiveStep={setActiveStep}
-            employeeId={employeeId}
-            setEmployeeId={setEmployeeId}
-        />;
-  
-      case 5:
-        return <AddressDetailsForm />;
-  
-      case 6:
-        return <FamilyNomineeForm />;
-  
-      case 7:
-        return <DocumentsForm />;
-  
-      case 8:
-        return (
-          <ReviewSubmitForm
-            onEditStep={setActiveStep}
-            formData={formData}
-          />
-        );
-  
+  const processFlow = [
+    {
+      step: 1,
+      title: "Gate Registration",
+      icon: Building2,
+      color: "blue",
+      status: "ACTIVE",
+    },
+    {
+      step: 2,
+      title: "Medical Examination",
+      icon: Stethoscope,
+      color: "sky",
+      status: "DISABLED",
+    },
+    {
+      step: 3,
+      title: "HR Executive Entry",
+      icon: FileText,
+      color: "green",
+      status: "DISABLED",
+    },
+    {
+      step: 4,
+      title: "Biometric & Picture Capture",
+      icon: Fingerprint,
+      color: "orange",
+      status: "DISABLED",
+    },
+    {
+      step: 5,
+      title: "Director Review",
+      icon: UserRound,
+      color: "purple",
+      status: "DISABLED",
+    },
+    {
+      step: 6,
+      title: "IT Activation",
+      icon: Monitor,
+      color: "cyan",
+      status: "DISABLED",
+    },
+    {
+      step: 7,
+      title: "Recruitment Reports",
+      icon: FileText,
+      color: "pink",
+      status: "DISABLED",
+    },
+  ];
+
+  const colorStyles = {
+    blue: {
+      badge: "bg-blue-600",
+      icon: "text-blue-600",
+      bg: "bg-blue-50",
+    },
+    sky: {
+      badge: "bg-sky-600",
+      icon: "text-sky-600",
+      bg: "bg-sky-50",
+    },
+    green: {
+      badge: "bg-green-600",
+      icon: "text-green-600",
+      bg: "bg-green-50",
+    },
+    orange: {
+      badge: "bg-orange-600",
+      icon: "text-orange-600",
+      bg: "bg-orange-50",
+    },
+    purple: {
+      badge: "bg-purple-600",
+      icon: "text-purple-600",
+      bg: "bg-purple-50",
+    },
+    cyan: {
+      badge: "bg-cyan-600",
+      icon: "text-cyan-600",
+      bg: "bg-cyan-50",
+    },
+    pink: {
+      badge: "bg-pink-600",
+      icon: "text-pink-600",
+      bg: "bg-pink-50",
+    },
+  } as const;
+
+  const getStatusClass = (status: string) => {
+    switch (status) {
+      case "ACTIVE":
+        return "bg-blue-100 text-blue-700";
+      case "COMPLETED":
+        return "bg-green-100 text-green-700";
+      case "PENDING":
+        return "bg-orange-100 text-orange-700";
       default:
-        return null;
+        return "bg-slate-100 text-slate-500";
     }
   };
+
+
 
   return (
-    <div className="min-h-screen bg-[#f5f7fb] w-full overflow-x-hidden px-1 py-5 sm:px-1">
-      <div className="bg-white rounded-[24px] border border-gray-200 overflow-hidden">
-        {/* HEADER / TAB STEPPER */}
-        <div className="border-b border-gray-200 bg-white px-2 py-4">
-          <div className="flex flex-col xl:flex-row xl:items-center gap-3 min-w-0">
-            {/* STEP TABS */}
-            <div className="flex items-center flex-wrap gap-x-10 gap-y-2 min-w-0 flex-1">
-              {steps.map((step) => {
-                const isActive = activeStep === step.id;
-                const isCompleted = step.id < activeStep;
+    <div className="min-h-screen bg-[#f4f7fc] p-6">
+      {/* Header */}
+      <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+        <div className="flex justify-between items-center mb-5">
+          <h2 className="font-bold text-[#1f2c73] text-xl">
+            RECRUITMENT SUMMARY
+            <span className="ml-2 text-gray-500 text-sm font-medium">
+              (May 1, 2025 - May 20, 2025)
+            </span>
+          </h2>
 
-                return (
-                  <button
-                    key={step.id}
-                    type="button"
-                    onClick={() => setActiveStep(step.id)}
-                    className={`
-                      relative flex items-center gap-2
-                      px-2 py-2
-                      transition-all
-                      border-b-2
-                      min-w-0
-
-                      ${
-                        isActive
-                          ? "border-[#2F49FF]"
-                          : "border-transparent"
-                      }
-                    `}
-                  >
-                    {/* STEP CIRCLE */}
-                    <div
-                      className={`
-                        w-6 h-6 rounded-full
-                        flex items-center justify-center
-                        text-[11px] font-semibold
-                        transition-all
-                        shrink-0
-
-                        ${
-                          isCompleted
-                            ? "bg-[#E8F8EE] text-[#22C55E]"
-                            : ""
-                        }
-
-                        ${
-                          isActive
-                            ? "bg-[#2F49FF] text-white"
-                            : ""
-                        }
-
-                        ${
-                          !isCompleted && !isActive
-                            ? "border border-gray-300 text-gray-500 bg-white"
-                            : ""
-                        }
-                      `}
-                    >
-                      {isCompleted ? "✓" : step.id}
-                    </div>
-
-                    {/* STEP TITLE */}
-                    <span
-                      className={`
-                        text-xs font-medium whitespace-nowrap
-
-                        ${
-                          isActive
-                            ? "text-[#2F49FF]"
-                            : isCompleted
-                            ? "text-[#1F2937]"
-                            : "text-gray-500"
-                        }
-                      `}
-                    >
-                      {step.title}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* ACTION BUTTONS */}
-            <div className="flex items-center gap-2 shrink-0 xl:ml-auto">
-              <button
-                type="button"
-                className="
-                  h-9 px-4
-                  rounded-lg
-                  border border-[#D9DCEC]
-                  bg-white
-                  text-xs font-medium
-                  text-[#344054]
-                  hover:bg-gray-50
-                  whitespace-nowrap
-                "
-              >
-                Save as Draft
-              </button>
-
-              <button
-                type="button"
-                onClick={handleNext}
-                disabled={activeStep === steps.length}
-                className="
-                  h-9 px-5
-                  rounded-lg
-                  bg-[#2F49FF]
-                  hover:bg-[#1f3cff]
-                  disabled:opacity-50
-                  text-white
-                  text-xs font-medium
-                  flex items-center gap-1
-                  whitespace-nowrap
-                "
-              >
-                Next
-                <span>→</span>
-              </button>
-            </div>
-          </div>
+          <button className="border px-4 py-2 rounded-lg text-blue-600 hover:bg-blue-50" onClick={() => navigate("/")}>
+            ← Back to Main Menu
+          </button>
         </div>
 
-        {/* FORM CONTENT */}
-        <FormProvider {...methods}>
-          <div className="p-6">{renderStepComponent()}</div>
-        </FormProvider>
+        {/* Stat Cards */}
+        <div className="grid grid-cols-4 gap-4">
+          {summaryCards.map((card, index) => {
+            const Icon = card.icon;
 
-        {/* FOOTER */}
-        <div className="flex items-center justify-between border-t border-gray-200 px-6 py-4">
-          <button
-            type="button"
-            disabled={activeStep === 1}
-            onClick={handlePrevious}
-            className="
-              h-10 px-5
-              border border-gray-300
-              rounded-xl
-              text-sm font-medium
-              text-gray-700
-              hover:bg-gray-50
-              disabled:opacity-50
-            "
-          >
-            Previous
-          </button>
+            return (
+              <div
+                key={index}
+                className={`
+                            rounded-2xl
+                            p-5
+                            flex
+                            items-center
+                            gap-4
+                            ${card.bg}
+                            shadow-md
+                            hover:shadow-lg
+                            transition-all
+                            duration-300
+                          `}>
+                <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center shadow-md">
+                  <Icon className={`w-8 h-8 ${card.color}`} />
+                </div>
 
-          <div className="text-sm text-gray-500 font-medium">
-            Step {activeStep} of {steps.length}
+                <div>
+                  <h4 className={`text-sm font-bold ${card.color}`}>
+                    {card.title}
+                  </h4>
+
+                  <h2 className={`text-4xl font-bold ${card.color}`}>
+                    {card.value}
+                  </h2>
+
+                  <p className="text-sm text-gray-600">{card.subtitle}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Recruitment by Company */}
+      <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+        <h3 className="font-bold text-[#1f2c73] text-lg mb-4">
+          RECRUITMENT BY COMPANY
+        </h3>
+
+        <div className="overflow-hidden rounded-xl shadow-sm">
+          <table className="w-full">
+            <thead>
+              <tr className="bg-[#f3f5fa] text-[#1f2c73]">
+                <th className="text-left p-4">Company</th>
+                <th className="text-center p-4">Workers</th>
+                <th className="text-center p-4">Staffs</th>
+                <th className="text-center p-4">Management</th>
+                <th className="text-center p-4">Total</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {companies.map((item, index) => (
+                <tr
+                  key={index}
+                  className="hover:bg-gray-50 transition"
+                >
+                  <td className="p-4">{item.company}</td>
+                  <td className="text-center p-4">{item.workers}</td>
+                  <td className="text-center p-4">{item.staffs}</td>
+                  <td className="text-center p-4">{item.management}</td>
+                  <td className="text-center p-4 font-bold text-blue-600">
+                    {item.total}
+                  </td>
+                </tr>
+              ))}
+
+              <tr className="bg-[#f3f5fa] font-bold text-blue-600">
+                <td className="p-4">TOTAL</td>
+                <td className="text-center p-4">1,012</td>
+                <td className="text-center p-4">186</td>
+                <td className="text-center p-4">50</td>
+                <td className="text-center p-4">1,248</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Process Flow */}
+      <div className="bg-white rounded-2xl shadow-lg p-6">
+        <h3 className="font-bold text-[#1f2c73] text-lg mb-5">
+          RECRUITMENT PROCESS FLOW
+        </h3>
+
+        <div className="flex items-center gap-4 overflow-x-auto pb-3">
+          {processFlow.map((item, index) => {
+            const Icon = item.icon;
+            const styles =
+              colorStyles[item.color as keyof typeof colorStyles];
+            return (
+              <React.Fragment key={item.step}>
+                <div className="relative
+                                min-w-[200px]
+                                rounded-2xl
+                                bg-white
+                                p-5
+                                shadow-md
+                                hover:shadow-lg
+                                transition-all
+                                duration-300
+                                ">
+                  <div className={`absolute top-0 left-0 ${styles.badge} text-white px-3 py-1 rounded-br-xl rounded-tl-2xl font-bold`}>
+                    {item.step}
+                  </div>
+
+                  <div className="pt-8 text-center">
+                    <div
+                      className={`w-16 h-16 mx-auto rounded-full ${styles.bg} shadow-sm flex items-center justify-center mb-4`}
+                    >
+                      <Icon className={`w-8 h-8 ${styles.icon}`} />
+                    </div>
+
+                    <h4 className="font-bold text-[#1f2c73] text-sm min-h-[45px]">
+                      {item.title}
+                    </h4>
+                    <span
+                      className={`inline-block mt-4 px-4 py-1 rounded-full text-xs font-semibold ${getStatusClass(
+                        item.status
+                      )}`}
+                    >
+                      {item.status}
+                    </span>
+                  </div>
+                </div>
+
+                {index !== processFlow.length - 1 && (
+                  <ChevronRight className="text-gray-400 flex-shrink-0" />
+                )}
+              </React.Fragment>
+            );
+          })}
+        </div>
+
+        {/* Legends */}
+        <div className="flex gap-8 mt-6 flex-wrap">
+          <div className="flex items-center gap-2">
+            <span className="w-3 h-3 rounded-full bg-blue-600"></span>
+            <span className="text-sm">Active</span>
           </div>
 
-          <button
-            type="button"
-            disabled={activeStep === steps.length}
-            onClick={handleNext}
-            className="
-              h-10 px-6
-              bg-[#4F19FF]
-              hover:bg-[#4315db]
-              disabled:opacity-50
-              text-white
-              rounded-xl
-              text-sm font-medium
-            "
-          >
-            Continue
-          </button>
+          <div className="flex items-center gap-2">
+            <span className="w-3 h-3 rounded-full bg-red-500"></span>
+            <span className="text-sm">Pending</span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="w-3 h-3 rounded-full bg-green-500"></span>
+            <span className="text-sm">Completed</span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="w-3 h-3 rounded-full bg-slate-400"></span>
+            <span className="text-sm">Disabled</span>
+          </div>
         </div>
       </div>
     </div>
   );
 };
 
-export default EmployeeOnboardingParent;
+export default EmployeeOnBoardingParent;
