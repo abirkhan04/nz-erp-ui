@@ -9,6 +9,7 @@ const EmployeeForm = lazy(() => import("./pages/RecruitmentDashboard"));
 const EmployeeAttendance = lazy(() => import("./pages/EmployeeAttendance"));
 const GateRegistration = lazy(() => import("./pages/Recruitment/GateRegistration"));
 const MedicalExamination = lazy(() => import("./pages/Recruitment/MedicalExamination"));
+const HRExecutiveEntry = lazy(() => import("./pages/Recruitment/HRExecutiveEntry"));
 
 /**
  * 🔐 Auth Check
@@ -56,6 +57,11 @@ function Layout() {
             <Route
               path="/recruitment/medical-examination"
               element={<MedicalExamination />}
+            />
+
+            <Route
+              path="/recruitment/hr-executive-entry"
+              element={<HRExecutiveEntry />}
             />
 
             <Route

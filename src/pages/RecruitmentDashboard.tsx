@@ -133,6 +133,7 @@ const RecruitmentDashboard = () => {
       icon: FileText,
       color: "green",
       status: "DISABLED",
+      uri: "/recruitment/hr-executive-entry",
     },
     {
       step: 4,
