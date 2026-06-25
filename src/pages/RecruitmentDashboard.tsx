@@ -38,9 +38,10 @@ interface ProcessStep {
   icon: LucideIcon;
   color: string;
   status: string;
+  uri?: string;
 }
 
-const EmployeeOnBoardingParent = () => {
+const RecruitmentDashboard = () => {
 
   const navigate = useNavigate();
   const summaryCards:SummaryCard[] = [
@@ -116,6 +117,7 @@ const EmployeeOnBoardingParent = () => {
       icon: Building2,
       color: "blue",
       status: "ACTIVE",
+      uri: "/recruitment/gate-registration",
     },
     {
       step: 2,
@@ -123,6 +125,7 @@ const EmployeeOnBoardingParent = () => {
       icon: Stethoscope,
       color: "sky",
       status: "DISABLED",
+      uri: "/recruitment/medical-examination",
     },
     {
       step: 3,
@@ -340,7 +343,8 @@ const EmployeeOnBoardingParent = () => {
                                 hover:shadow-lg
                                 transition-all
                                 duration-300
-                                ">
+                                cursor-pointer
+                                " onClick={() => item.uri && navigate(item.uri)}>
                   <div className={`absolute top-0 left-0 ${styles.badge} text-white px-3 py-1 rounded-br-xl rounded-tl-2xl font-bold`}>
                     {item.step}
                   </div>
@@ -400,4 +404,4 @@ const EmployeeOnBoardingParent = () => {
   );
 };
 
-export default EmployeeOnBoardingParent;
+export default RecruitmentDashboard;

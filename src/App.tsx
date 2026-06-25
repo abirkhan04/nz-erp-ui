@@ -5,8 +5,9 @@ import Topbar from "./components/Topbar";
 
 const Login = lazy(() => import("./pages/Login"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
-const EmployeeForm = lazy(() => import("./pages/EmployeeOnBoardingParent"));
+const EmployeeForm = lazy(() => import("./pages/RecruitmentDashboard"));
 const EmployeeAttendance = lazy(() => import("./pages/EmployeeAttendance"));
+const GateRegistration = lazy(() => import("./pages/Recruitment/GateRegistration"));
 
 /**
  * 🔐 Auth Check
@@ -44,6 +45,11 @@ function Layout() {
             <Route
               path="/recruitment"
               element={<EmployeeForm />}
+            />
+
+            <Route
+              path="/recruitment/gate-registration"
+              element={<GateRegistration />}
             />
 
             <Route
