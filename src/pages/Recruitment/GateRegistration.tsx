@@ -1,5 +1,8 @@
 import { useForm } from "react-hook-form";
 import CommonInputField from "../../components/CommonInputFields";
+import { usePost } from "../../hooks/usePost";
+import { API_ROUTES } from "../../api/routes";
+import toast from "react-hot-toast";
 
 export interface GateRegistrationForm {
   temporaryId: string;
@@ -241,6 +244,13 @@ const formSections = [
 ];
 
 const GateRegistration = () => {
+
+    const { mutate: GateRegistrationPost } =
+      usePost<{ message: string; id: string }, any>(
+        API_ROUTES.GATE_REGISTRATION
+      );
+
+
   const {
     register,
     handleSubmit,
@@ -260,7 +270,17 @@ const GateRegistration = () => {
   const onSubmit = (
     data: GateRegistrationForm
   ) => {
-    console.log(data);
+    GateRegistrationPost(data, {
+      onSuccess: (response) => {
+        toast.success(`গেট রেজিস্ট্রেশন সফল হয়েছে। আইডি: ${response.id}`);
+        reset();
+      },
+      onError: (error) => {
+        toast.error(
+          `গেট রেজিস্ট্রেশন ব্যর্থ হয়েছে। ত্রুটি: ${error.message}`
+        );
+      },
+    });
   };
 
   return (
