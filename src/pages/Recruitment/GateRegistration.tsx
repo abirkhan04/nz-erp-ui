@@ -267,21 +267,119 @@ const GateRegistration = () => {
     },
   });
 
-  const onSubmit = (
-    data: GateRegistrationForm
-  ) => {
-    GateRegistrationPost(data, {
-      onSuccess: (response) => {
-        toast.success(`গেট রেজিস্ট্রেশন সফল হয়েছে। আইডি: ${response.id}`);
-        reset();
-      },
-      onError: (error) => {
-        toast.error(
-          `গেট রেজিস্ট্রেশন ব্যর্থ হয়েছে। ত্রুটি: ${error.message}`
-        );
-      },
-    });
+const onSubmit = (
+  data: GateRegistrationForm
+) => {
+  const payload = {
+    employeeEnrollmentId: data.temporaryId,
+    employeeNameBangla: data.fullName,
+
+    // TODO: Replace these IDs from dropdown selections
+    employeeType: 1,
+    unitId: data.company,
+    departmentId: "",
+    locationId: "",
+    sectionId: "",
+    cellId: "",
+
+    proposedMonthlySalary: 0,
+
+    joiningDate: data.joiningDate,
+    confirmationDate: data.joiningDate,
+
+    dateOfBirth: data.dateOfBirth,
+
+    // TODO: Convert from dropdown value
+    gender:
+      data.gender === "Male"
+        ? 1
+        : data.gender === "Female"
+        ? 2
+        : 3,
+
+    religion: 0,
+
+    bloodGroup: 0,
+
+    idType:
+      data.nidType === "NID"
+        ? 1
+        : data.nidType === "Birth Certificate"
+        ? 2
+        : 3,
+
+    idNumber: data.nidNumber,
+
+    mobileNumber: data.mobileNumber,
+
+    guardianType: 1,
+    guardianName: data.fatherName,
+
+    motherNameBangla: data.motherName,
+
+    referenceType: 1,
+
+    employeeReference:
+      data.referenceName,
+
+    referencePersonId: "",
+
+    referenceMobileNumber:
+      data.referenceMobile,
+
+    relationship: 0,
+
+    // Permanent Address
+    permanentVillageAreaRoad:
+      data.permanentAddress,
+    permanentPostOffice: "",
+    permanentThana: "",
+    permanentDistrict: "",
+    permanentDivision: "",
+
+    // Present Address
+    presentVillageAreaRoad:
+      data.presentAddress,
+    presentPostOffice: "",
+    presentThana: "",
+    presentDistrict: "",
+    presentDivision: "",
+
+    securityClearanceBy: "",
+    securityClearanceDate:
+      new Date()
+        .toISOString()
+        .split("T")[0],
+
+    enrolledBy: "",
+    enrolledDate:
+      new Date()
+        .toISOString()
+        .split("T")[0],
+
+    biometricEnrolledBy: "",
+    biometricEnrolledDate:
+      new Date()
+        .toISOString()
+        .split("T")[0],
   };
+
+  GateRegistrationPost(payload, {
+    onSuccess: (response) => {
+      toast.success(
+        `গেট রেজিস্ট্রেশন সফল হয়েছে। আইডি: ${response.id}`
+      );
+
+      reset();
+    },
+
+    onError: (error) => {
+      toast.error(
+        `গেট রেজিস্ট্রেশন ব্যর্থ হয়েছে। ত্রুটি: ${error.message}`
+      );
+    },
+  });
+};
 
   return (
     <form
