@@ -482,8 +482,8 @@ const BiometricCapture = () => {
                                 setPage(index + 1)
                             }
                             className={`h-10 w-10 rounded-md border transition ${page === index + 1
-                                    ? "border-blue-600 bg-blue-600 text-white"
-                                    : "border-gray-300 bg-white hover:bg-slate-100"
+                                ? "border-blue-600 bg-blue-600 text-white"
+                                : "border-gray-300 bg-white hover:bg-slate-100"
                                 }`}
                         >
                             {index + 1}
@@ -502,133 +502,107 @@ const BiometricCapture = () => {
                         <div className="mt-8 rounded-xl border border-slate-200 bg-white">
 
                             <div className="border-b border-slate-200 px-6 py-4">
-
-                                <h3 className="text-lg font-semibold text-slate-800">
-                                    Candidate Information
+                                <h3 className="text-lg font-semibold text-blue-700">
+                                    Candidate Details (From HR Executive Entry)
                                 </h3>
-
                             </div>
 
-                            <div className="grid grid-cols-2 gap-x-10 gap-y-5 p-6">
+                            <div className="grid grid-cols-2 gap-x-12 p-6">
 
-                                <div>
-                                    <label className="text-sm text-gray-500">
-                                        Temporary ID
-                                    </label>
+                                {/* Left Column */}
+                                <div className="space-y-3">
 
-                                    <input
-                                        readOnly
-                                        value={selectedCandidate.temporaryId}
-                                        className="mt-1 w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2"
-                                    />
+                                    <div className="grid grid-cols-[110px_15px_1fr]">
+                                        <span className="text-sm text-slate-600">Temporary ID</span>
+                                        <span>:</span>
+                                        <span className="font-medium">{selectedCandidate.temporaryId}</span>
+                                    </div>
+
+                                    <div className="grid grid-cols-[110px_15px_1fr]">
+                                        <span className="text-sm text-slate-600">Full Name</span>
+                                        <span>:</span>
+                                        <span className="font-medium">{selectedCandidate.fullName}</span>
+                                    </div>
+
+                                    <div className="grid grid-cols-[110px_15px_1fr]">
+                                        <span className="text-sm text-slate-600">Father's Name</span>
+                                        <span>:</span>
+                                        <span className="font-medium">{selectedCandidate.fatherName}</span>
+                                    </div>
+
+                                    <div className="grid grid-cols-[110px_15px_1fr]">
+                                        <span className="text-sm text-slate-600">Date of Birth</span>
+                                        <span>:</span>
+                                        <span className="font-medium">{selectedCandidate.dateOfBirth}</span>
+                                    </div>
+
+                                    <div className="grid grid-cols-[110px_15px_1fr]">
+                                        <span className="text-sm text-slate-600">Gender</span>
+                                        <span>:</span>
+                                        <span className="font-medium">{selectedCandidate.gender}</span>
+                                    </div>
+
+                                    <div className="grid grid-cols-[110px_15px_1fr]">
+                                        <span className="text-sm text-slate-600">Blood Group</span>
+                                        <span>:</span>
+                                        <span className="font-medium">{selectedCandidate.bloodGroup}</span>
+                                    </div>
+
+                                    <div className="grid grid-cols-[110px_15px_1fr]">
+                                        <span className="text-sm text-slate-600">Date of Joining</span>
+                                        <span>:</span>
+                                        <span className="font-medium">{selectedCandidate.joiningDate}</span>
+                                    </div>
+
+                                    <div className="grid grid-cols-[110px_15px_1fr]">
+                                        <span className="text-sm text-slate-600">Type of Worker</span>
+                                        <span>:</span>
+                                        <span className="font-medium">{selectedCandidate.workerType}</span>
+                                    </div>
+
                                 </div>
 
-                                <div>
-                                    <label className="text-sm text-gray-500">
-                                        Full Name
-                                    </label>
+                                {/* Right Column */}
+                                <div className="space-y-3">
 
-                                    <input
-                                        readOnly
-                                        value={selectedCandidate.fullName}
-                                        className="mt-1 w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2"
-                                    />
-                                </div>
+                                    <div className="grid grid-cols-[150px_15px_1fr]">
+                                        <span className="text-sm text-slate-600">Company</span>
+                                        <span>:</span>
+                                        <span className="font-medium">{selectedCandidate.company}</span>
+                                    </div>
 
-                                <div>
-                                    <label className="text-sm text-gray-500">
-                                        Father's Name
-                                    </label>
+                                    <div className="grid grid-cols-[150px_15px_1fr]">
+                                        <span className="text-sm text-slate-600">Sub Unit / Oblique Shed</span>
+                                        <span>:</span>
+                                        <span className="font-medium">{selectedCandidate.shed}</span>
+                                    </div>
 
-                                    <input
-                                        readOnly
-                                        value={selectedCandidate.fatherName}
-                                        className="mt-1 w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2"
-                                    />
-                                </div>
+                                    <div className="grid grid-cols-[150px_15px_1fr]">
+                                        <span className="text-sm text-slate-600">Department</span>
+                                        <span>:</span>
+                                        <span className="font-medium">{selectedCandidate.department}</span>
+                                    </div>
 
-                                <div>
-                                    <label className="text-sm text-gray-500">
-                                        Date of Birth
-                                    </label>
+                                    <div className="grid grid-cols-[150px_15px_1fr]">
+                                        <span className="text-sm text-slate-600">Section</span>
+                                        <span>:</span>
+                                        <span className="font-medium">{selectedCandidate.section}</span>
+                                    </div>
 
-                                    <input
-                                        readOnly
-                                        value={selectedCandidate.dateOfBirth}
-                                        className="mt-1 w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2"
-                                    />
-                                </div>
+                                    <div className="grid grid-cols-[150px_15px_1fr]">
+                                        <span className="text-sm text-slate-600">Cell</span>
+                                        <span>:</span>
+                                        <span className="font-medium">{selectedCandidate.cell}</span>
+                                    </div>
 
-                                <div>
-                                    <label className="text-sm text-gray-500">
-                                        Company
-                                    </label>
+                                    <div className="grid grid-cols-[150px_15px_1fr]">
+                                        <span className="text-sm text-slate-600">Proposed Salary</span>
+                                        <span>:</span>
+                                        <span className="font-medium">
+                                            BDT {selectedCandidate.salary.toLocaleString()}
+                                        </span>
+                                    </div>
 
-                                    <input
-                                        readOnly
-                                        value={selectedCandidate.company}
-                                        className="mt-1 w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="text-sm text-gray-500">
-                                        Department
-                                    </label>
-
-                                    <input
-                                        readOnly
-                                        value={selectedCandidate.department}
-                                        className="mt-1 w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="text-sm text-gray-500">
-                                        Section
-                                    </label>
-
-                                    <input
-                                        readOnly
-                                        value={selectedCandidate.section}
-                                        className="mt-1 w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="text-sm text-gray-500">
-                                        Cell
-                                    </label>
-
-                                    <input
-                                        readOnly
-                                        value={selectedCandidate.cell}
-                                        className="mt-1 w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="text-sm text-gray-500">
-                                        Worker Type
-                                    </label>
-
-                                    <input
-                                        readOnly
-                                        value={selectedCandidate.workerType}
-                                        className="mt-1 w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="text-sm text-gray-500">
-                                        Proposed Salary
-                                    </label>
-
-                                    <input
-                                        readOnly
-                                        value={`৳ ${selectedCandidate.salary}`}
-                                        className="mt-1 w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2"
-                                    />
                                 </div>
 
                             </div>
@@ -809,8 +783,8 @@ const BiometricCapture = () => {
 
                                 <p
                                     className={`mt-4 text-lg font-semibold ${photoCaptured
-                                            ? "text-green-600"
-                                            : "text-orange-500"
+                                        ? "text-green-600"
+                                        : "text-orange-500"
                                         }`}
                                 >
                                     {photoCaptured
@@ -841,8 +815,8 @@ const BiometricCapture = () => {
 
                                 <p
                                     className={`mt-4 text-lg font-semibold ${fingerprintCaptured
-                                            ? "text-green-600"
-                                            : "text-orange-500"
+                                        ? "text-green-600"
+                                        : "text-orange-500"
                                         }`}
                                 >
                                     {fingerprintCaptured
@@ -916,8 +890,8 @@ const BiometricCapture = () => {
 
                                         <div
                                             className={`h-full ${fingerprintCaptured
-                                                    ? "w-[92%] bg-green-500"
-                                                    : "w-0"
+                                                ? "w-[92%] bg-green-500"
+                                                : "w-0"
                                                 }`}
                                         />
 
@@ -935,8 +909,8 @@ const BiometricCapture = () => {
 
                                         <div
                                             className={`h-full ${fingerprintCaptured
-                                                    ? "w-[89%] bg-green-500"
-                                                    : "w-0"
+                                                ? "w-[89%] bg-green-500"
+                                                : "w-0"
                                                 }`}
                                         />
 
@@ -954,8 +928,8 @@ const BiometricCapture = () => {
 
                                         <div
                                             className={`h-full ${fingerprintCaptured
-                                                    ? "w-[95%] bg-green-500"
-                                                    : "w-0"
+                                                ? "w-[95%] bg-green-500"
+                                                : "w-0"
                                                 }`}
                                         />
 
@@ -973,8 +947,8 @@ const BiometricCapture = () => {
 
                                         <div
                                             className={`h-full ${fingerprintCaptured
-                                                    ? "w-[91%] bg-green-500"
-                                                    : "w-0"
+                                                ? "w-[91%] bg-green-500"
+                                                : "w-0"
                                                 }`}
                                         />
 
@@ -1184,9 +1158,9 @@ const BiometricCapture = () => {
                                     );
                                 }}
                                 className={`flex items-center gap-2 rounded-lg px-8 py-3 font-semibold text-white transition ${photoCaptured &&
-                                        fingerprintCaptured
-                                        ? "bg-blue-600 hover:bg-blue-700"
-                                        : "cursor-not-allowed bg-slate-300"
+                                    fingerprintCaptured
+                                    ? "bg-blue-600 hover:bg-blue-700"
+                                    : "cursor-not-allowed bg-slate-300"
                                     }`}
                             >
 
