@@ -11,6 +11,7 @@ const GateRegistration = lazy(() => import("./pages/Recruitment/GateRegistration
 const MedicalExamination = lazy(() => import("./pages/Recruitment/MedicalExamination"));
 const HRExecutiveEntry = lazy(() => import("./pages/Recruitment/HRExecutiveEntry"));
 const HRExecutiveEntryDetails = lazy(() => import("./pages/Recruitment/HRExecutiveEntryDetail"));
+const BiometricCapture = lazy(() => import("./pages/Recruitment/BiometricAndPicture"));
 
 /**
  * 🔐 Auth Check
@@ -68,6 +69,11 @@ function Layout() {
             <Route
               path="/recruitment/hr-executive-entry/:candidateId"
               element={<HRExecutiveEntryDetails />}
+            />
+
+            <Route
+              path="/recruitment/biometric-picture-capture"
+              element={<BiometricCapture />}
             />
 
             <Route

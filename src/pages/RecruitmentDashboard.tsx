@@ -141,6 +141,7 @@ const RecruitmentDashboard = () => {
       icon: Fingerprint,
       color: "orange",
       status: "DISABLED",
+      uri: "/recruitment/biometric-picture-capture",
     },
     {
       step: 5,
