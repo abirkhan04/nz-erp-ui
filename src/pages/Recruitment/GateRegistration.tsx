@@ -3,6 +3,9 @@ import CommonInputField from "../../components/CommonInputFields";
 import { usePost } from "../../hooks/usePost";
 import { API_ROUTES } from "../../api/routes";
 import toast from "react-hot-toast";
+import { useGet } from "../../hooks/useGet";
+import { useEffect } from "react";
+import type { Enrollment, Unit } from "../../types/interfaces";
 
 export interface GateRegistrationForm {
   temporaryId: string;
@@ -21,8 +24,15 @@ export interface GateRegistrationForm {
 
   mobileNumber: string;
 
-  presentAddress: string;
-  permanentAddress: string;
+  presentVillageArea: string;
+  presentPostOffice: string;
+  presentPoliceStation: string;
+  presentDistrict: string;
+
+  permanentVillageArea: string;
+  permanentPostOffice: string;
+  permanentPoliceStation: string;
+  permanentDistrict: string;
 
   company: string;
   designation: string;
@@ -161,63 +171,71 @@ const personalInformationFields: SectionField[] =
     },
   ];
 
-const addressInformationFields: SectionField[] =
-  [
-    {
-      label: "বর্তমান ঠিকানা",
-      name: "presentAddress",
-      rules: {
-        required: "বর্তমান ঠিকানা আবশ্যক",
-      },
+const addressInformationFields: SectionField[] = [
+  // Present Address
+  {
+    label: "বর্তমান ঠিকানার গ্রাম / এলাকা",
+    name: "presentVillageArea",
+    rules: {
+      required: "গ্রাম / এলাকা আবশ্যক",
     },
-    {
-      label: "স্থায়ী ঠিকানা",
-      name: "permanentAddress",
-      rules: {
-        required: "স্থায়ী ঠিকানা আবশ্যক",
-      },
+  },
+  {
+    label: "বর্তমান ঠিকানার পোস্ট অফিস",
+    name: "presentPostOffice",
+    rules: {
+      required: "পোস্ট অফিস আবশ্যক",
     },
-  ];
+  },
+  {
+    label: "বর্তমান ঠিকানার থানা / উপজেলা",
+    name: "presentPoliceStation",
+    rules: {
+      required: "থানা / উপজেলা আবশ্যক",
+    },
+  },
+  {
+    label: "বর্তমান ঠিকানার জেলা",
+    name: "presentDistrict",
+    type: "text",
+    rules: {
+      required: "জেলা আবশ্যক",
+    },
+  },
 
-const serviceInformationFields: SectionField[] = [
+  // Permanent Address
   {
-    label: "কোম্পানি",
-    name: "company",
-    type: "dropdown",
-    options: [
-      {
-        label: "NZ Textile Limited",
-        value: "NZ_TEXTILE",
-      },
-      {
-        label: "NZ Fabrics Limited",
-        value: "NZ_FABRICS",
-      },
-      {
-        label: "NZ Denim Limited",
-        value: "NZ_DENIM",
-      },
-    ],
+    label: "স্থায়ী ঠিকানার গ্রাম / এলাকা",
+    name: "permanentVillageArea",
     rules: {
-      required: "কোম্পানি নির্বাচন করুন",
+      required: "গ্রাম / এলাকা আবশ্যক",
     },
   },
   {
-    label: "পদবী",
-    name: "designation",
+    label: "স্থায়ী ঠিকানার পোস্ট অফিস",
+    name: "permanentPostOffice",
     rules: {
-      required: "পদবী আবশ্যক",
+      required: "পোস্ট অফিস আবশ্যক",
     },
   },
   {
-    label: "যোগদানের তারিখ",
-    name: "joiningDate",
-    type: "date",
+    label: "স্থায়ী ঠিকানার থানা / উপজেলা",
+    name: "permanentPoliceStation",
     rules: {
-      required: "যোগদানের তারিখ আবশ্যক",
+      required: "থানা / উপজেলা আবশ্যক",
+    },
+  },
+  {
+    label: "স্থায়ী ঠিকানার জেলা",
+    name: "permanentDistrict",
+    type: "text",
+    rules: {
+      required: "জেলা আবশ্যক",
     },
   },
 ];
+
+
 
 const referenceInformationFields: SectionField[] = [
   {
@@ -245,10 +263,51 @@ const formSections = [
 
 const GateRegistration = () => {
 
-    const { mutate: GateRegistrationPost } =
-      usePost<{ message: string; id: string }, any>(
-        API_ROUTES.GATE_REGISTRATION
-      );
+  const { data: units = [] } = useGet<Unit[]>({
+    key: ["units"],
+    url: API_ROUTES.UNITS,
+  });
+
+  const { data: temporaryId } = useGet<Enrollment>({
+    key: ["temporaryId"],
+    url: API_ROUTES.ENROLLMENTID,
+  });
+
+  const serviceInformationFields: SectionField[] = [
+    {
+      label: "কোম্পানি",
+      name: "company",
+      type: "dropdown",
+      options: units.map((unit) => ({
+        label: unit.unitName,
+        value: unit.id,
+      })),
+      rules: {
+        required: "কোম্পানি নির্বাচন করুন",
+      },
+    },
+    {
+      label: "পদবী",
+      name: "designation",
+      rules: {
+        required: "পদবী আবশ্যক",
+      },
+    },
+    {
+      label: "যোগদানের তারিখ",
+      name: "joiningDate",
+      type: "date",
+      rules: {
+        required: "যোগদানের তারিখ আবশ্যক",
+      },
+    },
+  ];
+
+  const { mutate: GateRegistrationPost } =
+    usePost<{ message: string; id: string }, any>(
+      API_ROUTES.GATE_REGISTRATION
+    );
+
 
 
   const {
@@ -260,126 +319,133 @@ const GateRegistration = () => {
   } = useForm<GateRegistrationForm>({
     mode: "onTouched",
     defaultValues: {
-      temporaryId: "TMP-250001",
+      temporaryId: "",
       joiningDate: new Date()
         .toISOString()
         .split("T")[0],
     },
   });
 
-const onSubmit = (
-  data: GateRegistrationForm
-) => {
-  const payload = {
-    employeeEnrollmentId: data.temporaryId,
-    employeeNameBangla: data.fullName,
+  useEffect(() => {
+    if (temporaryId) {
+    reset({
+      temporaryId: temporaryId.enrollmentId,
+      joiningDate: new Date().toISOString().split("T")[0],
+    });
+   }
+  }, [temporaryId, reset]);
 
-    // TODO: Replace these IDs from dropdown selections
-    employeeType: 1,
-    unitId: data.company,
-    departmentId: "",
-    locationId: "",
-    sectionId: "",
-    cellId: "",
+  const onSubmit = (
+    data: GateRegistrationForm
+  ) => {
+    const payload = {
+      employeeEnrollmentId: data.temporaryId,
+      employeeNameBangla: data.fullName,
 
-    proposedMonthlySalary: 0,
+      // TODO: Replace these IDs from dropdown selections
+      employeeType: 1,
+      unitId: data.company,
+      departmentId: "",
+      locationId: "",
+      sectionId: "",
+      cellId: "",
 
-    joiningDate: data.joiningDate,
-    confirmationDate: data.joiningDate,
+      proposedMonthlySalary: 0,
 
-    dateOfBirth: data.dateOfBirth,
+      joiningDate: data.joiningDate,
+      confirmationDate: data.joiningDate,
 
-    // TODO: Convert from dropdown value
-    gender:
-      data.gender === "Male"
-        ? 1
-        : data.gender === "Female"
-        ? 2
-        : 3,
+      dateOfBirth: data.dateOfBirth,
 
-    religion: 0,
+      // TODO: Convert from dropdown value
+      gender:
+        data.gender === "Male"
+          ? 1
+          : data.gender === "Female"
+            ? 2
+            : 3,
 
-    bloodGroup: 0,
+      religion: 0,
 
-    idType:
-      data.nidType === "NID"
-        ? 1
-        : data.nidType === "Birth Certificate"
-        ? 2
-        : 3,
+      bloodGroup: 0,
 
-    idNumber: data.nidNumber,
+      idType:
+        data.nidType === "NID"
+          ? 1
+          : data.nidType === "Birth Certificate"
+            ? 2
+            : 3,
 
-    mobileNumber: data.mobileNumber,
+      idNumber: data.nidNumber,
 
-    guardianType: 1,
-    guardianName: data.fatherName,
+      mobileNumber: data.mobileNumber,
 
-    motherNameBangla: data.motherName,
+      guardianType: 1,
+      guardianName: data.fatherName,
 
-    referenceType: 1,
+      motherNameBangla: data.motherName,
 
-    employeeReference:
-      data.referenceName,
+      referenceType: 1,
 
-    referencePersonId: "",
+      employeeReference:
+        data.referenceName,
 
-    referenceMobileNumber:
-      data.referenceMobile,
+      referencePersonId: "",
 
-    relationship: 0,
+      referenceMobileNumber:
+        data.referenceMobile,
 
-    // Permanent Address
-    permanentVillageAreaRoad:
-      data.permanentAddress,
-    permanentPostOffice: "",
-    permanentThana: "",
-    permanentDistrict: "",
-    permanentDivision: "",
+      relationship: 0,
 
-    // Present Address
-    presentVillageAreaRoad:
-      data.presentAddress,
-    presentPostOffice: "",
-    presentThana: "",
-    presentDistrict: "",
-    presentDivision: "",
+      // Permanent Address
+      permanentVillageAreaRoad:
+        data.permanentVillageArea,
+      permanentPostOffice: data.permanentPostOffice,
+      permanentThana: data.permanentPoliceStation,
+      permanentDistrict: data.permanentDistrict,
 
-    securityClearanceBy: "",
-    securityClearanceDate:
-      new Date()
-        .toISOString()
-        .split("T")[0],
+      // Present Address
+      presentVillageAreaRoad:
+        data.presentVillageArea,
+      presentPostOffice: data.presentPostOffice,
+      presentThana: data.presentPoliceStation,
+      presentDistrict: data.presentDistrict,
 
-    enrolledBy: "",
-    enrolledDate:
-      new Date()
-        .toISOString()
-        .split("T")[0],
+      securityClearanceBy: "",
+      securityClearanceDate:
+        new Date()
+          .toISOString()
+          .split("T")[0],
 
-    biometricEnrolledBy: "",
-    biometricEnrolledDate:
-      new Date()
-        .toISOString()
-        .split("T")[0],
+      enrolledBy: "",
+      enrolledDate:
+        new Date()
+          .toISOString()
+          .split("T")[0],
+
+      biometricEnrolledBy: "",
+      biometricEnrolledDate:
+        new Date()
+          .toISOString()
+          .split("T")[0],
+    };
+
+    GateRegistrationPost(payload, {
+      onSuccess: (response) => {
+        toast.success(
+          `গেট রেজিস্ট্রেশন সফল হয়েছে। আইডি: ${response.id}`
+        );
+
+        reset();
+      },
+
+      onError: (error) => {
+        toast.error(
+          `গেট রেজিস্ট্রেশন ব্যর্থ হয়েছে। ত্রুটি: ${error.message}`
+        );
+      },
+    });
   };
-
-  GateRegistrationPost(payload, {
-    onSuccess: (response) => {
-      toast.success(
-        `গেট রেজিস্ট্রেশন সফল হয়েছে। আইডি: ${response.id}`
-      );
-
-      reset();
-    },
-
-    onError: (error) => {
-      toast.error(
-        `গেট রেজিস্ট্রেশন ব্যর্থ হয়েছে। ত্রুটি: ${error.message}`
-      );
-    },
-  });
-};
 
   return (
     <form

@@ -20,5 +20,7 @@ export const API_ROUTES = {
   MEDICAL_FITNESS_CHECK: "MedicalFitnessChecks",
   PHYSICAL_EXAMINATION_SETTINGS: "PhysicalExaminationSettings",
 
+
+  UNITS: "Unit",
   GATE_REGISTRATION: "Employees/candidate-entry",
 };

@@ -231,3 +231,15 @@ export type PhysicalExaminationSetting = {
   optionValuesJson: string | null;
   isActive: boolean;
 };
+
+export interface Unit {
+  id: string;
+  unitCode: string;
+  unitName: string;
+  createdOn: string;
+  createdBy: string;
+  updatedOn: string;
+  updatedBy: string;
+  isActive: boolean;
+  isCompliant: boolean;
+}
