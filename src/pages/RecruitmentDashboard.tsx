@@ -149,6 +149,7 @@ const RecruitmentDashboard = () => {
       icon: UserRound,
       color: "purple",
       status: "DISABLED",
+      uri: "/recruitment/director-review",
     },
     {
       step: 6,

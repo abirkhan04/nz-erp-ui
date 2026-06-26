@@ -1,6 +1,7 @@
 import {
     useMemo,
     useState,
+    useRef,
 } from "react";
 
 import {
@@ -163,6 +164,53 @@ const mockCandidates: Candidate[] = [
 const PAGE_SIZE = 5;
 
 const BiometricCapture = () => {
+
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+
+    const [photo, setPhoto] = useState<string>("");
+    const [stream, setStream] = useState<MediaStream | null>(null);
+
+    const startCamera = async () => {
+        try {
+            const mediaStream = await navigator.mediaDevices.getUserMedia({
+                video: true,
+            });
+
+            setStream(mediaStream);
+
+            if (videoRef.current) {
+                videoRef.current.srcObject = mediaStream;
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    };
+    const capturePhoto = () => {
+        if (!videoRef.current || !canvasRef.current) return;
+
+        const video = videoRef.current;
+        const canvas = canvasRef.current;
+
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        const image = canvas.toDataURL("image/png");
+
+        console.log(image); // Should start with "data:image/png;base64,..."
+
+        setPhoto(image);
+        setPhotoCaptured(true);
+
+        // Optional: stop camera after capture
+        stream?.getTracks().forEach(track => track.stop());
+    };
+    
     const [search, setSearch] =
         useState("");
 
@@ -616,72 +664,42 @@ const BiometricCapture = () => {
                         <div className="mt-8 grid grid-cols-2 gap-6">
 
                             {/* Photo */}
+                            <div className="h-80 rounded-lg overflow-hidden border">
 
-                            <div className="rounded-xl border border-slate-200 bg-white">
+                                {photo ? (
+                                    <img
+                                        src={photo}
+                                        className="h-full w-full object-cover"
+                                    />
+                                ) : (
+                                    <video
+                                        ref={videoRef}
+                                        autoPlay
+                                        playsInline
+                                        className="h-full w-full object-cover"
+                                    />
+                                )}
 
-                                <div className="border-b px-6 py-4">
+                                <canvas
+                                    ref={canvasRef}
+                                    style={{ display: "none" }}
+                                />
 
-                                    <h3 className="flex items-center gap-2 text-lg font-semibold">
+                            </div>
 
-                                        <Camera
-                                            size={20}
-                                            className="text-blue-600"
-                                        />
+                            <div className="mt-4 flex gap-3">
 
-                                        Picture Capture
+                                <button
+                                    onClick={startCamera}
+                                >
+                                    Start Camera
+                                </button>
 
-                                    </h3>
-
-                                </div>
-
-                                <div className="p-6">
-
-                                    <div className="flex h-80 items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50">
-
-                                        {photoCaptured ? (
-
-                                            <div className="text-center">
-
-                                                <Camera
-                                                    size={70}
-                                                    className="mx-auto mb-4 text-green-600"
-                                                />
-
-                                                <p className="font-semibold text-green-600">
-                                                    Photo Captured Successfully
-                                                </p>
-
-                                            </div>
-
-                                        ) : (
-
-                                            <div className="text-center">
-
-                                                <Camera
-                                                    size={70}
-                                                    className="mx-auto mb-4 text-slate-400"
-                                                />
-
-                                                <p className="text-gray-500">
-                                                    Camera Preview
-                                                </p>
-
-                                            </div>
-
-                                        )}
-
-                                    </div>
-
-                                    <button
-                                        onClick={() =>
-                                            setPhotoCaptured(true)
-                                        }
-                                        className="mt-5 w-full rounded-lg bg-blue-600 py-3 font-medium text-white hover:bg-blue-700"
-                                    >
-                                        Capture Picture
-                                    </button>
-
-                                </div>
+                                <button
+                                    onClick={capturePhoto}
+                                >
+                                    Capture
+                                </button>
 
                             </div>
 
