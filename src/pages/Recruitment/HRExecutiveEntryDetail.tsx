@@ -32,6 +32,7 @@ interface Candidate {
 }
 
 interface HRExecutiveEntryForm {
+  employeeId: string;
   company: string;
   subUnit: string;
   department: string;
@@ -179,6 +180,7 @@ const HRExecutiveEntryDetails = () => {
           paymentMode:
             "BANK",
           files: [],
+          employeeId: "",
         },
       }
     );
@@ -188,6 +190,7 @@ const HRExecutiveEntryDetails = () => {
 
   useEffect(() => {
     reset({
+      employeeId: candidateId,
       company: "1",
       subUnit: "1",
       department: "1",
@@ -223,6 +226,7 @@ const HRExecutiveEntryDetails = () => {
   const onSubmit = (
     data: HRExecutiveEntryForm
   ) => {
+    console.log("data here",data);
     const formData = new FormData();
 
     Object.entries(data).forEach(([key, value]) => {
@@ -235,6 +239,9 @@ const HRExecutiveEntryDetails = () => {
       formData.append("files", file);
     });
 
+    for (const [key, value] of formData.entries()) {
+     console.log(key, value);
+    }
     // mutate(formData);
   };
 
