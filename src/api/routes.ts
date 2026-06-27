@@ -4,6 +4,7 @@ export const API_ROUTES = {
   DEPARTMENT: "Departments",
   SECTION: "Sections",
   GRADE: "Grades",
+  SHIFT: "Shifts",
 
 
   EMPLOYEES: "Employees",
@@ -23,5 +24,6 @@ export const API_ROUTES = {
 
 
   UNITS: "Unit",
+  SUB_UNITS: "SubUnits",
   GATE_REGISTRATION: "Employees/candidate-entry",
 };
