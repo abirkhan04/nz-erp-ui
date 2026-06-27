@@ -4,6 +4,8 @@ import {
     useState,
 } from "react";
 
+import { useGet } from "../../hooks/useGet";
+
 import {
     ClipboardCheck,
     CircleCheck,
@@ -17,11 +19,12 @@ import {
     useFieldArray,
     useForm,
 } from "react-hook-form";
+import { API_ROUTES } from "../../api/routes";
 
 interface Candidate {
     id: number;
-    candidateId: string;
-    candidateName: string;
+    enrollmentId: string;
+    employeeName: string;
     age: number;
     identificationSign: string;
     medicalResult: string;
@@ -33,66 +36,12 @@ interface MedicalExaminationForm {
 
 const PAGE_SIZE = 5;
 
-const MOCK_DATA: Candidate[] = [
-    {
-        id: 1,
-        candidateId: "CAN-25-00051",
-        candidateName: "Ali Raza",
-        age: 24,
-        identificationSign: "",
-        medicalResult: "",
-    },
-    {
-        id: 2,
-        candidateId: "CAN-25-00052",
-        candidateName: "Muhammad Imran",
-        age: 26,
-        identificationSign: "",
-        medicalResult: "",
-    },
-    {
-        id: 3,
-        candidateId: "CAN-25-00053",
-        candidateName: "Shahid Mehmood",
-        age: 28,
-        identificationSign: "",
-        medicalResult: "",
-    },
-    {
-        id: 4,
-        candidateId: "CAN-25-00054",
-        candidateName: "Nadeem Akhtar",
-        age: 27,
-        identificationSign: "",
-        medicalResult: "",
-    },
-    {
-        id: 5,
-        candidateId: "CAN-25-00055",
-        candidateName: "Faisal Khan",
-        age: 23,
-        identificationSign: "",
-        medicalResult: "",
-    },
-    {
-        id: 6,
-        candidateId: "CAN-25-00056",
-        candidateName: "Umair Javed",
-        age: 25,
-        identificationSign: "",
-        medicalResult: "",
-    },
-    {
-        id: 7,
-        candidateId: "CAN-25-00057",
-        candidateName: "Zeeshan Ali",
-        age: 24,
-        identificationSign: "",
-        medicalResult: "",
-    },
-];
-
 const MedicalExamination = () => {
+
+    const { data: candidates } = useGet<Candidate[]>({
+        key: ["candidates"],
+        url: `${API_ROUTES.EMPLOYEES_BY_STATUS}?status=CandidateEntry`,
+    });
     const [searchText, setSearchText] =
         useState("");
 
@@ -100,22 +49,24 @@ const MedicalExamination = () => {
         useState(1);
 
     const filteredData = useMemo(() => {
-        if (!searchText) return MOCK_DATA;
+        const data = candidates ?? [];
 
-        return MOCK_DATA.filter(
+        if (!searchText) return data;
+
+        return data.filter(
             (candidate) =>
                 candidate.candidateId
-                    .toLowerCase()
-                    .includes(
-                        searchText.toLowerCase()
-                    ) ||
+                    ?.toLowerCase()
+                    .includes(searchText.toLowerCase()) ||
                 candidate.candidateName
-                    .toLowerCase()
-                    .includes(
-                        searchText.toLowerCase()
-                    )
+                    ?.toLowerCase()
+                    .includes(searchText.toLowerCase())
         );
-    }, [searchText]);
+    }, [candidates, searchText]);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [candidates]);
 
     const totalPages = Math.ceil(
         filteredData.length / PAGE_SIZE
@@ -369,13 +320,13 @@ const MedicalExamination = () => {
 
                                             <td className="p-4 text-sm text-slate-700">
                                                 {
-                                                    field.candidateId
+                                                    field.enrollmentId
                                                 }
                                             </td>
 
                                             <td className="p-4 text-sm text-slate-700">
                                                 {
-                                                    field.candidateName
+                                                    field.employeeName
                                                 }
                                             </td>
 

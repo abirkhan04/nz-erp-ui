@@ -328,11 +328,11 @@ const GateRegistration = () => {
 
   useEffect(() => {
     if (temporaryId) {
-    reset({
-      temporaryId: temporaryId.enrollmentId,
-      joiningDate: new Date().toISOString().split("T")[0],
-    });
-   }
+      reset({
+        temporaryId: temporaryId.enrollmentId,
+        joiningDate: new Date().toISOString().split("T")[0],
+      });
+    }
   }, [temporaryId, reset]);
 
   const onSubmit = (
@@ -464,39 +464,108 @@ const GateRegistration = () => {
           </p>
         </div>
 
-        {formSections.map((section) => (
-          <div
-            key={section.title}
-            className="bg-white rounded-xl shadow-sm p-5"
-          >
-            <div className="border-b pb-3 mb-5">
-              <h2 className="text-lg font-semibold text-blue-700">
-                {section.title}
-              </h2>
-            </div>
+        {formSections.map((section) => {
+          if (section.title === "২. ঠিকানা তথ্য") {
+            return (
+              <div
+                key={section.title}
+                className="bg-white rounded-xl shadow-sm p-5"
+              >
+                <div className="border-b pb-3 mb-6">
+                  <h2 className="text-lg font-semibold text-blue-700">
+                    {section.title}
+                  </h2>
+                </div>
 
+                <div className="grid grid-cols-2 gap-8">
+                  {/* Present Address */}
+                  <div>
+                    <h3 className="mb-4 text-base font-semibold text-slate-700 border-b pb-2">
+                      বর্তমান ঠিকানা
+                    </h3>
+
+                    <div className="grid grid-cols-1 gap-4">
+                      {addressInformationFields
+                        .filter((field) =>
+                          field.name.startsWith("present")
+                        )
+                        .map((field) => (
+                          <CommonInputField
+                            key={field.name}
+                            label={field.label}
+                            name={field.name as any}
+                            type={field.type}
+                            options={field.options}
+                            rules={field.rules}
+                            register={register}
+                            errors={errors}
+                            control={control}
+                          />
+                        ))}
+                    </div>
+                  </div>
+
+                  {/* Permanent Address */}
+                  <div>
+                    <h3 className="mb-4 text-base font-semibold text-slate-700 border-b pb-2">
+                      স্থায়ী ঠিকানা
+                    </h3>
+
+                    <div className="grid grid-cols-1 gap-4">
+                      {addressInformationFields
+                        .filter((field) =>
+                          field.name.startsWith("permanent")
+                        )
+                        .map((field) => (
+                          <CommonInputField
+                            key={field.name}
+                            label={field.label}
+                            name={field.name as any}
+                            type={field.type}
+                            options={field.options}
+                            rules={field.rules}
+                            register={register}
+                            errors={errors}
+                            control={control}
+                          />
+                        ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          }
+
+          return (
             <div
-              className={`grid ${section.columns} gap-4`}
+              key={section.title}
+              className="bg-white rounded-xl shadow-sm p-5"
             >
-              {section.fields.map((field) => (
-                <CommonInputField
-                  key={field.name}
-                  label={field.label}
-                  name={field.name as any}
-                  type={field.type}
-                  options={field.options}
-                  rules={field.rules}
-                  register={register}
-                  errors={errors}
-                  control={control}
-                  disabled={
-                    field.name === "temporaryId"
-                  }
-                />
-              ))}
+              <div className="border-b pb-3 mb-5">
+                <h2 className="text-lg font-semibold text-blue-700">
+                  {section.title}
+                </h2>
+              </div>
+
+              <div className={`grid ${section.columns} gap-4`}>
+                {section.fields.map((field) => (
+                  <CommonInputField
+                    key={field.name}
+                    label={field.label}
+                    name={field.name as any}
+                    type={field.type}
+                    options={field.options}
+                    rules={field.rules}
+                    register={register}
+                    errors={errors}
+                    control={control}
+                    disabled={field.name === "temporaryId"}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
 
         <div className="grid grid-cols-2 gap-6">
 
