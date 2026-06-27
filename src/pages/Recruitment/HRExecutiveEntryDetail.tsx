@@ -23,6 +23,8 @@ import CommonInputField from "../../components/CommonInputFields";
 import { API_ROUTES } from "../../api/routes";
 import type { Unit } from "../../types/interfaces";
 import { useGet } from "../../hooks/useGet";
+import { usePost } from "../../hooks/usePost";
+import toast from "react-hot-toast";
 
 interface Candidate {
   candidateId: string;
@@ -41,9 +43,9 @@ interface HRExecutiveEntryForm {
 
   designation: string;
   grade: string;
-  shift: string;
+  shift: string | null;
   weekday: string;
-  workerType: string;
+  workerType: string | null;
 
   proposedSalary: string;
   joiningDate: string;
@@ -185,6 +187,8 @@ const HRExecutiveEntryDetails = () => {
       }
     );
 
+  const {mutate: HRExecutiveEntryPost} = usePost(API_ROUTES.HRExecutiveEntry);  
+
   const paymentMode =
     watch("paymentMode");
 
@@ -198,9 +202,9 @@ const HRExecutiveEntryDetails = () => {
       cell: "1",
       designation: "1",
       grade: "1",
-      shift: "1",
+      shift: "",
       weekday: "1",
-      workerType: "1",
+      workerType: null,
       proposedSalary:
         "13000",
       joiningDate:
@@ -223,27 +227,157 @@ const HRExecutiveEntryDetails = () => {
 
   const uploadedFiles = watch("files");
 
-  const onSubmit = (
-    data: HRExecutiveEntryForm
-  ) => {
-    console.log("data here",data);
-    const formData = new FormData();
+const onSubmit = (data: HRExecutiveEntryForm) => {
+  console.log("data here", data);
 
-    Object.entries(data).forEach(([key, value]) => {
-      if (key !== "files") {
-        formData.append(key, String(value));
-      }
-    });
+  const payload = {
+    employeeId: data.employeeId,
+    employeeEnrollmentId: "1234", // Populate if available
+    unitId: data.company,
+    subunitId: data.subUnit,
+    departmentId: data.department,
+    sectionId: data.section,
+    cellId: data.cell,
+    designationId: data.designation,
+    gradeId: data.grade,
 
-    data.files.forEach((file) => {
-      formData.append("files", file);
-    });
+    employeeType: 0, // Set according to your enum
+    employeeTypeId: data.employeeCategory,
 
-    for (const [key, value] of formData.entries()) {
-     console.log(key, value);
-    }
-    // mutate(formData);
+    shiftId: data.shift,
+    employeeNatureId: data.workerType||null,
+
+    holiday: Number(data.weekday) || 0,
+
+    joiningDate: data.joiningDate,
+    confirmationDate: data.joiningDate, // Calculate if required
+
+    proposedMonthlySalary: Number(data.proposedSalary),
+    bankPortion: data.paymentMode === "BANK" ? Number(data.proposedSalary) : 0,
+    cashPortion: data.paymentMode === "CASH" ? Number(data.proposedSalary) : 0,
+
+    otherAllowance: {},
+
+    salaryAccountId: "",
+
+    tax: 0,
+
+    paymentMethod: data.paymentMode,
+
+    bankingId: data.bankName,
+    accountName: "",
+    accountNo: data.accountNumber,
+    routingNo: "",
+    branchName: data.branchName,
+
+    salaryAccountFlag: data.paymentMode === "BANK",
+
+    accountType: data.accountType,
+
+    // documents: [
+    //   ...(data.educationCertificate
+    //     ? [
+    //         {
+    //           employeeId: data.employeeId,
+    //           documentType: "EducationCertificate",
+    //           documentNo: "",
+    //           issueDate: "",
+    //           expiryDate: "",
+    //           fileName: "",
+    //           filePath: "",
+    //         },
+    //       ]
+    //     : []),
+
+    //   ...(data.nationalId
+    //     ? [
+    //         {
+    //           employeeId: data.employeeId,
+    //           documentType: "NationalId",
+    //           documentNo: "",
+    //           issueDate: "",
+    //           expiryDate: "",
+    //           fileName: "",
+    //           filePath: "",
+    //         },
+    //       ]
+    //     : []),
+
+    //   ...(data.policeClearance
+    //     ? [
+    //         {
+    //           employeeId: data.employeeId,
+    //           documentType: "PoliceClearance",
+    //           documentNo: "",
+    //           issueDate: "",
+    //           expiryDate: "",
+    //           fileName: "",
+    //           filePath: "",
+    //         },
+    //       ]
+    //     : []),
+
+    //   ...(data.experienceCertificate
+    //     ? [
+    //         {
+    //           employeeId: data.employeeId,
+    //           documentType: "ExperienceCertificate",
+    //           documentNo: "",
+    //           issueDate: "",
+    //           expiryDate: "",
+    //           fileName: "",
+    //           filePath: "",
+    //         },
+    //       ]
+    //     : []),
+
+    //   ...(data.passportPhoto
+    //     ? [
+    //         {
+    //           employeeId: data.employeeId,
+    //           documentType: "PassportPhoto",
+    //           documentNo: "",
+    //           issueDate: "",
+    //           expiryDate: "",
+    //           fileName: "",
+    //           filePath: "",
+    //         },
+    //       ]
+    //     : []),
+    // ],
+    documents: null,
+
+    tinNumber: "",
+
+    probationPeriod: Number(data.probationPeriod),
+
+    reportingTo: data.reportingTo,
+
+    processingGroupId: "",
+
+    grossSalary: Number(data.proposedSalary),
   };
+
+  console.log(payload);
+
+      HRExecutiveEntryPost(payload, {
+      onSuccess: (response) => {
+        toast.success(
+          `Entry entered successfully ${response.id}`
+        );
+
+        reset();
+      },
+
+      onError: (error) => {
+        toast.error(
+          `Entry failed ${error.message}`
+        );
+      },
+    });
+
+  // mutate(payload);
+};
 
   const serviceInformationFields = [
     {

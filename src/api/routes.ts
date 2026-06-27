@@ -1,3 +1,5 @@
+import HRExecutiveEntry from "../pages/Recruitment/HRExecutiveEntry";
+
 export const API_ROUTES = {
   LOGIN: "/login",
   MENU: "/MenuPermission/menus",
@@ -26,4 +28,5 @@ export const API_ROUTES = {
   UNITS: "Unit",
   SUB_UNITS: "SubUnits",
   GATE_REGISTRATION: "Employees/candidate-entry",
+  HRExecutiveEntry: "Employees/hr-executive-entry"
 };
