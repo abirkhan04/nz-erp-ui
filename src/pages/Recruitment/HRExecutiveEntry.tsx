@@ -1,6 +1,7 @@
 import {
     useMemo,
     useState,
+    useEffect,
 } from "react";
 
 import { useNavigate } from "react-router-dom";
@@ -14,11 +15,13 @@ import {
     Search,
     ChevronDown,
 } from "lucide-react";
+import { API_ROUTES } from "../../api/routes";
+import { useGet } from "../../hooks/useGet";
 
 interface HRCandidate {
-    id: number;
-    candidateId: string;
-    candidateName: string;
+    employeeId: number;
+    enrollmentId: string;
+    employeeName: string;
     age: number;
     medicalResult: string;
     receivedDate: string;
@@ -26,66 +29,12 @@ interface HRCandidate {
 
 const PAGE_SIZE = 5;
 
-const MOCK_DATA: HRCandidate[] = [
-    {
-        id: 1,
-        candidateId: "CAN-25-00051",
-        candidateName: "Ali Raza",
-        age: 24,
-        medicalResult: "Fit",
-        receivedDate: "15-May-2025",
-    },
-    {
-        id: 2,
-        candidateId: "CAN-25-00052",
-        candidateName: "Muhammad Imran",
-        age: 26,
-        medicalResult: "Fit",
-        receivedDate: "15-May-2025",
-    },
-    {
-        id: 3,
-        candidateId: "CAN-25-00055",
-        candidateName: "Faisal Khan",
-        age: 23,
-        medicalResult: "Fit",
-        receivedDate: "15-May-2025",
-    },
-    {
-        id: 4,
-        candidateId: "CAN-25-00057",
-        candidateName: "Zeeshan Ali",
-        age: 24,
-        medicalResult: "Fit",
-        receivedDate: "15-May-2025",
-    },
-    {
-        id: 5,
-        candidateId: "CAN-25-00060",
-        candidateName: "Usman Tariq",
-        age: 24,
-        medicalResult: "Fit",
-        receivedDate: "15-May-2025",
-    },
-    {
-        id: 6,
-        candidateId: "CAN-25-00061",
-        candidateName: "Sajid Mehmood",
-        age: 25,
-        medicalResult: "Fit",
-        receivedDate: "15-May-2025",
-    },
-    {
-        id: 7,
-        candidateId: "CAN-25-00062",
-        candidateName: "Adeel Ahmad",
-        age: 27,
-        medicalResult: "Fit",
-        receivedDate: "15-May-2025",
-    },
-];
-
 const HRExecutiveEntry = () => {
+    const { data: candidates } = useGet<HRCandidate[]>({
+        key: ["candidates"],
+        url: `${API_ROUTES.EMPLOYEES_BY_STATUS}?status=Medical`,
+    });
+
     const [searchText, setSearchText] =
         useState("");
 
@@ -95,18 +44,24 @@ const HRExecutiveEntry = () => {
         useState(1);
 
     const filteredData = useMemo(() => {
-        if (!searchText) return MOCK_DATA;
+        const data = candidates ?? [];
 
-        return MOCK_DATA.filter(
+        if (!searchText) return data;
+
+        return data.filter(
             (candidate) =>
-                candidate.candidateId
-                    .toLowerCase()
+                candidate.enrollmentId
+                    ?.toLowerCase()
                     .includes(searchText.toLowerCase()) ||
-                candidate.candidateName
-                    .toLowerCase()
+                candidate.employeeName
+                    ?.toLowerCase()
                     .includes(searchText.toLowerCase())
         );
-    }, [searchText]);
+    }, [candidates, searchText]);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [candidates]);
 
     const totalPages = Math.ceil(
         filteredData.length / PAGE_SIZE
@@ -316,7 +271,7 @@ const HRExecutiveEntry = () => {
                             {paginatedData.map(
                                 (candidate, index) => (
                                     <tr
-                                        key={candidate.id}
+                                        key={candidate.employeeId}
                                         className="
                         border-b
                         border-slate-100
@@ -331,11 +286,11 @@ const HRExecutiveEntry = () => {
                                         </td>
 
                                         <td className="p-4 text-sm">
-                                            {candidate.candidateId}
+                                            {candidate.enrollmentId}
                                         </td>
 
                                         <td className="p-4 text-sm">
-                                            {candidate.candidateName}
+                                            {candidate.employeeName}
                                         </td>
 
                                         <td className="p-4 text-sm text-center">
