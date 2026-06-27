@@ -20,14 +20,17 @@ import {
     useForm,
 } from "react-hook-form";
 import { API_ROUTES } from "../../api/routes";
+import { usePost } from "../../hooks/usePost";
+import toast from "react-hot-toast";
 
 interface Candidate {
-    id: number;
+    employeeId: number;
     enrollmentId: string;
     employeeName: string;
     age: number;
     identificationSign: string;
     medicalResult: string;
+    remarks: string;
 }
 
 interface MedicalExaminationForm {
@@ -42,6 +45,10 @@ const MedicalExamination = () => {
         key: ["candidates"],
         url: `${API_ROUTES.EMPLOYEES_BY_STATUS}?status=CandidateEntry`,
     });
+
+    const { mutate: MedicalFitnessCheck } = usePost<{ message: string; id: string }, any>(
+        API_ROUTES.MEDICAL_FITNESS_CHECK,
+    );
     const [searchText, setSearchText] =
         useState("");
 
@@ -55,10 +62,10 @@ const MedicalExamination = () => {
 
         return data.filter(
             (candidate) =>
-                candidate.candidateId
+                candidate.enrollmentId
                     ?.toLowerCase()
                     .includes(searchText.toLowerCase()) ||
-                candidate.candidateName
+                candidate.employeeName
                     ?.toLowerCase()
                     .includes(searchText.toLowerCase())
         );
@@ -112,6 +119,33 @@ const MedicalExamination = () => {
             "Medical Examination Result",
             data
         );
+        const examinedByDoctor = localStorage.getItem("token") ?? "";
+
+        const payload = data.candidates.map((candidate) => ({
+            employeeId: candidate.employeeId,
+            enrollmentId: candidate.enrollmentId,
+            identificationSign: candidate.identificationSign,
+            fitness: candidate.medicalResult === "FIT" ? 0 : 1,
+            remarks: candidate.remarks,
+            examinedByDoctor,
+            examinationDateTime: new Date().toISOString(),
+        }));
+
+        MedicalFitnessCheck(payload, {
+            onSuccess: (response) => {
+                toast.success(
+                    `Fitness check submitted successfully. ${response.message}`
+                );
+
+                reset();
+            },
+
+            onError: (error) => {
+                toast.error(
+                    `Fitness check submission failed. Error: ${error.message}`
+                );
+            },
+        });
     };
 
     const statCards = [
@@ -291,7 +325,7 @@ const MedicalExamination = () => {
                                     </th>
 
                                     <th className="text-center p-4 text-sm font-semibold text-slate-600">
-                                        Action
+                                        Remarks
                                     </th>
 
                                 </tr>
@@ -435,22 +469,48 @@ const MedicalExamination = () => {
 
                                             </td>
 
-                                            {/* Action */}
+                                            {/* Remakrs */}
+                                            <td className="p-2">
 
-                                            <td className="p-4 text-center">
+                                                <input
+                                                    {...register(
+                                                        `candidates.${index}.remarks`,
+                                                        {
+                                                            required:
+                                                                "Required",
+                                                        }
+                                                    )}
+                                                    placeholder="Enter Remarks"
+                                                    className={`
+                            w-full
+                            border
+                            rounded-md
+                            px-3
+                            py-2
+                            text-sm
+                            ${errors
+                                                            ?.candidates?.[
+                                                            index
+                                                        ]
+                                                            ?.remarks
+                                                            ? "border-red-500"
+                                                            : ""
+                                                        }
+                          `}
+                                                />
 
-                                                <button
-                                                    type="button"
-                                                    className="
-                            text-blue-600
-                            hover:text-blue-800
-                            font-medium
-                          "
-                                                >
-                                                    View
-                                                </button>
+                                                {errors
+                                                    ?.candidates?.[
+                                                    index
+                                                ]
+                                                    ?.remarks && (
+                                                        <p className="text-red-500 text-xs mt-1">
+                                                            Required
+                                                        </p>
+                                                    )}
 
                                             </td>
+
 
                                         </tr>
                                     )
