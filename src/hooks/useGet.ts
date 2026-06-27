@@ -30,11 +30,11 @@ export const useGet = <T = any>({
     },
     enabled,
         // ✅ Important
-    staleTime: Infinity, // 5 minutes
+    staleTime: 0, // 5 minutes
 
     // ✅ Prevent unnecessary refetch
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
-    refetchOnMount: false,
+    refetchOnMount: true,
   });
 };

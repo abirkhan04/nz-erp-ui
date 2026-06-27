@@ -2,6 +2,7 @@ import {
     useMemo,
     useState,
     useRef,
+    useEffect,
 } from "react";
 
 import {
@@ -11,11 +12,13 @@ import {
     Search,
     Send,
 } from "lucide-react";
+import { useGet } from "../../hooks/useGet";
+import { API_ROUTES } from "../../api/routes";
 
 interface Candidate {
     id: number;
-    temporaryId: string;
-    fullName: string;
+    enrollmentId: string;
+    employeeName: string;
     dateOfBirth: string;
     gender: string;
     bloodGroup: string;
@@ -32,138 +35,14 @@ interface Candidate {
     workerType: string;
 }
 
-const mockCandidates: Candidate[] = [
-    {
-        id: 1,
-        temporaryId: "TMP2505150001",
-        fullName: "Ali Raza",
-        dateOfBirth: "15-May-2002",
-        gender: "Male",
-        bloodGroup: "B+",
-        joiningDate: "15-May-2025",
-        status: "IT Pending",
-        fatherName: "Abdul Raza",
-        company: "NZ Textile Limited",
-        shed: "Spinning Unit",
-        department: "Production",
-        section: "Weaving",
-        cell: "Loom-12",
-        salary: 18000,
-        workerType: "Worker",
-    },
-    {
-        id: 2,
-        temporaryId: "TMP2505150002",
-        fullName: "Muhammad Imran",
-        dateOfBirth: "28-Mar-2001",
-        gender: "Male",
-        bloodGroup: "O+",
-        joiningDate: "15-May-2025",
-        status: "IT Pending",
-        fatherName: "Rahim Uddin",
-        company: "NZ Textile Limited",
-        shed: "Spinning Unit",
-        department: "Production",
-        section: "Weaving",
-        cell: "Loom-14",
-        salary: 17500,
-        workerType: "Worker",
-    },
-    {
-        id: 3,
-        temporaryId: "TMP2505150003",
-        fullName: "Shahid Mehmood",
-        dateOfBirth: "10-Jan-2003",
-        gender: "Male",
-        bloodGroup: "A+",
-        joiningDate: "15-May-2025",
-        status: "IT Pending",
-        fatherName: "Akbar Ali",
-        company: "NZ Textile Limited",
-        shed: "Spinning Unit",
-        department: "Production",
-        section: "Weaving",
-        cell: "Loom-15",
-        salary: 18200,
-        workerType: "Worker",
-    },
-    {
-        id: 4,
-        temporaryId: "TMP2505150004",
-        fullName: "Nadeem Akhtar",
-        dateOfBirth: "22-Feb-2002",
-        gender: "Male",
-        bloodGroup: "B+",
-        joiningDate: "15-May-2025",
-        status: "IT Pending",
-        fatherName: "Sultan Ahmed",
-        company: "NZ Textile Limited",
-        shed: "Spinning Unit",
-        department: "Production",
-        section: "Weaving",
-        cell: "Loom-11",
-        salary: 18000,
-        workerType: "Worker",
-    },
-    {
-        id: 5,
-        temporaryId: "TMP2505150005",
-        fullName: "Faisal Khan",
-        dateOfBirth: "05-Jul-2001",
-        gender: "Male",
-        bloodGroup: "AB+",
-        joiningDate: "15-May-2025",
-        status: "IT Pending",
-        fatherName: "Hanif Khan",
-        company: "NZ Textile Limited",
-        shed: "Spinning Unit",
-        department: "Production",
-        section: "Weaving",
-        cell: "Loom-16",
-        salary: 18100,
-        workerType: "Worker",
-    },
-    {
-        id: 6,
-        temporaryId: "TMP2505150006",
-        fullName: "Umair Javed",
-        dateOfBirth: "19-Nov-2002",
-        gender: "Male",
-        bloodGroup: "O-",
-        joiningDate: "15-May-2025",
-        status: "IT Pending",
-        fatherName: "Javed Iqbal",
-        company: "NZ Textile Limited",
-        shed: "Spinning Unit",
-        department: "Production",
-        section: "Weaving",
-        cell: "Loom-18",
-        salary: 17900,
-        workerType: "Worker",
-    },
-    {
-        id: 7,
-        temporaryId: "TMP2505150007",
-        fullName: "Zeeshan Ali",
-        dateOfBirth: "12-Apr-2002",
-        gender: "Male",
-        bloodGroup: "A-",
-        joiningDate: "15-May-2025",
-        status: "IT Pending",
-        fatherName: "Ali Noor",
-        company: "NZ Textile Limited",
-        shed: "Spinning Unit",
-        department: "Production",
-        section: "Weaving",
-        cell: "Loom-20",
-        salary: 18500,
-        workerType: "Worker",
-    },
-];
-
 const PAGE_SIZE = 5;
 
 const BiometricCapture = () => {
+
+    const { data: candidates } = useGet<Candidate[]>({
+        key: ["candidates"],
+        url: `${API_ROUTES.EMPLOYEES_BY_STATUS}?status=HRExecutive`,
+    });
 
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -210,7 +89,7 @@ const BiometricCapture = () => {
         // Optional: stop camera after capture
         stream?.getTracks().forEach(track => track.stop());
     };
-    
+
     const [search, setSearch] =
         useState("");
 
@@ -234,22 +113,25 @@ const BiometricCapture = () => {
         setFingerprintCaptured,
     ] = useState(false);
 
-    const filteredData =
-        useMemo(() => {
-            return mockCandidates.filter(
-                (item) =>
-                    item.temporaryId
-                        .toLowerCase()
-                        .includes(
-                            search.toLowerCase()
-                        ) ||
-                    item.fullName
-                        .toLowerCase()
-                        .includes(
-                            search.toLowerCase()
-                        )
-            );
-        }, [search]);
+    const filteredData = useMemo(() => {
+        const data = candidates ?? [];
+
+        if (!search) return data;
+
+        return data.filter(
+            (candidate) =>
+                candidate.enrollmentId
+                    ?.toLowerCase()
+                    .includes(search.toLowerCase()) ||
+                candidate.employeeName
+                    ?.toLowerCase()
+                    .includes(search.toLowerCase())
+        );
+    }, [candidates, search]);
+
+    useEffect(() => {
+        setPage(1);
+    }, [candidates]);
 
     const totalPages =
         Math.ceil(
@@ -429,13 +311,13 @@ const BiometricCapture = () => {
 
                                         <td className="px-4 py-3 font-medium text-blue-700">
                                             {
-                                                candidate.temporaryId
+                                                candidate.enrollmentId
                                             }
                                         </td>
 
                                         <td className="px-4 py-3">
                                             {
-                                                candidate.fullName
+                                                candidate.employeeName
                                             }
                                         </td>
 
@@ -563,13 +445,13 @@ const BiometricCapture = () => {
                                     <div className="grid grid-cols-[110px_15px_1fr]">
                                         <span className="text-sm text-slate-600">Temporary ID</span>
                                         <span>:</span>
-                                        <span className="font-medium">{selectedCandidate.temporaryId}</span>
+                                        <span className="font-medium">{selectedCandidate.enrollmentId}</span>
                                     </div>
 
                                     <div className="grid grid-cols-[110px_15px_1fr]">
                                         <span className="text-sm text-slate-600">Full Name</span>
                                         <span>:</span>
-                                        <span className="font-medium">{selectedCandidate.fullName}</span>
+                                        <span className="font-medium">{selectedCandidate.employeeName}</span>
                                     </div>
 
                                     <div className="grid grid-cols-[110px_15px_1fr]">
@@ -1205,7 +1087,7 @@ const BiometricCapture = () => {
                                     </p>
 
                                     <h4 className="mt-1 font-semibold text-slate-800">
-                                        {selectedCandidate.fullName}
+                                        {selectedCandidate.employeeName}
                                     </h4>
 
                                 </div>
@@ -1217,7 +1099,7 @@ const BiometricCapture = () => {
                                     </p>
 
                                     <h4 className="mt-1 font-semibold text-slate-800">
-                                        {selectedCandidate.temporaryId}
+                                        {selectedCandidate.enrollmentId}
                                     </h4>
 
                                 </div>
