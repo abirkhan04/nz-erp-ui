@@ -74,6 +74,7 @@ interface HRExecutiveEntryForm {
   policeClearance: boolean;
   experienceCertificate: boolean;
   passportPhoto: boolean;
+  files: File[];
 }
 
 const MOCK_CANDIDATES: Candidate[] = [
@@ -117,32 +118,32 @@ const HRExecutiveEntryDetails = () => {
     url: API_ROUTES.SUB_UNITS,
   });
 
-  const {data: departments = [] } = useGet<any[]>({
+  const { data: departments = [] } = useGet<any[]>({
     key: ["departments"],
     url: API_ROUTES.DEPARTMENT,
   });
 
-  const {data: sections = [] } = useGet<any[]>({
+  const { data: sections = [] } = useGet<any[]>({
     key: ["sections"],
     url: API_ROUTES.SECTION,
   });
 
-  const {data: cells = [] } = useGet<any[]>({
+  const { data: cells = [] } = useGet<any[]>({
     key: ["cells"],
     url: API_ROUTES.CELL,
   });
 
-  const {data: designations = [] } = useGet<any[]>({
+  const { data: designations = [] } = useGet<any[]>({
     key: ["designations"],
     url: API_ROUTES.DESIGNATION,
   });
 
-  const {data: grades = [] } = useGet<any[]>({
+  const { data: grades = [] } = useGet<any[]>({
     key: ["grades"],
     url: API_ROUTES.GRADE,
   });
 
-  const {data: shifts = [] } = useGet<any[]>({
+  const { data: shifts = [] } = useGet<any[]>({
     key: ["shifts"],
     url: API_ROUTES.SHIFT,
   });
@@ -177,6 +178,7 @@ const HRExecutiveEntryDetails = () => {
         defaultValues: {
           paymentMode:
             "BANK",
+          files: [],
         },
       }
     );
@@ -212,13 +214,28 @@ const HRExecutiveEntryDetails = () => {
       remarks: "",
       paymentMode:
         "BANK",
+      files: [],
     });
   }, [reset]);
+
+  const uploadedFiles = watch("files");
 
   const onSubmit = (
     data: HRExecutiveEntryForm
   ) => {
-    console.log(data);
+    const formData = new FormData();
+
+    Object.entries(data).forEach(([key, value]) => {
+      if (key !== "files") {
+        formData.append(key, String(value));
+      }
+    });
+
+    data.files.forEach((file) => {
+      formData.append("files", file);
+    });
+
+    // mutate(formData);
   };
 
   const serviceInformationFields = [
@@ -469,9 +486,9 @@ const HRExecutiveEntryDetails = () => {
                   )
                 }
                 className={`px-6 py-2 border rounded-lg ${paymentMode ===
-                    mode
-                    ? "bg-blue-50 border-blue-500"
-                    : ""
+                  mode
+                  ? "bg-blue-50 border-blue-500"
+                  : ""
                   }`}
               >
                 {mode}
@@ -692,17 +709,59 @@ const HRExecutiveEntryDetails = () => {
 
         </div>
 
-        <div className="bg-white rounded-xl border-dashed border-2 p-10 text-center mb-6">
+        <div className="bg-white rounded-xl border-2 border-dashed p-8 mb-6">
 
-          <UploadCloud
-            size={40}
-            className="mx-auto mb-3"
-          />
+          <label className="flex flex-col items-center justify-center cursor-pointer">
 
-          <p>
-            Drag & Drop
-            Documents Here
-          </p>
+            <UploadCloud
+              size={40}
+              className="mb-3 text-blue-600"
+            />
+
+            <p className="font-medium">
+              Click or Drag & Drop Files
+            </p>
+
+            <p className="text-sm text-gray-500">
+              Multiple files are supported
+            </p>
+
+            <input
+              type="file"
+              multiple
+              className="hidden"
+              onChange={(e) => {
+                const files = Array.from(e.target.files ?? []);
+                setValue("files", files);
+              }}
+            />
+          </label>
+
+          {uploadedFiles?.length > 0 && (
+            <div className="mt-6 border rounded-lg">
+              {uploadedFiles.map((file, index) => (
+                <div
+                  key={index}
+                  className="flex justify-between items-center px-4 py-2 border-b last:border-b-0"
+                >
+                  <span>{file.name}</span>
+
+                  <button
+                    type="button"
+                    className="text-red-500"
+                    onClick={() => {
+                      setValue(
+                        "files",
+                        uploadedFiles.filter((_, i) => i !== index)
+                      );
+                    }}
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
 
         </div>
 
