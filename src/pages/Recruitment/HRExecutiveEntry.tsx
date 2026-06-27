@@ -24,7 +24,7 @@ interface HRCandidate {
     employeeName: string;
     age: number;
     medicalResult: string;
-    receivedDate: string;
+    examinationDate: string;
 }
 
 const PAGE_SIZE = 5;
@@ -314,7 +314,14 @@ const HRExecutiveEntry = () => {
                                         </td>
 
                                         <td className="p-4 text-center text-sm">
-                                            {candidate.receivedDate}
+                                            {new Date(candidate.examinationDate).toLocaleDateString(
+                                                "en-US",
+                                                {
+                                                    year: "numeric",
+                                                    month: "long",
+                                                    day: "numeric",
+                                                }
+                                            )}
                                         </td>
 
                                         <td className="p-4 text-center">
