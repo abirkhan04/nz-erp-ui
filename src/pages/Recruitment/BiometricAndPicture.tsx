@@ -14,9 +14,12 @@ import {
 } from "lucide-react";
 import { useGet } from "../../hooks/useGet";
 import { API_ROUTES } from "../../api/routes";
+import { usePost } from "../../hooks/usePost";
+import toast from "react-hot-toast";
 
 interface Candidate {
     id: number;
+    employeeId: string;
     enrollmentId: string;
     employeeName: string;
     dateOfBirth: string;
@@ -43,6 +46,10 @@ const BiometricCapture = () => {
         key: ["candidates"],
         url: `${API_ROUTES.EMPLOYEES_BY_STATUS}?status=HRExecutive`,
     });
+
+    const { mutate: BiometricCapturePost } = usePost<{ message: string; id: string }, any>(
+        API_ROUTES.BIOMETRIC_CAPTURE
+    );
 
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -81,7 +88,7 @@ const BiometricCapture = () => {
 
         const image = canvas.toDataURL("image/png");
 
-        console.log(image); // Should start with "data:image/png;base64,..."
+        // console.log(image); // Should start with "data:image/png;base64,..."
 
         setPhoto(image);
         setPhotoCaptured(true);
@@ -89,6 +96,24 @@ const BiometricCapture = () => {
         // Optional: stop camera after capture
         stream?.getTracks().forEach(track => track.stop());
     };
+
+    const biometricSubmitted = () => {
+        const payload = {
+            employeeId: selectedCandidate?.employeeId,
+            employeeEnrollmentId: selectedCandidate?.enrollmentId,
+            cardNo: "123"
+        }
+
+        BiometricCapturePost(payload, {
+            onSuccess: (response) => {
+                toast.success(response.message);
+            },
+
+            onError: (error) => {
+                toast.error(error.message);
+            },
+        })
+    }
 
     const [search, setSearch] =
         useState("");
@@ -529,7 +554,7 @@ const BiometricCapture = () => {
                                         <span className="text-sm text-slate-600">Proposed Salary</span>
                                         <span>:</span>
                                         <span className="font-medium">
-                                            BDT {selectedCandidate.salary.toLocaleString()}
+                                            BDT {selectedCandidate.salary?.toLocaleString()}
                                         </span>
                                     </div>
 
@@ -943,7 +968,7 @@ const BiometricCapture = () => {
                                     </p>
 
                                     <p className="mt-1 font-semibold text-green-700">
-                                        ৳ {selectedCandidate.salary.toLocaleString()}
+                                        ৳ {selectedCandidate.salary?.toLocaleString()}
                                     </p>
 
                                 </div>
@@ -1052,11 +1077,7 @@ const BiometricCapture = () => {
                                     !photoCaptured ||
                                     !fingerprintCaptured
                                 }
-                                onClick={() => {
-                                    alert(
-                                        "Biometric Successfully Submitted!"
-                                    );
-                                }}
+                                onClick={biometricSubmitted}
                                 className={`flex items-center gap-2 rounded-lg px-8 py-3 font-semibold text-white transition ${photoCaptured &&
                                     fingerprintCaptured
                                     ? "bg-blue-600 hover:bg-blue-700"

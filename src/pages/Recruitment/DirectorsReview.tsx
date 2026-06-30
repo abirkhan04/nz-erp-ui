@@ -1,4 +1,5 @@
 import {
+  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -14,6 +15,8 @@ import {
 import {
   useForm,
 } from "react-hook-form";
+import { useGet } from "../../hooks/useGet";
+import { API_ROUTES } from "../../api/routes";
 
 interface DirectorReviewForm {
   remarks: string;
@@ -22,7 +25,9 @@ interface DirectorReviewForm {
 
 interface Candidate {
   id: number;
-  temporaryId: string;
+  employeeId: string;
+  enrollmentId: string;
+  ///temporaryId: string;
   fullName: string;
   department: string;
   section: string;
@@ -43,92 +48,15 @@ interface Candidate {
   photo: string;
 }
 
-const mockCandidates: Candidate[] = [
-  {
-    id: 1,
-    temporaryId: "TMP2505150001",
-    fullName: "Ali Raza",
-    department: "Production",
-    section: "Weaving",
-    cell: "Loom-12",
-    designation: "Weaving Operator",
-    grade: "Grade-03",
-    shift: "Shift-A (Day)",
-    weekday: "6 Days (Sun-Fri)",
-    salary: 18000,
-    joiningDate: "15-May-2025",
-    status: "Pending",
-    fatherName: "Abdul Raza",
-    dob: "15-May-2002",
-    bloodGroup: "B+",
-    workerType: "Worker",
-    photo: "",
-  },
-  {
-    id: 2,
-    temporaryId: "TMP2505150002",
-    fullName: "Muhammad Imran",
-    department: "Maintenance",
-    section: "Mechanical",
-    cell: "Shift-A",
-    designation: "Mechanic",
-    grade: "Grade-03",
-    shift: "Shift-B (Night)",
-    weekday: "6 Days (Sun-Fri)",
-    salary: 20500,
-    joiningDate: "15-May-2025",
-    status: "Pending",
-    fatherName: "Rahim Uddin",
-    dob: "28-Mar-2001",
-    bloodGroup: "O+",
-    workerType: "Worker",
-    photo: "",
-  },
-  {
-    id: 3,
-    temporaryId: "TMP2505150003",
-    fullName: "Shahid Mehmood",
-    department: "Production",
-    section: "Spinning",
-    cell: "Ring-08",
-    designation: "Spinning Operator",
-    grade: "Grade-02",
-    shift: "Shift-A",
-    weekday: "6 Days",
-    salary: 17000,
-    joiningDate: "15-May-2025",
-    status: "Pending",
-    fatherName: "Akbar Ali",
-    dob: "10-Jan-2003",
-    bloodGroup: "A+",
-    workerType: "Worker",
-    photo: "",
-  },
-  {
-    id: 4,
-    temporaryId: "TMP2505150004",
-    fullName: "Nadeem Akhtar",
-    department: "Quality",
-    section: "Inspection",
-    cell: "Final-01",
-    designation: "Quality Inspector",
-    grade: "Grade-04",
-    shift: "Shift-A",
-    weekday: "6 Days",
-    salary: 19000,
-    joiningDate: "15-May-2025",
-    status: "Pending",
-    fatherName: "Sultan Ahmed",
-    dob: "22-Feb-2002",
-    bloodGroup: "B+",
-    workerType: "Worker",
-    photo: "",
-  },
-];
-
 const PAGE_SIZE = 2;
 
 const DirectorReview = () => {
+  
+    const { data: candidates=[] } = useGet<Candidate[]>({
+        key: ["candidates"],
+        url: `${API_ROUTES.EMPLOYEES_BY_STATUS}?status=Biometric`,
+    });
+
   const [page, setPage] =
     useState(1);
 
@@ -157,20 +85,23 @@ const DirectorReview = () => {
 
   const filteredData =
     useMemo(() => {
-      return mockCandidates.filter(
+      return candidates.filter(
         (item) =>
-          item.fullName
-            .toLowerCase()
+          item.fullName?.toLowerCase()
             .includes(
               search.toLowerCase()
             ) ||
-          item.temporaryId
+          item.enrollmentId
             .toLowerCase()
             .includes(
               search.toLowerCase()
             )
       );
-    }, [search]);
+    }, [candidates, search]);
+
+    useEffect(() => {
+        setPage(1);
+    }, [candidates]);
 
   const totalPages =
     Math.ceil(
@@ -397,7 +328,7 @@ const DirectorReview = () => {
                   </td>
 
                   <td className="px-4 py-3 font-medium text-blue-700">
-                    {item.temporaryId}
+                    {item.enrollmentId}
                   </td>
 
                   <td className="px-4 py-3">
@@ -422,7 +353,7 @@ const DirectorReview = () => {
 
                   <td className="px-4 py-3">
                     ৳
-                    {item.salary.toLocaleString()}
+                    {item.salary?.toLocaleString()}
                   </td>
 
                   <td className="px-4 py-3">
@@ -519,7 +450,7 @@ const DirectorReview = () => {
 
                   <p className="font-semibold">
                     {
-                      selectedCandidate.temporaryId
+                      selectedCandidate.enrollmentId
                     }
                   </p>
                 </div>
@@ -647,7 +578,7 @@ const DirectorReview = () => {
 
                   <p className="font-semibold text-green-700">
                     ৳
-                    {selectedCandidate.salary.toLocaleString()}
+                    {selectedCandidate.salary?.toLocaleString()}
                   </p>
                 </div>
 
@@ -823,7 +754,7 @@ const DirectorReview = () => {
                 </p>
 
                 <h3 className="text-2xl font-bold text-blue-700">
-                  {mockCandidates.length}
+                  {candidates.length}
                 </h3>
               </div>
 

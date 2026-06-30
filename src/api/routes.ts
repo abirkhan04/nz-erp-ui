@@ -27,6 +27,6 @@ export const API_ROUTES = {
   SUB_UNITS: "SubUnits",
   GATE_REGISTRATION: "Employees/candidate-entry",
   HRExecutiveEntry: "Employees/hr-executive-entry",
-
+  BIOMETRIC_CAPTURE: "Employees/biometric-capture",
   EMPLOYEE_NATURES: "EmployeeNatures",
 };
