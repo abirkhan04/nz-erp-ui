@@ -68,7 +68,7 @@ function Layout() {
             />
 
             <Route
-              path="/recruitment/hr-executive-entry/:candidateId"
+              path="/recruitment/hr-executive-entry/:candidateId/:enrollmentId"
               element={<HRExecutiveEntryDetails />}
             />
 

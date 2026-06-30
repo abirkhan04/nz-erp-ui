@@ -35,16 +35,18 @@ interface Candidate {
 
 interface HRExecutiveEntryForm {
   employeeId: string;
-  company: string;
-  subUnit: string;
-  department: string;
-  section: string;
-  cell: string;
+  employeeEnrollmentId: string;
 
-  designation: string;
-  grade: string;
+  company: string | null;
+  subUnit: string | null;
+  department: string | null;
+  section: string | null;
+  cell: string | null;
+
+  designation: string | null;
+  grade: string | null;
   shift: string | null;
-  weekday: string;
+  weekday: string | null;
   workerType: string | null;
 
   proposedSalary: string;
@@ -53,14 +55,14 @@ interface HRExecutiveEntryForm {
   employmentType: string;
   payBasis: string;
 
-  reportingTo: string;
-  employeeCategory: string;
+  reportingTo: string | null;
+  employeeCategory: string | null;
   workLocation: string;
   remarks: string;
 
   paymentMode: string;
 
-  bankName: string;
+  bankName: string | null;
   branchName: string;
   accountNumber: string;
   accountType: string;
@@ -77,6 +79,7 @@ interface HRExecutiveEntryForm {
   policeClearance: boolean;
   experienceCertificate: boolean;
   passportPhoto: boolean;
+
   files: File[];
 }
 
@@ -151,10 +154,15 @@ const HRExecutiveEntryDetails = () => {
     url: API_ROUTES.SHIFT,
   });
 
+  const {data: employeeNatures = []} = useGet<any[]>({
+    key: ["workerTypes"],
+    url: API_ROUTES.EMPLOYEE_NATURES
+  })
+
   const navigate =
     useNavigate();
 
-  const { candidateId } =
+  const { candidateId, enrollmentId } =
     useParams();
 
   const candidate = useMemo(
@@ -195,15 +203,17 @@ const HRExecutiveEntryDetails = () => {
   useEffect(() => {
     reset({
       employeeId: candidateId,
-      company: "1",
-      subUnit: "1",
-      department: "1",
-      section: "1",
-      cell: "1",
-      designation: "1",
-      grade: "1",
-      shift: "",
-      weekday: "1",
+      employeeEnrollmentId: enrollmentId,
+      company: null,
+      subUnit: null,
+      department: null,
+      section: null,
+      cell: null,
+      bankName: null,
+      designation: null,
+      grade: null,
+      shift: null,
+      weekday: null,
       workerType: null,
       proposedSalary:
         "13000",
@@ -214,9 +224,9 @@ const HRExecutiveEntryDetails = () => {
       employmentType:
         "Regular",
       payBasis: "Monthly",
-      reportingTo: "1",
+      reportingTo: null,
       employeeCategory:
-        "1",
+        null,
       workLocation: "1",
       remarks: "",
       paymentMode:
@@ -232,7 +242,7 @@ const onSubmit = (data: HRExecutiveEntryForm) => {
 
   const payload = {
     employeeId: data.employeeId,
-    employeeEnrollmentId: "1234", // Populate if available
+    employeeEnrollmentId: data.employeeEnrollmentId,
     unitId: data.company,
     subunitId: data.subUnit,
     departmentId: data.department,
@@ -244,7 +254,7 @@ const onSubmit = (data: HRExecutiveEntryForm) => {
     employeeType: 0, // Set according to your enum
     employeeTypeId: data.employeeCategory,
 
-    shiftId: data.shift,
+    shiftId: data.shift ,
     employeeNatureId: data.workerType||null,
 
     holiday: Number(data.weekday) || 0,
@@ -258,7 +268,7 @@ const onSubmit = (data: HRExecutiveEntryForm) => {
 
     otherAllowance: {},
 
-    salaryAccountId: "",
+    salaryAccountId: null,
 
     tax: 0,
 
@@ -353,7 +363,7 @@ const onSubmit = (data: HRExecutiveEntryForm) => {
 
     reportingTo: data.reportingTo,
 
-    processingGroupId: "",
+    processingGroupId: null,
 
     grossSalary: Number(data.proposedSalary),
   };
@@ -463,6 +473,9 @@ const onSubmit = (data: HRExecutiveEntryForm) => {
         label: shift.shiftName,
         value: shift.id,
       })),
+      rules: {
+        required: "Select Shift",
+      },
     },
     {
       label: "Weekday",
@@ -473,6 +486,13 @@ const onSubmit = (data: HRExecutiveEntryForm) => {
       label: "Worker Type",
       name: "workerType",
       type: "dropdown",
+      options: employeeNatures.map((i)=> ({
+        label: i.natureName,
+        value: i.id
+      })),
+      rules: {
+        required: "Select worker type",
+      },
     },
     {
       label: "Salary",
@@ -594,6 +614,7 @@ const onSubmit = (data: HRExecutiveEntryForm) => {
                   control={
                     control
                   }
+                   rules={field.rules} 
                   errors={
                     errors
                   }

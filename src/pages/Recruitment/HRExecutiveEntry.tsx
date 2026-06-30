@@ -329,7 +329,7 @@ const HRExecutiveEntry = () => {
                                                 type="button"
                                                 onClick={() =>
                                                     navigate(
-                                                        `/recruitment/hr-executive-entry/${candidate.employeeId}`
+                                                        `/recruitment/hr-executive-entry/${candidate.employeeId}/${candidate.enrollmentId}`
                                                     )
                                                 }
                                                 className="
