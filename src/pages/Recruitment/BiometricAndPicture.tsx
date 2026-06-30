@@ -16,6 +16,17 @@ import { useGet } from "../../hooks/useGet";
 import { API_ROUTES } from "../../api/routes";
 import { usePost } from "../../hooks/usePost";
 import toast from "react-hot-toast";
+import { api } from "../../api/client";
+
+export interface Document {
+  employeeId: string |undefined;
+  documentType: number;
+  documentNo: string;
+  issueDate: string;
+  expiryDate: string | null;
+  fileName: string;
+  filePath: string;
+}
 
 interface Candidate {
     id: number;
@@ -51,13 +62,53 @@ const BiometricCapture = () => {
         API_ROUTES.BIOMETRIC_CAPTURE
     );
 
+    const [documents, setDocuments] = useState<Document[]>([]);
+
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
     const [photo, setPhoto] = useState<string>("");
     const [stream, setStream] = useState<MediaStream | null>(null);
 
+    const dataURLToFile = (dataUrl: string, fileName: string): File => {
+        const arr = dataUrl.split(",");
+        const mime = arr[0].match(/:(.*?);/)?.[1] || "image/png";
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+
+        while (n--) {
+            u8arr[n] = bstr.charCodeAt(n);
+        }
+
+        return new File([u8arr], fileName, { type: mime });
+    };
+
+    const uploadPhoto = async (imageData: string) => {
+        const file = dataURLToFile(
+            imageData,
+            `employee-photo-${Date.now()}.png`
+        );
+
+        const formData = new FormData();
+        formData.append("files", file);
+
+        const { data } = await api.post(
+            `Employees/upload-files?employeeEnrollmentId=${selectedCandidate?.enrollmentId}`,
+            formData,
+            {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+            }
+        );
+
+        return data;
+    };
+
+
     const startCamera = async () => {
+        setPhoto("");
         try {
             const mediaStream = await navigator.mediaDevices.getUserMedia({
                 video: true,
@@ -72,36 +123,69 @@ const BiometricCapture = () => {
             console.error(err);
         }
     };
-    const capturePhoto = () => {
+    const capturePhoto = async () => {
         if (!videoRef.current || !canvasRef.current) return;
 
-        const video = videoRef.current;
-        const canvas = canvasRef.current;
+        try {
+            const video = videoRef.current;
+            const canvas = canvasRef.current;
 
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
 
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return;
+            const ctx = canvas.getContext("2d");
+            if (!ctx) return;
 
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            // Capture image from camera
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-        const image = canvas.toDataURL("image/png");
+            // Base64 image
+            const image = canvas.toDataURL("image/png");
 
-        // console.log(image); // Should start with "data:image/png;base64,..."
+            // Preview image
+            setPhoto(image);
+            setPhotoCaptured(true);
 
-        setPhoto(image);
-        setPhotoCaptured(true);
+            // Stop camera
+            stream?.getTracks().forEach(track => track.stop());
 
-        // Optional: stop camera after capture
-        stream?.getTracks().forEach(track => track.stop());
+            // Upload image
+            const uploadResponse = await uploadPhoto(image);
+
+            if (
+                !uploadResponse.fileNames ||
+                uploadResponse.fileNames.length === 0
+            ) {
+                throw new Error("No file returned from upload.");
+            }
+
+            const fileName = uploadResponse.fileNames[0];
+
+        // Update documents
+        setDocuments([
+            {
+                employeeId: selectedCandidate?.employeeId,
+                documentType: 0,
+                documentNo: "",
+                issueDate: new Date().toISOString().split("T")[0],
+                expiryDate:null,
+                fileName,
+                filePath: fileName, // Change if your backend expects a full path
+            },
+        ]);
+
+            console.log("Photo uploaded successfully:", fileName);
+        } catch (error) {
+            console.error("Error capturing/uploading photo:", error);
+        }
     };
 
     const biometricSubmitted = () => {
         const payload = {
             employeeId: selectedCandidate?.employeeId,
             employeeEnrollmentId: selectedCandidate?.enrollmentId,
-            cardNo: "123"
+            cardNo: "123",
+            documents
         }
 
         BiometricCapturePost(payload, {
