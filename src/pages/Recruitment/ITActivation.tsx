@@ -95,7 +95,7 @@ const AvatarIcon: React.FC = () => (
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 const ITActivationPage: React.FC = () => {
-    const { data: candidates = [], refetch } = useGet<Candidate[]>({
+    const { data: candidates = [] } = useGet<Candidate[]>({
         key: ["candidates"],
         url: `${API_ROUTES.EMPLOYEES_BY_STATUS}?status=DirectorReview`,
     });
