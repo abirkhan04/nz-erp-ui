@@ -506,7 +506,7 @@ const ITActivationPage: React.FC = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {selected?.documents?.map((doc, i) => (
+                                {selected?.documents?.map((doc:Document, i:number) => (
                                     <tr key={i} style={{
                                         borderBottom: "1px solid #f3f4f6",
                                         background: i % 2 === 0 ? "#fff" : "#fafafa",
