@@ -272,7 +272,7 @@ const GateRegistration = () => {
     url: API_ROUTES.UNITS,
   });
 
-  const { data: temporaryId } = useGet<Enrollment>({
+  const { data: temporaryId, refetch: refetchTemporaryId } = useGet<Enrollment>({
     key: ["temporaryId"],
     url: API_ROUTES.ENROLLMENTID,
   });
@@ -319,6 +319,7 @@ const GateRegistration = () => {
     handleSubmit,
     control,
     reset,
+    getValues,
     formState: { errors },
   } = useForm<GateRegistrationForm>({
     mode: "onTouched",
@@ -330,8 +331,68 @@ const GateRegistration = () => {
     },
   });
 
+  const getDraftKey = (temporaryId: string) =>
+    `gateRegistrationDraft_${temporaryId}`;
+
+  const handleSaveDraft = () => {
+    const values = getValues();
+
+    if (!values.temporaryId) {
+      toast.error("Temporary ID পাওয়া যায়নি");
+      return;
+    }
+
+    localStorage.setItem(
+      getDraftKey(values.temporaryId),
+      JSON.stringify(values)
+    );
+
+    toast.success("ফর্মটি সফলভাবে সংরক্ষণ করা হয়েছে");
+  };
+
+  const handleReset = () => {
+    const currentTemporaryId = getValues("temporaryId");
+
+    localStorage.removeItem(getDraftKey(currentTemporaryId));
+
+    reset({
+      temporaryId: currentTemporaryId,
+      joiningDate: new Date().toISOString().split("T")[0],
+
+      fullName: "",
+      fatherName: "",
+      motherName: "",
+      nidType: "",
+      nidNumber: "",
+      dateOfBirth: "",
+      gender: "",
+      religion: "",
+      bloodGroup: "",
+      mobileNumber: "",
+      presentVillageArea: "",
+      presentPostOffice: "",
+      presentPoliceStation: "",
+      presentDistrict: "",
+      permanentVillageArea: "",
+      permanentPostOffice: "",
+      permanentPoliceStation: "",
+      permanentDistrict: "",
+      company: "",
+      designation: "",
+      referenceName: "",
+      referenceMobile: "",
+    });
+  };
+
   useEffect(() => {
-    if (temporaryId) {
+    if (!temporaryId?.enrollmentId) return;
+
+    const key = getDraftKey(temporaryId.enrollmentId);
+    const draft = localStorage.getItem(key);
+
+    if (draft) {
+      reset(JSON.parse(draft));
+    } else {
       reset({
         temporaryId: temporaryId.enrollmentId,
         joiningDate: new Date().toISOString().split("T")[0],
@@ -440,6 +501,10 @@ const GateRegistration = () => {
           `গেট রেজিস্ট্রেশন সফল হয়েছে। আইডি: ${response.id}`
         );
 
+        localStorage.removeItem(
+          getDraftKey(data.temporaryId)
+        );
+
         reset();
       },
 
@@ -463,7 +528,7 @@ const GateRegistration = () => {
           <button
             type="button"
             className="flex items-center gap-2 border border-blue-300 text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-50"
-            onClick = {()=> navigate("/recruitment")}
+            onClick={() => navigate("/recruitment")}
           >
             Back to Main Menu
           </button>
@@ -640,10 +705,18 @@ const GateRegistration = () => {
 
             <button
               type="button"
-              onClick={() => reset()}
+              onClick={handleReset}
               className="px-6 py-2 border border-gray-300 rounded-lg"
             >
               রিসেট
+            </button>
+
+            <button
+              type="button"
+              onClick={handleSaveDraft}
+              className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+            >
+              সংরক্ষণ
             </button>
 
             <button

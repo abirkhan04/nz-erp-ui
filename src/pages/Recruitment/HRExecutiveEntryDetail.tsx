@@ -90,6 +90,8 @@ const dropdownOptions = [
 
 const HRExecutiveEntryDetails = () => {
 
+
+
   const { data: units = [] } = useGet<Unit[]>({
     key: ["units"],
     url: API_ROUTES.UNITS,
@@ -130,7 +132,7 @@ const HRExecutiveEntryDetails = () => {
     url: API_ROUTES.SHIFT,
   });
 
-  const {data: employeeNatures = []} = useGet<any[]>({
+  const { data: employeeNatures = [] } = useGet<any[]>({
     key: ["workerTypes"],
     url: API_ROUTES.EMPLOYEE_NATURES
   })
@@ -140,6 +142,8 @@ const HRExecutiveEntryDetails = () => {
 
   const { candidateId, enrollmentId } =
     useParams();
+
+  const DRAFT_KEY = `HR_EXECUTIVE_DRAFT_${candidateId}_${enrollmentId}`;
 
 
   const {
@@ -162,15 +166,30 @@ const HRExecutiveEntryDetails = () => {
       }
     );
 
-  const {mutate: HRExecutiveEntryPost} = usePost(API_ROUTES.HRExecutiveEntry);  
+  const { mutate: HRExecutiveEntryPost } = usePost(API_ROUTES.HRExecutiveEntry);
 
   const paymentMode =
     watch("paymentMode");
 
+  const values = watch();
+
+useEffect(() => {
+  const timer = setTimeout(() => {
+    const { files, ...rest } = values;
+
+    localStorage.setItem(
+      DRAFT_KEY,
+      JSON.stringify(rest)
+    );
+  }, 1000);
+
+  return () => clearTimeout(timer);
+}, [values, DRAFT_KEY]);
+
   useEffect(() => {
-    reset({
-      employeeId: candidateId,
-      employeeEnrollmentId: enrollmentId,
+    const defaultValues: any = {
+      employeeId: candidateId ?? "",
+      employeeEnrollmentId: enrollmentId ?? "",
       company: null,
       subUnit: null,
       department: null,
@@ -182,167 +201,199 @@ const HRExecutiveEntryDetails = () => {
       shift: null,
       weekday: null,
       workerType: null,
-      proposedSalary:
-        "13000",
-      joiningDate:
-        "2025-06-01",
-      probationPeriod:
-        "3",
-      employmentType:
-        "Regular",
+      proposedSalary: "13000",
+      joiningDate: "2025-06-01",
+      probationPeriod: "3",
+      employmentType: "Regular",
       payBasis: "Monthly",
       reportingTo: null,
-      employeeCategory:
-        null,
+      employeeCategory: null,
       workLocation: "1",
       remarks: "",
-      paymentMode:
-        "BANK",
+      paymentMode: "BANK",
       files: [],
-    });
-  }, [reset]);
+    };
+
+    const draft = localStorage.getItem(DRAFT_KEY);
+
+    if (draft) {
+      const parsed = JSON.parse(draft);
+      console.log("Parsed draft:", parsed);
+      reset({
+        ...defaultValues,
+        ...parsed,
+        files: [], // Files cannot be restored
+      });
+    } else {
+      reset(defaultValues);
+    }
+  }, [candidateId, enrollmentId, reset,   units,
+  subUnits,
+  departments,
+  sections,
+  cells,
+  designations,
+  grades,
+  shifts,
+  employeeNatures,
+  candidateId,
+  enrollmentId]);
+
+  const handleSaveDraft = () => {
+    const values = watch();
+
+    // Remove files before saving
+    const { files, ...rest } = values;
+
+    localStorage.setItem(
+      DRAFT_KEY,
+      JSON.stringify(rest)
+    );
+
+    toast.success("Draft saved successfully.");
+  };
 
   const uploadedFiles = watch("files");
 
-const onSubmit = (data: HRExecutiveEntryForm) => {
-  console.log("data here", data);
+  const onSubmit = (data: HRExecutiveEntryForm) => {
+    console.log("data here", data);
 
-  const payload = {
-    employeeId: data.employeeId,
-    employeeEnrollmentId: data.employeeEnrollmentId,
-    unitId: data.company,
-    subunitId: data.subUnit,
-    departmentId: data.department,
-    sectionId: data.section,
-    cellId: data.cell,
-    designationId: data.designation,
-    gradeId: data.grade,
+    const payload = {
+      employeeId: data.employeeId,
+      employeeEnrollmentId: data.employeeEnrollmentId,
+      unitId: data.company,
+      subunitId: data.subUnit,
+      departmentId: data.department,
+      sectionId: data.section,
+      cellId: data.cell,
+      designationId: data.designation,
+      gradeId: data.grade,
 
-    employeeType: 0, // Set according to your enum
-    employeeTypeId: data.employeeCategory,
+      employeeType: 0, // Set according to your enum
+      employeeTypeId: data.employeeCategory,
 
-    shiftId: data.shift ,
-    employeeNatureId: data.workerType||null,
+      shiftId: data.shift,
+      employeeNatureId: data.workerType || null,
 
-    holiday: Number(data.weekday) || 0,
+      holiday: Number(data.weekday) || 0,
 
-    joiningDate: data.joiningDate,
-    confirmationDate: data.joiningDate, // Calculate if required
+      joiningDate: data.joiningDate,
+      confirmationDate: data.joiningDate, // Calculate if required
 
-    proposedMonthlySalary: Number(data.proposedSalary),
-    bankPortion: data.paymentMode === "BANK" ? Number(data.proposedSalary) : 0,
-    cashPortion: data.paymentMode === "CASH" ? Number(data.proposedSalary) : 0,
+      proposedMonthlySalary: Number(data.proposedSalary),
+      bankPortion: data.paymentMode === "BANK" ? Number(data.proposedSalary) : 0,
+      cashPortion: data.paymentMode === "CASH" ? Number(data.proposedSalary) : 0,
 
-    otherAllowance: {},
+      otherAllowance: {},
 
-    salaryAccountId: null,
+      salaryAccountId: null,
 
-    tax: 0,
+      tax: 0,
 
-    paymentMethod: data.paymentMode,
+      paymentMethod: data.paymentMode,
 
-    bankingId: data.bankName,
-    accountName: "",
-    accountNo: data.accountNumber,
-    routingNo: "",
-    branchName: data.branchName,
+      bankingId: data.bankName,
+      accountName: "",
+      accountNo: data.accountNumber,
+      routingNo: "",
+      branchName: data.branchName,
 
-    salaryAccountFlag: data.paymentMode === "BANK",
+      salaryAccountFlag: data.paymentMode === "BANK",
 
-    accountType: data.accountType,
+      accountType: data.accountType,
 
-    // documents: [
-    //   ...(data.educationCertificate
-    //     ? [
-    //         {
-    //           employeeId: data.employeeId,
-    //           documentType: "EducationCertificate",
-    //           documentNo: "",
-    //           issueDate: "",
-    //           expiryDate: "",
-    //           fileName: "",
-    //           filePath: "",
-    //         },
-    //       ]
-    //     : []),
+      // documents: [
+      //   ...(data.educationCertificate
+      //     ? [
+      //         {
+      //           employeeId: data.employeeId,
+      //           documentType: "EducationCertificate",
+      //           documentNo: "",
+      //           issueDate: "",
+      //           expiryDate: "",
+      //           fileName: "",
+      //           filePath: "",
+      //         },
+      //       ]
+      //     : []),
 
-    //   ...(data.nationalId
-    //     ? [
-    //         {
-    //           employeeId: data.employeeId,
-    //           documentType: "NationalId",
-    //           documentNo: "",
-    //           issueDate: "",
-    //           expiryDate: "",
-    //           fileName: "",
-    //           filePath: "",
-    //         },
-    //       ]
-    //     : []),
+      //   ...(data.nationalId
+      //     ? [
+      //         {
+      //           employeeId: data.employeeId,
+      //           documentType: "NationalId",
+      //           documentNo: "",
+      //           issueDate: "",
+      //           expiryDate: "",
+      //           fileName: "",
+      //           filePath: "",
+      //         },
+      //       ]
+      //     : []),
 
-    //   ...(data.policeClearance
-    //     ? [
-    //         {
-    //           employeeId: data.employeeId,
-    //           documentType: "PoliceClearance",
-    //           documentNo: "",
-    //           issueDate: "",
-    //           expiryDate: "",
-    //           fileName: "",
-    //           filePath: "",
-    //         },
-    //       ]
-    //     : []),
+      //   ...(data.policeClearance
+      //     ? [
+      //         {
+      //           employeeId: data.employeeId,
+      //           documentType: "PoliceClearance",
+      //           documentNo: "",
+      //           issueDate: "",
+      //           expiryDate: "",
+      //           fileName: "",
+      //           filePath: "",
+      //         },
+      //       ]
+      //     : []),
 
-    //   ...(data.experienceCertificate
-    //     ? [
-    //         {
-    //           employeeId: data.employeeId,
-    //           documentType: "ExperienceCertificate",
-    //           documentNo: "",
-    //           issueDate: "",
-    //           expiryDate: "",
-    //           fileName: "",
-    //           filePath: "",
-    //         },
-    //       ]
-    //     : []),
+      //   ...(data.experienceCertificate
+      //     ? [
+      //         {
+      //           employeeId: data.employeeId,
+      //           documentType: "ExperienceCertificate",
+      //           documentNo: "",
+      //           issueDate: "",
+      //           expiryDate: "",
+      //           fileName: "",
+      //           filePath: "",
+      //         },
+      //       ]
+      //     : []),
 
-    //   ...(data.passportPhoto
-    //     ? [
-    //         {
-    //           employeeId: data.employeeId,
-    //           documentType: "PassportPhoto",
-    //           documentNo: "",
-    //           issueDate: "",
-    //           expiryDate: "",
-    //           fileName: "",
-    //           filePath: "",
-    //         },
-    //       ]
-    //     : []),
-    // ],
-    documents: null,
+      //   ...(data.passportPhoto
+      //     ? [
+      //         {
+      //           employeeId: data.employeeId,
+      //           documentType: "PassportPhoto",
+      //           documentNo: "",
+      //           issueDate: "",
+      //           expiryDate: "",
+      //           fileName: "",
+      //           filePath: "",
+      //         },
+      //       ]
+      //     : []),
+      // ],
+      documents: null,
 
-    tinNumber: "",
+      tinNumber: "",
 
-    probationPeriod: Number(data.probationPeriod),
+      probationPeriod: Number(data.probationPeriod),
 
-    reportingTo: data.reportingTo,
+      reportingTo: data.reportingTo,
 
-    processingGroupId: null,
+      processingGroupId: null,
 
-    grossSalary: Number(data.proposedSalary),
-  };
+      grossSalary: Number(data.proposedSalary),
+    };
 
-  console.log(payload);
+    console.log(payload);
 
-      HRExecutiveEntryPost(payload, {
+    HRExecutiveEntryPost(payload, {
       onSuccess: (response) => {
         toast.success(
           `Entry entered successfully ${response.id}`
         );
-
+        localStorage.removeItem(DRAFT_KEY);
         reset();
       },
 
@@ -353,8 +404,8 @@ const onSubmit = (data: HRExecutiveEntryForm) => {
       },
     });
 
-  // mutate(payload);
-};
+    // mutate(payload);
+  };
 
   const serviceInformationFields = [
     {
@@ -453,7 +504,7 @@ const onSubmit = (data: HRExecutiveEntryForm) => {
       label: "Worker Type",
       name: "workerType",
       type: "dropdown",
-      options: employeeNatures.map((i)=> ({
+      options: employeeNatures.map((i) => ({
         label: i.natureName,
         value: i.id
       })),
@@ -581,7 +632,7 @@ const onSubmit = (data: HRExecutiveEntryForm) => {
                   control={
                     control
                   }
-                   rules={field.rules} 
+                  rules={field.rules}
                   errors={
                     errors
                   }
@@ -898,9 +949,10 @@ const onSubmit = (data: HRExecutiveEntryForm) => {
 
           <button
             type="button"
-            onClick={() =>
-              reset()
-            }
+            onClick={() => {
+              localStorage.removeItem(DRAFT_KEY);
+              reset();
+            }}
             className="border px-6 py-3 rounded-lg"
           >
             Reset
@@ -908,6 +960,7 @@ const onSubmit = (data: HRExecutiveEntryForm) => {
 
           <button
             type="button"
+            onClick={handleSaveDraft}
             className="bg-green-600 text-white px-6 py-3 rounded-lg flex items-center gap-2"
           >
             <Save size={16} />
