@@ -8,9 +8,7 @@ import { useNavigate } from "react-router-dom";
 
 import {
     ClipboardCheck,
-    CircleCheck,
     CircleX,
-    Clock3,
     Search,
     ChevronDown,
 } from "lucide-react";
