@@ -94,6 +94,7 @@ const MedicalExamination = () => {
         control,
         register,
         reset,
+        watch,
         handleSubmit,
         formState: { errors },
     } = useForm<MedicalExaminationForm>({
@@ -148,42 +149,59 @@ const MedicalExamination = () => {
         });
     };
 
+    const watchedCandidates = watch("candidates");
+
+    const receivedCount = candidates?.length ?? 0;
+
+    const fitCount =
+        watchedCandidates?.filter(
+            (x) => x.medicalResult === "FIT"
+        ).length ?? 0;
+
+    const unfitCount =
+        watchedCandidates?.filter(
+            (x) => x.medicalResult === "UNFIT"
+        ).length ?? 0;
+
+    const pendingCount =
+        watchedCandidates?.filter(
+            (x) =>
+                !x.medicalResult ||
+                x.medicalResult === "PENDING"
+        ).length ?? 0;
+
     const statCards = [
         {
             title: "RECEIVED FROM GATE",
-            value: 50,
+            value: receivedCount,
             icon: ClipboardCheck,
-            color:
-                "text-blue-600 border-blue-100 bg-blue-50",
+            color: "text-blue-600 border-blue-100 bg-blue-50",
             iconBg: "bg-blue-100",
         },
         {
             title: "FIT",
-            value: 0,
+            value: fitCount,
             icon: CircleCheck,
-            color:
-                "text-green-600 border-green-100 bg-green-50",
+            color: "text-green-600 border-green-100 bg-green-50",
             iconBg: "bg-green-100",
         },
         {
             title: "UNFIT",
-            value: 0,
+            value: unfitCount,
             icon: CircleX,
-            color:
-                "text-red-600 border-red-100 bg-red-50",
+            color: "text-red-600 border-red-100 bg-red-50",
             iconBg: "bg-red-100",
         },
         {
             title: "PENDING EXAMINATION",
-            value: 50,
+            value: pendingCount,
             icon: Clock3,
-            color:
-                "text-orange-600 border-orange-100 bg-orange-50",
+            color: "text-orange-600 border-orange-100 bg-orange-50",
             iconBg: "bg-orange-100",
         },
     ];
 
-     const navigate = useNavigate();
+    const navigate = useNavigate();
 
     return (
         <form
