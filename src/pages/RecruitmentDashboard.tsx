@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import type { LucideIcon } from "lucide-react";
+import { API_ROUTES } from "../api/routes";
+import { useGet } from "../hooks/useGet";
 
 interface SummaryCard {
   title: string;
@@ -44,35 +46,39 @@ interface ProcessStep {
 const RecruitmentDashboard = () => {
 
   const navigate = useNavigate();
+  const {data: activationSummery} = useGet<any>({
+    key: ["activationSummery"],
+    url: API_ROUTES.IT_ACTIVATION_SUMMARY,
+  });
   const summaryCards:SummaryCard[] = [
     {
       title: "TOTAL RECRUITED",
-      value: "1,248",
-      subtitle: "Up to May 20, 2025",
+      value: activationSummery?.total,
+      subtitle: new Date().toLocaleDateString(),
       icon: Users,
       color: "text-blue-600",
       bg: "bg-blue-50",
     },
     {
       title: "WORKERS",
-      value: "1,012",
-      subtitle: "81.09% of Total",
+      value: activationSummery?.workers,
+      subtitle: `${activationSummery?.total ? ((activationSummery.workers / activationSummery.total) * 100).toFixed(2) : 0}% of Total`,
       icon: Briefcase,
       color: "text-green-600",
       bg: "bg-green-50",
     },
     {
       title: "STAFFS",
-      value: "186",
-      subtitle: "14.90% of Total",
+      value: activationSummery?.staff,
+      subtitle: `${activationSummery?.total ? ((activationSummery.staff / activationSummery.total) * 100).toFixed(2) : 0}% of Total`,
       icon: UserCheck,
       color: "text-purple-600",
       bg: "bg-purple-50",
     },
     {
       title: "MANAGEMENT",
-      value: "50",
-      subtitle: "4.01% of Total",
+      value: activationSummery?.management,
+      subtitle: `${activationSummery?.total ? ((activationSummery.management / activationSummery.total) * 100).toFixed(2) : 0}% of Total`,
       icon: Building2,
       color: "text-orange-600",
       bg: "bg-orange-50",
