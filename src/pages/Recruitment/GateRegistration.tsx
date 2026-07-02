@@ -112,6 +112,9 @@ const personalInformationFields: SectionField[] =
       label: "জন্ম তারিখ",
       name: "dateOfBirth",
       type: "date",
+      rules: {
+        required: "জন্ম তারিখ আবশ্যক",
+      }
     },
     {
       label: "মোবাইল নম্বর",

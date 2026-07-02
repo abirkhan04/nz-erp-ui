@@ -66,7 +66,7 @@ const PAGE_SIZE = 2;
 const EMPTY_CANDIDATES: Candidate[] = [];
 
 const DirectorReview = () => {
-  const { data: candidates = EMPTY_CANDIDATES } =
+  const { data: candidates = EMPTY_CANDIDATES, refetch } =
     useGet<Candidate[]>({
       key: ["candidates"],
       url: `${API_ROUTES.EMPLOYEES_BY_STATUS}?status=Biometric`,
@@ -231,6 +231,7 @@ const DirectorReview = () => {
     DirectorReviewPost(payload, {
       onSuccess: (response) => {
         toast.success(response.message);
+        refetch();
       },
 
       onError: (error) => {

@@ -53,7 +53,7 @@ const PAGE_SIZE = 5;
 
 const BiometricCapture = () => {
 
-    const { data: candidates } = useGet<Candidate[]>({
+    const { data: candidates, refetch } = useGet<Candidate[]>({
         key: ["candidates"],
         url: `${API_ROUTES.EMPLOYEES_BY_STATUS}?status=HRExecutive`,
     });
@@ -191,6 +191,7 @@ const BiometricCapture = () => {
         BiometricCapturePost(payload, {
             onSuccess: (response) => {
                 toast.success(response.message);
+                refetch();
             },
 
             onError: (error) => {

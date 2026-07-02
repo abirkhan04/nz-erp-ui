@@ -13,6 +13,7 @@ const HRExecutiveEntry = lazy(() => import("./pages/Recruitment/HRExecutiveEntry
 const HRExecutiveEntryDetails = lazy(() => import("./pages/Recruitment/HRExecutiveEntryDetail"));
 const BiometricCapture = lazy(() => import("./pages/Recruitment/BiometricAndPicture"));
 const DirectorsReview = lazy(() => import("./pages/Recruitment/DirectorsReview"));
+const ITActivation = lazy(() => import("./pages/Recruitment/ITActivation"));
 
 /**
  * 🔐 Auth Check
@@ -80,6 +81,11 @@ function Layout() {
             <Route
               path="/recruitment/director-review"
               element={<DirectorsReview />}
+            />
+
+            <Route
+              path="/recruitment/it-activation"
+              element={<ITActivation />}
             />
 
             <Route

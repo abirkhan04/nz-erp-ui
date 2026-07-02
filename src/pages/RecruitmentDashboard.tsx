@@ -157,6 +157,7 @@ const RecruitmentDashboard = () => {
       icon: Monitor,
       color: "cyan",
       status: "DISABLED",
+      uri: "/recruitment/it-activation",
     },
     {
       step: 7,

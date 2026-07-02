@@ -41,7 +41,7 @@ const PAGE_SIZE = 5;
 
 const MedicalExamination = () => {
 
-    const { data: candidates } = useGet<Candidate[]>({
+    const { data: candidates, refetch } = useGet<Candidate[]>({
         key: ["candidates"],
         url: `${API_ROUTES.EMPLOYEES_BY_STATUS}?status=CandidateEntry`,
     });
@@ -136,8 +136,7 @@ const MedicalExamination = () => {
                 toast.success(
                     `Fitness check submitted successfully. ${response.message}`
                 );
-
-                reset();
+                refetch();
             },
 
             onError: (error) => {
