@@ -19,7 +19,9 @@ import {
 
 import { useGet } from "../../hooks/useGet";
 import { API_ROUTES } from "../../api/routes";
- import { useWatch } from "react-hook-form";
+import { useWatch } from "react-hook-form";
+import { usePost } from "../../hooks/usePost";
+import toast from "react-hot-toast";
 
 interface SalaryRow {
   selected: boolean;
@@ -39,7 +41,7 @@ interface Candidate {
   id: number;
   employeeId: string;
   enrollmentId: string;
-  fullName: string;
+  employeeName: string;
   department: string;
   section: string;
   cell: string;
@@ -69,6 +71,10 @@ const DirectorReview = () => {
       key: ["candidates"],
       url: `${API_ROUTES.EMPLOYEES_BY_STATUS}?status=Biometric`,
     });
+
+  const { mutate: DirectorReviewPost } = usePost<{ message: string; id: string }, any>(
+    API_ROUTES.DIRECTORS_REVIEW
+  );
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
@@ -118,16 +124,16 @@ const DirectorReview = () => {
 
 
 
-const employeeRows =
-  useWatch({
-    control,
-    name: "employees",
-  }) || [];
+  const employeeRows =
+    useWatch({
+      control,
+      name: "employees",
+    }) || [];
 
   const filteredData = useMemo(() => {
     return candidates.filter(
       (item) =>
-        item.fullName
+        item.employeeName
           ?.toLowerCase()
           .includes(search.toLowerCase()) ||
         item.enrollmentId.toLowerCase().includes(search.toLowerCase())
@@ -146,6 +152,7 @@ const employeeRows =
   );
 
   const onSubmit = (data: DirectorReviewForm) => {
+    console.log("data.employees-->", data.employees);
     const payload = data.employees
       .filter((item) => item.selected)
       .map((item) => ({
@@ -210,17 +217,26 @@ const employeeRows =
     employeeRows.every((row) => row.selected);
 
   const handleSendToIT = handleSubmit((data) => {
+    console.log("data.employees-->", data.employees);
     const payload = data.employees
       .filter((item) => item.selected)
       .map((item) => ({
         employeeId: item.employeeId,
         employeeEnrollmentId: item.employeeEnrollmentId,
-        grossSalary: item.grossSalary,
+        grossSalary: item.grossSalary || null,
         proposedMonthlySalary: item.proposedMonthlySalary,
       }));
 
     console.log("Send To IT Payload", payload);
-    alert(`${payload.length} employee(s) ready to send`);
+    DirectorReviewPost(payload, {
+      onSuccess: (response) => {
+        toast.success(response.message);
+      },
+
+      onError: (error) => {
+        toast.error(error.message);
+      },
+    })
   });
 
   return (
@@ -374,7 +390,7 @@ const employeeRows =
                         {item.enrollmentId}
                       </td>
 
-                      <td className="px-4 py-3">{item.fullName}</td>
+                      <td className="px-4 py-3">{item.employeeName}</td>
                       <td className="px-4 py-3">{item.department}</td>
                       <td className="px-4 py-3">{item.section}</td>
                       <td className="px-4 py-3">{item.designation}</td>
@@ -382,9 +398,15 @@ const employeeRows =
 
                       <td className="px-4 py-3 font-medium">
                         ৳
-                        {(
-                          employeeRows[formIndex]?.grossSalary ?? 0
-                        ).toLocaleString()}
+                        {Number.isFinite(employeeRows[formIndex]?.grossSalary)
+                          ? employeeRows[formIndex].grossSalary.toLocaleString()
+                          : "0"}
+                        <input
+                          type="hidden"
+                          {...register(`employees.${formIndex}.grossSalary`, {
+                            valueAsNumber: true,
+                          })}
+                        />
                       </td>
 
                       <td className="px-4 py-3">
@@ -430,11 +452,10 @@ const employeeRows =
                 key={index}
                 type="button"
                 onClick={() => setPage(index + 1)}
-                className={`h-10 w-10 rounded-md border ${
-                  page === index + 1
-                    ? "bg-blue-600 text-white"
-                    : "bg-white hover:bg-slate-100"
-                }`}
+                className={`h-10 w-10 rounded-md border ${page === index + 1
+                  ? "bg-blue-600 text-white"
+                  : "bg-white hover:bg-slate-100"
+                  }`}
               >
                 {index + 1}
               </button>
@@ -466,7 +487,7 @@ const employeeRows =
                   <div>
                     <p className="text-slate-500">Full Name</p>
                     <p className="font-semibold">
-                      {selectedCandidate.fullName}
+                      {selectedCandidate.employeeName}
                     </p>
                   </div>
                   <div>
@@ -524,6 +545,7 @@ const employeeRows =
                     <p className="font-semibold text-green-700">
                       ৳{selectedCandidate.salary?.toLocaleString()}
                     </p>
+
                   </div>
                 </div>
               </div>

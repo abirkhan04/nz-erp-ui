@@ -19,13 +19,13 @@ import toast from "react-hot-toast";
 import { api } from "../../api/client";
 
 export interface Document {
-  employeeId: string |undefined;
-  documentType: number;
-  documentNo: string;
-  issueDate: string;
-  expiryDate: string | null;
-  fileName: string;
-  filePath: string;
+    employeeId: string | undefined;
+    documentType: number;
+    documentNo: string;
+    issueDate: string;
+    expiryDate: string | null;
+    fileName: string;
+    filePath: string;
 }
 
 interface Candidate {
@@ -36,7 +36,7 @@ interface Candidate {
     dateOfBirth: string;
     gender: string;
     bloodGroup: string;
-    joiningDate: string;
+    dateOfJoining: string;
     status: string;
 
     fatherName: string;
@@ -161,18 +161,18 @@ const BiometricCapture = () => {
 
             const fileName = uploadResponse.fileNames[0];
 
-        // Update documents
-        setDocuments([
-            {
-                employeeId: selectedCandidate?.employeeId,
-                documentType: 0,
-                documentNo: "",
-                issueDate: new Date().toISOString().split("T")[0],
-                expiryDate:null,
-                fileName,
-                filePath: fileName, // Change if your backend expects a full path
-            },
-        ]);
+            // Update documents
+            setDocuments([
+                {
+                    employeeId: selectedCandidate?.employeeId,
+                    documentType: 0,
+                    documentNo: "",
+                    issueDate: new Date().toISOString().split("T")[0],
+                    expiryDate: null,
+                    fileName,
+                    filePath: fileName, // Change if your backend expects a full path
+                },
+            ]);
 
             console.log("Photo uploaded successfully:", fileName);
         } catch (error) {
@@ -223,7 +223,25 @@ const BiometricCapture = () => {
     ] = useState(false);
 
     const filteredData = useMemo(() => {
-        const data = candidates ?? [];
+        const bloodGroups = [
+            "A+",
+            "A-",
+            "B+",
+            "B-",
+            "O+",
+            "O-",
+            "AB+",
+            "AB-",
+        ] as const;
+
+        const genders = ["Male", "Female", "Other"] as const;
+
+        const data =
+            candidates?.map((candidate) => ({
+                ...candidate,
+                bloodGroup: bloodGroups[Number(candidate.bloodGroup)] ?? "",
+                gender: genders[Number(candidate.gender)] ?? "",
+            })) ?? [];
 
         if (!search) return data;
 
@@ -385,9 +403,6 @@ const BiometricCapture = () => {
                                     Date of Joining
                                 </th>
 
-                                <th className="px-4 py-3">
-                                    Status
-                                </th>
 
                                 <th className="px-4 py-3 text-center">
                                     Action
@@ -450,19 +465,10 @@ const BiometricCapture = () => {
 
                                         <td className="px-4 py-3">
                                             {
-                                                candidate.joiningDate
+                                                candidate.dateOfJoining
                                             }
                                         </td>
 
-                                        <td className="px-4 py-3">
-
-                                            <span className="rounded-full bg-orange-100 px-3 py-1 text-xs font-semibold text-orange-700">
-                                                {
-                                                    candidate.status
-                                                }
-                                            </span>
-
-                                        </td>
 
                                         <td className="px-4 py-3 text-center">
 
@@ -590,7 +596,7 @@ const BiometricCapture = () => {
                                     <div className="grid grid-cols-[110px_15px_1fr]">
                                         <span className="text-sm text-slate-600">Date of Joining</span>
                                         <span>:</span>
-                                        <span className="font-medium">{selectedCandidate.joiningDate}</span>
+                                        <span className="font-medium">{selectedCandidate.dateOfJoining}</span>
                                     </div>
 
                                     <div className="grid grid-cols-[110px_15px_1fr]">
