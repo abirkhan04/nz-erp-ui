@@ -272,7 +272,7 @@ const GateRegistration = () => {
     url: API_ROUTES.UNITS,
   });
 
-  const { data: temporaryId, refetch: refetchTemporaryId } = useGet<Enrollment>({
+  const { data: temporaryId } = useGet<Enrollment>({
     key: ["temporaryId"],
     url: API_ROUTES.ENROLLMENTID,
   });
