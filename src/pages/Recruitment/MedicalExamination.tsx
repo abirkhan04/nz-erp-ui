@@ -22,6 +22,7 @@ import {
 import { API_ROUTES } from "../../api/routes";
 import { usePost } from "../../hooks/usePost";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 interface Candidate {
     employeeId: number;
@@ -182,6 +183,8 @@ const MedicalExamination = () => {
         },
     ];
 
+     const navigate = useNavigate();
+
     return (
         <form
             onSubmit={handleSubmit(onSubmit)}
@@ -195,6 +198,7 @@ const MedicalExamination = () => {
                     <button
                         type="button"
                         className="flex items-center gap-2 border border-blue-300 text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-50"
+                        onClick={() => navigate("/recruitment")}
                     >
                         Back to Main Menu
                     </button>

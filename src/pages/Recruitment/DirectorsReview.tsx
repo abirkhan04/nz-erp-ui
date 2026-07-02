@@ -22,6 +22,7 @@ import { API_ROUTES } from "../../api/routes";
 import { useWatch } from "react-hook-form";
 import { usePost } from "../../hooks/usePost";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 interface SalaryRow {
   selected: boolean;
@@ -240,8 +241,28 @@ const DirectorReview = () => {
     })
   });
 
+  const navigate = useNavigate();
+
   return (
     <div className="min-h-screen bg-slate-50 p-6">
+      <div className="flex justify-end mb-6">
+        <button
+          type="button"
+          className="
+              border
+              border-blue-300
+              text-blue-600
+              rounded-lg
+              px-4
+              py-2
+              text-sm
+              font-medium
+            "
+          onClick={() => navigate("/recruitment")}
+        >
+          ← Back to Main Menu
+        </button>
+      </div>
       <div className="mx-auto max-w-[1700px]">
 
         {/* ================= Summary Cards ================= */}

@@ -234,7 +234,7 @@ const RecruitmentDashboard = () => {
           </h2>
 
           <button className="border px-4 py-2 rounded-lg text-blue-600 hover:bg-blue-50" onClick={() => navigate("/")}>
-            ← Back to Main Menu
+            ← Back to Parent
           </button>
         </div>
 

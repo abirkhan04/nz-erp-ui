@@ -128,6 +128,7 @@ const HRExecutiveEntry = () => {
               text-sm
               font-medium
             "
+                    onClick={() => navigate("/recruitment")}
                 >
                     ← Back to Main Menu
                 </button>

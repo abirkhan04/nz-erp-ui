@@ -3,6 +3,7 @@ import { useGet } from "../../hooks/useGet";
 import { API_ROUTES } from "../../api/routes";
 import { usePost } from "../../hooks/usePost";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -103,9 +104,9 @@ const ITActivationPage: React.FC = () => {
         url: `${API_ROUTES.EMPLOYEES_BY_STATUS}?status=DirectorReview`,
     });
 
-      const { mutate: ITActivationPost } = usePost<{ message: string; id: string }, any>(
+    const { mutate: ITActivationPost } = usePost<{ message: string; id: string }, any>(
         API_ROUTES.IT_ACTIVATION
-      );
+    );
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedId, setSelectedId] = useState<string>(candidates[0]?.enrollmentId);
     const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -135,26 +136,28 @@ const ITActivationPage: React.FC = () => {
 
     const handleActivateNext = () => {
         // Payload to be provided by user later
-     ITActivationPost({employeeId: selected.employeeId, employeeEnrollmentId: selected.enrollmentId}, {
-      onSuccess: async (response) => {
-        toast.success(
-          `IT Activation completed${response.id}`
-        );
-        await refetch();
-        setSelectedId(""); // Reset selected candidate after activation
-      },
+        ITActivationPost({ employeeId: selected.employeeId, employeeEnrollmentId: selected.enrollmentId }, {
+            onSuccess: async (response) => {
+                toast.success(
+                    `IT Activation completed${response.id}`
+                );
+                await refetch();
+                setSelectedId(""); // Reset selected candidate after activation
+            },
 
-      onError: (error) => {
-        toast.error(
-          `IT Activation failed. Error: ${error.message}`
-        );
-      },
-    });
+            onError: (error) => {
+                toast.error(
+                    `IT Activation failed. Error: ${error.message}`
+                );
+            },
+        });
     };
 
     // const handleActivate = () => {
     //     alert(`Activating employee: ${selected.employeeName} (${selected.enrollmentId})`);
     // };
+
+    const navigate = useNavigate();
 
     return (
         <div style={{
@@ -162,6 +165,25 @@ const ITActivationPage: React.FC = () => {
             background: "#f1f5f9",
             fontFamily: "'Segoe UI', system-ui, sans-serif",
         }}>
+
+            <div className="flex justify-end mb-6">
+                <button
+                    type="button"
+                    className="
+              border
+              border-blue-300
+              text-blue-600
+              rounded-lg
+              px-4
+              py-2
+              text-sm
+              font-medium
+            "
+                    onClick={() => navigate("/recruitment")}
+                >
+                    ← Back to Main Menu
+                </button>
+            </div>
 
             {/* ── Page Title Bar ── */}
             <div style={{
@@ -347,7 +369,7 @@ const ITActivationPage: React.FC = () => {
                             </div>
                             <div>
                                 <InfoRow label="Type of Worker" value={selected?.typeOfWorker} />
-                                <InfoRow label="Proposed Salary" value={`${selected?.proposedSalary.toLocaleString()} BDT`} />
+                                <InfoRow label="Proposed Salary" value={`${selected?.proposedSalary?.toLocaleString()} BDT`} />
                                 <InfoRow label="Pay Basis" value={selected?.payBasis} />
                                 <InfoRow label="Date of Joining" value={selected?.dateOfJoining} />
                                 <InfoRow label="Probation Period" value={selected?.probationPeriod} />
@@ -545,9 +567,9 @@ const ITActivationPage: React.FC = () => {
                     // disabled={!selected?.readyForActivation}
                     style={{
                         display: "flex", alignItems: "center", gap: 7,
-                        background:"#16a34a",
+                        background: "#16a34a",
                         border: "none", borderRadius: 8, padding: "9px 24px",
-                        cursor:  "pointer",
+                        cursor: "pointer",
                         fontSize: 13, color: "#fff", fontWeight: 700,
                     }}>
                     Activate &amp; Next

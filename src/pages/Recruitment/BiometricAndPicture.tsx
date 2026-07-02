@@ -17,6 +17,7 @@ import { API_ROUTES } from "../../api/routes";
 import { usePost } from "../../hooks/usePost";
 import toast from "react-hot-toast";
 import { api } from "../../api/client";
+import { useNavigate } from "react-router-dom";
 
 export interface Document {
     employeeId: string | undefined;
@@ -289,11 +290,31 @@ const BiometricCapture = () => {
             );
         };
 
+    const navigate = useNavigate();
+
     return (
         <div className="min-h-screen bg-slate-50 p-6">
             <div className="mx-auto max-w-[1700px]">
 
                 {/* Header */}
+                <div className="flex justify-end mb-6">
+                    <button
+                        type="button"
+                        className="
+              border
+              border-blue-300
+              text-blue-600
+              rounded-lg
+              px-4
+              py-2
+              text-sm
+              font-medium
+            "
+                        onClick={() => navigate("/recruitment")}
+                    >
+                        ← Back to Main Menu
+                    </button>
+                </div>
 
                 <div className="mb-5 flex items-center justify-between">
 

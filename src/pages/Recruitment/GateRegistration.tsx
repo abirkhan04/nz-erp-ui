@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import { useGet } from "../../hooks/useGet";
 import { useEffect } from "react";
 import type { Enrollment, Unit } from "../../types/interfaces";
+import { useNavigate } from "react-router-dom";
 
 export interface GateRegistrationForm {
   temporaryId: string;
@@ -450,12 +451,23 @@ const GateRegistration = () => {
     });
   };
 
+  const navigate = useNavigate();
+
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
       className="min-h-screen bg-slate-100 p-6"
     >
       <div className="max-w-7xl mx-auto space-y-6">
+        <div className="flex justify-end mb-6">
+          <button
+            type="button"
+            className="flex items-center gap-2 border border-blue-300 text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-50"
+            onClick = {()=> navigate("/recruitment")}
+          >
+            Back to Main Menu
+          </button>
+        </div>
 
         <div>
           <h1 className="text-2xl font-bold text-blue-900">
@@ -635,13 +647,6 @@ const GateRegistration = () => {
             </button>
 
             <button
-              type="submit"
-              className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-            >
-              সংরক্ষণ
-            </button>
-
-            <button
               type="button"
               className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
             >
@@ -649,7 +654,7 @@ const GateRegistration = () => {
             </button>
 
             <button
-              type="button"
+              type="submit"
               className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
             >
               মেডিকেল পরীক্ষায় প্রেরণ
