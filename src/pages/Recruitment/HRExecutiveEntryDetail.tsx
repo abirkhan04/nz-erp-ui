@@ -265,9 +265,9 @@ useEffect(() => {
       subunitId: data.subUnit,
       departmentId: data.department,
       sectionId: data.section,
-      cellId: data.cell,
-      designationId: data.designation,
-      gradeId: data.grade,
+      cellId: data.cell || null,
+      designationId: data.designation || null,
+      gradeId: data.grade || null,
 
       employeeType: 0, // Set according to your enum
       employeeTypeId: data.employeeCategory,
@@ -972,7 +972,7 @@ useEffect(() => {
             className="bg-blue-600 text-white px-6 py-3 rounded-lg flex items-center gap-2"
           >
             <Send size={16} />
-            Submit To Director
+            Submit To Biometric
           </button>
 
         </div>

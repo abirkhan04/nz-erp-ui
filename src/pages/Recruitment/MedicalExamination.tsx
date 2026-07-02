@@ -728,7 +728,7 @@ const MedicalExamination = () => {
                             size={18}
                         />
 
-                        Send Fit Candidates
+                        Send Candidates
                         to HR Executive Entry
 
                         <span

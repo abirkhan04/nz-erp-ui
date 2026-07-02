@@ -16,13 +16,14 @@ import {
 } from "lucide-react";
 import { API_ROUTES } from "../../api/routes";
 import { useGet } from "../../hooks/useGet";
+import { medicalResultMap } from "../EmployeeInformation/types";
 
 interface HRCandidate {
     employeeId: number;
     enrollmentId: string;
     employeeName: string;
     age: number;
-    medicalResult: string;
+    medicalResult: number;
     examinationDate: string;
 }
 
@@ -43,7 +44,10 @@ const HRExecutiveEntry = () => {
         useState(1);
 
     const filteredData = useMemo(() => {
-        const data = candidates ?? [];
+        const data = (candidates ?? []).filter((item) => item.medicalResult !== 1).map((item) => ({
+            ...item,
+            medicalResult: medicalResultMap.get(item.medicalResult) ?? "-",
+        }));
 
         if (!searchText) return data;
 
@@ -76,38 +80,33 @@ const HRExecutiveEntry = () => {
         );
     }, [filteredData, currentPage]);
 
+    const stats = useMemo(() => {
+        const data = candidates ?? [];
+
+        return {
+            totalReceived: data.length,
+            rejectedByMedical: data.filter(
+                (x) => x.medicalResult === 1
+            ).length,
+        };
+    }, [candidates]);
+
     const statCards = [
         {
             title: "RECEIVED FROM MEDICAL",
-            value: 25,
+            value: stats.totalReceived,
             icon: ClipboardCheck,
             color:
                 "text-blue-600 bg-blue-50 border-blue-100",
             iconBg: "bg-blue-100",
         },
         {
-            title: "ENTERED",
-            value: 0,
-            icon: CircleCheck,
-            color:
-                "text-green-600 bg-green-50 border-green-100",
-            iconBg: "bg-green-100",
-        },
-        {
             title: "REJECTED BY MEDICAL",
-            value: 25,
+            value: stats.rejectedByMedical,
             icon: CircleX,
             color:
                 "text-red-600 bg-red-50 border-red-100",
             iconBg: "bg-red-100",
-        },
-        {
-            title: "PENDING ENTRY",
-            value: 25,
-            icon: Clock3,
-            color:
-                "text-orange-600 bg-orange-50 border-orange-100",
-            iconBg: "bg-orange-100",
         },
     ];
 
@@ -191,7 +190,7 @@ const HRExecutiveEntry = () => {
                         </h2>
 
                         <span className="bg-red-500 text-white text-xs font-semibold px-2 py-1 rounded-full">
-                            25
+                            {filteredData?.length ?? 0}
                         </span>
                     </div>
 
