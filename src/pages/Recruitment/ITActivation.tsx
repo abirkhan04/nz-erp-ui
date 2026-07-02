@@ -15,7 +15,6 @@ interface Document {
 
 interface Candidate {
     employeeId: string;
-    enrollmentId: string;
     employeeName: string;
     fatherName: string;
     dateOfBirth: string;
@@ -104,39 +103,44 @@ const ITActivationPage: React.FC = () => {
         url: `${API_ROUTES.EMPLOYEES_BY_STATUS}?status=DirectorReview`,
     });
 
+
+
     const { mutate: ITActivationPost } = usePost<{ message: string; id: string }, any>(
         API_ROUTES.IT_ACTIVATION
     );
     const [searchTerm, setSearchTerm] = useState("");
-    const [selectedId, setSelectedId] = useState<string>(candidates[0]?.enrollmentId);
+    const [selectedId, setSelectedId] = useState<string>("");
     const [dropdownOpen, setDropdownOpen] = useState(false);
 
-
-    useEffect(() => {
-        if (candidates.length && !selectedId) {
-            setSelectedId(candidates[0].enrollmentId);
-        }
-    }, [candidates, selectedId]);
+    const { data: selected = {} } = useGet<any>({
+        key: ["activationSummary", selectedId],
+        url: `${API_ROUTES.IT_DETAIL}/${selectedId}`,
+        enabled: !!selectedId,
+    });
 
     const filteredCandidates = useMemo(() => {
-        const term = searchTerm.trim().toLowerCase();
+        const keyword = searchTerm.trim().toLowerCase();
 
-        if (!term) return candidates;
+        if (!keyword) return candidates;
 
         return candidates.filter(
-            (c) =>
-                c.employeeName?.toLowerCase().includes(term) ||
-                c.enrollmentId?.toLowerCase().includes(term)
+            c =>
+                c.employeeName?.toLowerCase().includes(keyword) ||
+                c.employeeId?.toLowerCase().includes(keyword)
         );
     }, [candidates, searchTerm]);
 
-    const selected = useMemo(() =>
-        candidates.find(c => c.enrollmentId === selectedId) ?? candidates[0],
-        [selectedId, candidates]);
+
+    useEffect(() => {
+        if (candidates.length > 0 && !selectedId) {
+            setSelectedId(candidates[0].employeeId);
+        }
+    }, [candidates, selectedId]);
+
 
     const handleActivateNext = () => {
         // Payload to be provided by user later
-        ITActivationPost({ employeeId: selected.employeeId, employeeEnrollmentId: selected.enrollmentId }, {
+        ITActivationPost({ employeeId: selectedId, employeeEnrollmentId: selected.enrollmentId }, {
             onSuccess: async (response) => {
                 toast.success(
                     `IT Activation completed${response.id}`
@@ -154,7 +158,7 @@ const ITActivationPage: React.FC = () => {
     };
 
     // const handleActivate = () => {
-    //     alert(`Activating employee: ${selected.employeeName} (${selected.enrollmentId})`);
+    //     alert(`Activating employee: ${selected.employeeName} (${selected.employeeId})`);
     // };
 
     const navigate = useNavigate();
@@ -250,20 +254,24 @@ const ITActivationPage: React.FC = () => {
                         maxWidth: 420, marginTop: 4,
                     }}>
                         {filteredCandidates.map(c => (
-                            <div key={c.enrollmentId}
-                                onMouseDown={() => { setSelectedId(c.enrollmentId); setSearchTerm(c.employeeName); setDropdownOpen(false); }}
+                            <div key={c.employeeId}
+                                onMouseDown={() => {
+                                    setSelectedId(c.employeeId);
+                                    setSearchTerm(c.employeeName);
+                                    setDropdownOpen(false);
+                                }}
                                 style={{
                                     padding: "10px 16px", cursor: "pointer", display: "flex",
                                     justifyContent: "space-between", alignItems: "center",
-                                    background: c.enrollmentId === selectedId ? "#eff6ff" : "#fff",
+                                    background: c.employeeId === selectedId ? "#eff6ff" : "#fff",
                                     borderBottom: "1px solid #f3f4f6",
                                     transition: "background 0.15s",
                                 }}>
                                 <div>
                                     <div style={{ fontWeight: 700, fontSize: 13, color: "#0f172a" }}>{c.employeeName}</div>
-                                    <div style={{ fontSize: 11, color: "#6b7280" }}>{c.enrollmentId} &bull; {c.department}</div>
+                                    <div style={{ fontSize: 11, color: "#6b7280" }}>{c.employeeId} &bull; {c.department}</div>
                                 </div>
-                                {c.enrollmentId === selectedId && (
+                                {c.employeeId === selectedId && (
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="3">
                                         <path d="M20 6 9 17l-5-5" />
                                     </svg>
@@ -328,7 +336,7 @@ const ITActivationPage: React.FC = () => {
                                 )}
                             </div>
                             <div style={{ flex: 1, minWidth: 0 }}>
-                                <InfoRow label="Temporary ID" value={selected?.enrollmentId} />
+                                <InfoRow label="Temporary ID" value={selected?.employeeId} />
                                 <InfoRow label="Full Name" value={selected?.employeeName} />
                                 <InfoRow label="Father's Name" value={selected?.fatherName} />
                                 <InfoRow label="Date of Birth" value={selected?.dateOfBirth} />
@@ -358,7 +366,7 @@ const ITActivationPage: React.FC = () => {
                     <div style={{ padding: 16 }}>
                         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 12px" }}>
                             <div>
-                                <InfoRow label="Company" value={selected?.company} />
+                                <InfoRow label="Company" value={selected?.unitName} />
                                 <InfoRow label="Department" value={selected?.department} />
                                 <InfoRow label="Section" value={selected?.section} />
                                 <InfoRow label="Cell" value={selected?.cell} />
@@ -369,7 +377,7 @@ const ITActivationPage: React.FC = () => {
                             </div>
                             <div>
                                 <InfoRow label="Type of Worker" value={selected?.typeOfWorker} />
-                                <InfoRow label="Proposed Salary" value={`${selected?.proposedSalary?.toLocaleString()} BDT`} />
+                                <InfoRow label="Proposed Salary" value={`${selected?.proposedMonthlySalary?.toLocaleString()} BDT`} />
                                 <InfoRow label="Pay Basis" value={selected?.payBasis} />
                                 <InfoRow label="Date of Joining" value={selected?.dateOfJoining} />
                                 <InfoRow label="Probation Period" value={selected?.probationPeriod} />
@@ -438,18 +446,18 @@ const ITActivationPage: React.FC = () => {
                         <div style={{ marginTop: 14 }}>
                             <div style={{ fontSize: 12, fontWeight: 700, color: "#0f172a", marginBottom: 8 }}>Quick Switch Candidate</div>
                             {candidates.map(c => (
-                                <div key={c.enrollmentId}
-                                    onClick={() => setSelectedId(c.enrollmentId)}
+                                <div key={c.employeeId}
+                                    onClick={() => setSelectedId(c.employeeId)}
                                     style={{
                                         display: "flex", alignItems: "center", justifyContent: "space-between",
                                         padding: "8px 10px", borderRadius: 8, cursor: "pointer", marginBottom: 4,
-                                        background: c.enrollmentId === selectedId ? "#eff6ff" : "#f8fafc",
-                                        border: `1.5px solid ${c.enrollmentId === selectedId ? "#bfdbfe" : "#e2e8f0"}`,
+                                        background: c.employeeId === selectedId ? "#eff6ff" : "#f8fafc",
+                                        border: `1.5px solid ${c.employeeId === selectedId ? "#bfdbfe" : "#e2e8f0"}`,
                                         transition: "all 0.15s",
                                     }}>
                                     <div>
                                         <div style={{ fontSize: 12, fontWeight: 700, color: "#0f172a" }}>{c.employeeName}</div>
-                                        <div style={{ fontSize: 11, color: "#6b7280" }}>{c.enrollmentId}</div>
+                                        <div style={{ fontSize: 11, color: "#6b7280" }}>{c.employeeId}</div>
                                     </div>
                                     <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 3 }}>
                                         <span style={{
@@ -459,7 +467,7 @@ const ITActivationPage: React.FC = () => {
                                         }}>
                                             {c.readyForActivation ? "Ready" : "Not Ready"}
                                         </span>
-                                        {c.enrollmentId === selectedId && (
+                                        {c.employeeId === selectedId && (
                                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="3">
                                                 <path d="M20 6 9 17l-5-5" />
                                             </svg>
