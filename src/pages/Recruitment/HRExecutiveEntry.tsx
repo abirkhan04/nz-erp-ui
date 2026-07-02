@@ -489,7 +489,7 @@ const HRExecutiveEntry = () => {
                 </p>
             </div>
 
-            <div className="flex justify-end mt-6">
+            {/* <div className="flex justify-end mt-6">
                 <button
                     type="button"
                     className="
@@ -526,7 +526,7 @@ const HRExecutiveEntry = () => {
                         0
                     </span>
                 </button>
-            </div>
+            </div> */}
 
         </div>
     );

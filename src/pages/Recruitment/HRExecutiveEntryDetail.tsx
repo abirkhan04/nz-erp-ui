@@ -26,13 +26,6 @@ import { useGet } from "../../hooks/useGet";
 import { usePost } from "../../hooks/usePost";
 import toast from "react-hot-toast";
 
-interface Candidate {
-  candidateId: string;
-  candidateName: string;
-  status: string;
-  entryDate: string;
-}
-
 interface HRExecutiveEntryForm {
   employeeId: string;
   employeeEnrollmentId: string;
@@ -83,23 +76,7 @@ interface HRExecutiveEntryForm {
   files: File[];
 }
 
-const MOCK_CANDIDATES: Candidate[] = [
-  {
-    candidateId: "CAN-25-00051",
-    candidateName: "Ali Raza",
-    status:
-      "Selected by Production Manager",
-    entryDate: "15-May-2025",
-  },
-  {
-    candidateId: "CAN-25-00052",
-    candidateName:
-      "Muhammad Imran",
-    status:
-      "Selected by Production Manager",
-    entryDate: "15-May-2025",
-  },
-];
+
 
 const dropdownOptions = [
   {
@@ -165,15 +142,6 @@ const HRExecutiveEntryDetails = () => {
   const { candidateId, enrollmentId } =
     useParams();
 
-  const candidate = useMemo(
-    () =>
-      MOCK_CANDIDATES.find(
-        (item) =>
-          item.candidateId ===
-          candidateId
-      ),
-    [candidateId]
-  );
 
   const {
     register,
@@ -569,7 +537,7 @@ const onSubmit = (data: HRExecutiveEntryForm) => {
             Candidate :
             {" "}
             {
-              candidate?.candidateId
+              candidateId
             }
           </div>
 
@@ -577,7 +545,7 @@ const onSubmit = (data: HRExecutiveEntryForm) => {
             Entry Date :
             {" "}
             {
-              candidate?.entryDate
+              new Date().toLocaleDateString()
             }
           </div>
 
