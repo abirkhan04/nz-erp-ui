@@ -29,5 +29,6 @@ export const API_ROUTES = {
   HRExecutiveEntry: "Employees/hr-executive-entry",
   BIOMETRIC_CAPTURE: "Employees/biometric-capture",
   DIRECTORS_REVIEW: "Employees/directors-review",
+  IT_ACTIVATION: "Employees/it-activation",
   EMPLOYEE_NATURES: "EmployeeNatures",
 };

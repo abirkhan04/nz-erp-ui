@@ -1,6 +1,8 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useGet } from "../../hooks/useGet";
 import { API_ROUTES } from "../../api/routes";
+import { usePost } from "../../hooks/usePost";
+import toast from "react-hot-toast";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -11,6 +13,7 @@ interface Document {
 }
 
 interface Candidate {
+    employeeId: string;
     enrollmentId: string;
     employeeName: string;
     fatherName: string;
@@ -95,10 +98,14 @@ const AvatarIcon: React.FC = () => (
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 const ITActivationPage: React.FC = () => {
-    const { data: candidates = [] } = useGet<Candidate[]>({
+    const { data: candidates = [], refetch } = useGet<Candidate[]>({
         key: ["candidates"],
         url: `${API_ROUTES.EMPLOYEES_BY_STATUS}?status=DirectorReview`,
     });
+
+      const { mutate: ITActivationPost } = usePost<{ message: string; id: string }, any>(
+        API_ROUTES.IT_ACTIVATION
+      );
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedId, setSelectedId] = useState<string>(candidates[0]?.enrollmentId);
     const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -124,16 +131,30 @@ const ITActivationPage: React.FC = () => {
 
     const selected = useMemo(() =>
         candidates.find(c => c.enrollmentId === selectedId) ?? candidates[0],
-        [selectedId]);
+        [selectedId, candidates]);
 
     const handleActivateNext = () => {
         // Payload to be provided by user later
-        alert(`Activate & Next triggered for: ${selected.enrollmentId}`);
+     ITActivationPost({employeeId: selected.employeeId, employeeEnrollmentId: selected.enrollmentId}, {
+      onSuccess: async (response) => {
+        toast.success(
+          `IT Activation completed${response.id}`
+        );
+        await refetch();
+        setSelectedId(""); // Reset selected candidate after activation
+      },
+
+      onError: (error) => {
+        toast.error(
+          `IT Activation failed. Error: ${error.message}`
+        );
+      },
+    });
     };
 
-    const handleActivate = () => {
-        alert(`Activating employee: ${selected.employeeName} (${selected.enrollmentId})`);
-    };
+    // const handleActivate = () => {
+    //     alert(`Activating employee: ${selected.employeeName} (${selected.enrollmentId})`);
+    // };
 
     return (
         <div style={{
@@ -503,30 +524,30 @@ const ITActivationPage: React.FC = () => {
                     Preview Company ID Card
                 </button>
 
-                <button
+                {/* <button
                     onClick={handleActivate}
-                    disabled={!selected?.readyForActivation}
+                    // disabled={!selected?.readyForActivation}
                     style={{
                         display: "flex", alignItems: "center", gap: 7,
-                        background: selected?.readyForActivation ? "#16a34a" : "#9ca3af",
+                        background:  "#16a34a",
                         border: "none", borderRadius: 8, padding: "9px 24px",
-                        cursor: selected?.readyForActivation ? "pointer" : "not-allowed",
+                        cursor:  "pointer",
                         fontSize: 13, color: "#fff", fontWeight: 700,
                     }}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                         <path d="M20 6 9 17l-5-5" />
                     </svg>
                     Activate Employee
-                </button>
+                </button> */}
 
                 <button
                     onClick={handleActivateNext}
-                    disabled={!selected?.readyForActivation}
+                    // disabled={!selected?.readyForActivation}
                     style={{
                         display: "flex", alignItems: "center", gap: 7,
-                        background: selected?.readyForActivation ? "#0f2044" : "#9ca3af",
+                        background:"#16a34a",
                         border: "none", borderRadius: 8, padding: "9px 24px",
-                        cursor: selected?.readyForActivation ? "pointer" : "not-allowed",
+                        cursor:  "pointer",
                         fontSize: 13, color: "#fff", fontWeight: 700,
                     }}>
                     Activate &amp; Next
