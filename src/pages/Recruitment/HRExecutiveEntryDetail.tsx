@@ -116,7 +116,7 @@ const HRExecutiveEntryDetails = () => {
   });
 
   const { data: subUnits = [] } = useGet<any[]>({
-    key: ["subUnits"],
+    key: ["subUnits", watch("company")],
     url: `${API_ROUTES.SUB_UNITS}/Unit/${watch("company")}`,
     enabled: !!watch("company"),
   });
@@ -127,8 +127,9 @@ const HRExecutiveEntryDetails = () => {
   });
 
   const { data: sections = [] } = useGet<any[]>({
-    key: ["sections"],
-    url: API_ROUTES.SECTION,
+    key: ["sections", watch("department")],
+    url: `${API_ROUTES.SECTION}/by-department/${watch("department")}?includeInactive=false`,
+    enabled: !!watch("department"),
   });
 
   const { data: cells = [] } = useGet<any[]>({
@@ -230,7 +231,6 @@ useEffect(() => {
     }
   }, [candidateId, enrollmentId, reset,   units,
   departments,
-  sections,
   cells,
   designations,
   grades,
@@ -292,7 +292,7 @@ useEffect(() => {
 
       paymentMethod: data.paymentMode,
 
-      bankingId: data.bankName,
+      bankingId: data.bankName|| null,
       accountName: "",
       accountNo: data.accountNumber,
       routingNo: "",
