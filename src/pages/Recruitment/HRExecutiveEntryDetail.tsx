@@ -90,7 +90,7 @@ const dropdownOptions = [
 
 const HRExecutiveEntryDetails = () => {
 
-    const {
+  const {
     register,
     control,
     watch,
@@ -175,18 +175,18 @@ const HRExecutiveEntryDetails = () => {
 
   const values = watch();
 
-useEffect(() => {
-  const timer = setTimeout(() => {
-    const { files, ...rest } = values;
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const { files, ...rest } = values;
 
-    localStorage.setItem(
-      DRAFT_KEY,
-      JSON.stringify(rest)
-    );
-  }, 1000);
+      localStorage.setItem(
+        DRAFT_KEY,
+        JSON.stringify(rest)
+      );
+    }, 1000);
 
-  return () => clearTimeout(timer);
-}, [values, DRAFT_KEY]);
+    return () => clearTimeout(timer);
+  }, [values, DRAFT_KEY]);
 
   useEffect(() => {
     const defaultValues: any = {
@@ -224,20 +224,40 @@ useEffect(() => {
       reset({
         ...defaultValues,
         ...parsed,
+        subUnit: null,
+        section: null,
         files: [], // Files cannot be restored
       });
     } else {
       reset(defaultValues);
     }
-  }, [candidateId, enrollmentId, reset,   units,
-  departments,
-  cells,
-  designations,
-  grades,
-  shifts,
-  employeeNatures,
-  candidateId,
-  enrollmentId]);
+  }, [candidateId, enrollmentId, reset, units,
+    departments,
+    cells,
+    designations,
+    grades,
+    shifts,
+    employeeNatures,
+    candidateId,
+    enrollmentId]);
+
+  useEffect(() => {
+    const draft = localStorage.getItem(DRAFT_KEY);
+    if (!draft || subUnits.length === 0) return;
+
+    const parsed = JSON.parse(draft);
+
+    setValue("subUnit", parsed.subUnit);
+  }, [subUnits]);
+
+  useEffect(() => {
+    const draft = localStorage.getItem(DRAFT_KEY);
+    if (!draft || sections.length === 0) return;
+
+    const parsed = JSON.parse(draft);
+
+    setValue("section", parsed.section);
+  }, [sections]);
 
   const handleSaveDraft = () => {
     const values = watch();
@@ -292,7 +312,7 @@ useEffect(() => {
 
       paymentMethod: data.paymentMode,
 
-      bankingId: data.bankName|| null,
+      bankingId: data.bankName || null,
       accountName: "",
       accountNo: data.accountNumber,
       routingNo: "",
