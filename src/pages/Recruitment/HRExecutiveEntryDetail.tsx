@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useRef
 } from "react";
 
 import {
@@ -163,6 +164,31 @@ const HRExecutiveEntryDetails = () => {
   const { candidateId, enrollmentId } =
     useParams();
 
+  const didRestoreRef = useRef(false);
+  const restoredSubUnitRef = useRef(false);
+  const restoredSectionRef = useRef(false);
+  const restoredFieldsRef = useRef(false);
+  const restoredCompanyRef = useRef(false);
+  const restoredDepartmentRef = useRef(false);
+  const restoredCellRef = useRef(false);
+  const restoredDesignationRef = useRef(false);
+  const restoredGradeRef = useRef(false);
+  const restoredShiftRef = useRef(false);
+  const restoredWorkerTypeRef = useRef(false);
+
+  useEffect(() => {
+    didRestoreRef.current = false;
+    restoredSubUnitRef.current = false;
+    restoredSectionRef.current = false;
+    restoredCompanyRef.current = false;
+    restoredDepartmentRef.current = false;
+    restoredCellRef.current = false;
+    restoredDesignationRef.current = false;
+    restoredGradeRef.current = false;
+    restoredShiftRef.current = false;
+    restoredWorkerTypeRef.current = false;
+  }, [candidateId, enrollmentId]);
+
   const DRAFT_KEY = `HR_EXECUTIVE_DRAFT_${candidateId}_${enrollmentId}`;
 
 
@@ -189,6 +215,9 @@ const HRExecutiveEntryDetails = () => {
   }, [values, DRAFT_KEY]);
 
   useEffect(() => {
+    if (didRestoreRef.current) return;
+    didRestoreRef.current = true;
+
     const defaultValues: any = {
       employeeId: candidateId ?? "",
       employeeEnrollmentId: enrollmentId ?? "",
@@ -220,44 +249,103 @@ const HRExecutiveEntryDetails = () => {
 
     if (draft) {
       const parsed = JSON.parse(draft);
-      console.log("Parsed draft:", parsed);
       reset({
         ...defaultValues,
         ...parsed,
-        subUnit: null,
-        section: null,
-        files: [], // Files cannot be restored
+        files: [],
       });
     } else {
       reset(defaultValues);
     }
-  }, [candidateId, enrollmentId, reset, units,
-    departments,
-    cells,
-    designations,
-    grades,
-    shifts,
-    employeeNatures,
-    candidateId,
-    enrollmentId]);
+  }, [candidateId, enrollmentId, reset]);
 
   useEffect(() => {
+    if (restoredSubUnitRef.current || subUnits.length === 0) return;
     const draft = localStorage.getItem(DRAFT_KEY);
-    if (!draft || subUnits.length === 0) return;
-
+    if (!draft) return;
     const parsed = JSON.parse(draft);
-
-    setValue("subUnit", parsed.subUnit);
+    if (parsed.subUnit != null) setValue("subUnit", parsed.subUnit);
+    restoredSubUnitRef.current = true;
   }, [subUnits]);
 
   useEffect(() => {
+    if (restoredSectionRef.current || sections.length === 0) return;
     const draft = localStorage.getItem(DRAFT_KEY);
-    if (!draft || sections.length === 0) return;
-
+    if (!draft) return;
     const parsed = JSON.parse(draft);
-
-    setValue("section", parsed.section);
+    if (parsed.section != null) setValue("section", parsed.section);
+    restoredSectionRef.current = true;
   }, [sections]);
+
+  useEffect(() => {
+    if (restoredCompanyRef.current || units.length === 0) return;
+    const draft = localStorage.getItem(DRAFT_KEY);
+    if (draft) {
+      const parsed = JSON.parse(draft);
+      if (parsed.company != null) setValue("company", parsed.company);
+    }
+    restoredCompanyRef.current = true;
+  }, [units]);
+
+  useEffect(() => {
+    if (restoredDepartmentRef.current || departments.length === 0) return;
+    const draft = localStorage.getItem(DRAFT_KEY);
+    if (draft) {
+      const parsed = JSON.parse(draft);
+      if (parsed.department != null) setValue("department", parsed.department);
+    }
+    restoredDepartmentRef.current = true;
+  }, [departments]);
+
+  useEffect(() => {
+    if (restoredCellRef.current || cells.length === 0) return;
+    const draft = localStorage.getItem(DRAFT_KEY);
+    if (draft) {
+      const parsed = JSON.parse(draft);
+      if (parsed.cell != null) setValue("cell", parsed.cell);
+    }
+    restoredCellRef.current = true;
+  }, [cells]);
+
+  useEffect(() => {
+    if (restoredDesignationRef.current || designations.length === 0) return;
+    const draft = localStorage.getItem(DRAFT_KEY);
+    if (draft) {
+      const parsed = JSON.parse(draft);
+      if (parsed.designation != null) setValue("designation", parsed.designation);
+    }
+    restoredDesignationRef.current = true;
+  }, [designations]);
+
+  useEffect(() => {
+    if (restoredGradeRef.current || grades.length === 0) return;
+    const draft = localStorage.getItem(DRAFT_KEY);
+    if (draft) {
+      const parsed = JSON.parse(draft);
+      if (parsed.grade != null) setValue("grade", parsed.grade);
+    }
+    restoredGradeRef.current = true;
+  }, [grades]);
+
+  useEffect(() => {
+    if (restoredShiftRef.current || shifts.length === 0) return;
+    const draft = localStorage.getItem(DRAFT_KEY);
+    if (draft) {
+      const parsed = JSON.parse(draft);
+      if (parsed.shift != null) setValue("shift", parsed.shift);
+    }
+    restoredShiftRef.current = true;
+  }, [shifts]);
+
+  useEffect(() => {
+    if (restoredWorkerTypeRef.current || employeeNatures.length === 0) return;
+    const draft = localStorage.getItem(DRAFT_KEY);
+    if (draft) {
+      const parsed = JSON.parse(draft);
+      if (parsed.workerType != null) setValue("workerType", parsed.workerType);
+    }
+    restoredWorkerTypeRef.current = true;
+  }, [employeeNatures]);
 
   const handleSaveDraft = () => {
     const values = watch();
