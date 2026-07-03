@@ -167,7 +167,6 @@ const HRExecutiveEntryDetails = () => {
   const didRestoreRef = useRef(false);
   const restoredSubUnitRef = useRef(false);
   const restoredSectionRef = useRef(false);
-  const restoredFieldsRef = useRef(false);
   const restoredCompanyRef = useRef(false);
   const restoredDepartmentRef = useRef(false);
   const restoredCellRef = useRef(false);
