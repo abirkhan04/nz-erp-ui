@@ -4,6 +4,7 @@ import { API_ROUTES } from "../../api/routes";
 import { usePost } from "../../hooks/usePost";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { genderMapFromNumber, reverseBloodGroupMap } from "../EmployeeInformation/types";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -53,7 +54,7 @@ interface Candidate {
 
 const InfoRow: React.FC<{ label: string; value: string | number }> = ({ label, value }) => (
     <div style={{ display: "flex", gap: 6, marginBottom: 5, fontSize: 13 }}>
-        <span style={{ color: "#6b7280", minWidth: 130, flexShrink: 0 }}>{label}</span>
+        <span style={{ color: "#6b7280", minWidth: 100, flexShrink: 0 }}>{label}</span>
         <span style={{ color: "#374151", fontWeight: 600 }}>: {value}</span>
     </div>
 );
@@ -340,8 +341,8 @@ const ITActivationPage: React.FC = () => {
                                 <InfoRow label="Full Name" value={selected?.employeeName} />
                                 <InfoRow label="Father's Name" value={selected?.fatherName} />
                                 <InfoRow label="Date of Birth" value={selected?.dateOfBirth} />
-                                <InfoRow label="Gender" value={selected?.gender} />
-                                <InfoRow label="Blood Group" value={selected?.bloodGroup} />
+                                <InfoRow label="Gender" value={genderMapFromNumber[selected?.gender]} />
+                                <InfoRow label="Blood Group" value={reverseBloodGroupMap[selected?.bloodGroup]} />
                                 <InfoRow label="Religion" value={selected?.religion} />
                                 <InfoRow label="Nominee Name" value={selected?.nomineeName} />
                                 <InfoRow label="Nominee Relation" value={selected?.nomineeRelation} />
@@ -377,7 +378,7 @@ const ITActivationPage: React.FC = () => {
                             </div>
                             <div>
                                 <InfoRow label="Type of Worker" value={selected?.typeOfWorker} />
-                                <InfoRow label="Proposed Salary" value={`${selected?.proposedMonthlySalary?.toLocaleString()} BDT`} />
+                                <InfoRow label="Proposed Salary" value={`${selected?.proposedMonthlySalary?.toLocaleString()||0} BDT`} />
                                 <InfoRow label="Pay Basis" value={selected?.payBasis} />
                                 <InfoRow label="Date of Joining" value={selected?.dateOfJoining} />
                                 <InfoRow label="Probation Period" value={selected?.probationPeriod} />

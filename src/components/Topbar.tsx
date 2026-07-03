@@ -1,23 +1,23 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { User, ChevronDown, Building2 } from "lucide-react";
+import { User, ChevronDown } from "lucide-react";
 
 export default function Topbar() {
   const [userOpen, setUserOpen] = useState(false);
 
-  const [companyOpen, setCompanyOpen] = useState(false);
-  const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
+  // const [companyOpen, setCompanyOpen] = useState(false);
+  // const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
 
   const [, setLocationOpen] = useState(false);
 
   const navigate = useNavigate();
 
   const userRef = useRef<HTMLDivElement>(null);
-  const companyRef = useRef<HTMLDivElement>(null);
+  // const companyRef = useRef<HTMLDivElement>(null);
   const locationRef = useRef<HTMLDivElement>(null);
 
   // Data
-  const companies = ["Textile", "Fabric", "Denim", "DyFlax", "Apparels"];
+  // const companies = ["Textile", "Fabric", "Denim", "DyFlax", "Apparels"];
 
   // Outside click handler
   useEffect(() => {
@@ -25,9 +25,9 @@ export default function Topbar() {
       if (userRef.current && !userRef.current.contains(e.target as Node)) {
         setUserOpen(false);
       }
-      if (companyRef.current && !companyRef.current.contains(e.target as Node)) {
-        setCompanyOpen(false);
-      }
+      // if (companyRef.current && !companyRef.current.contains(e.target as Node)) {
+      //   setCompanyOpen(false);
+      // }
       if (locationRef.current && !locationRef.current.contains(e.target as Node)) {
         setLocationOpen(false);
       }
@@ -38,24 +38,24 @@ export default function Topbar() {
   }, []);
 
   // Toggle handlers
-  const toggleCompany = (company: string) => {
-    setSelectedCompanies((prev) =>
-      prev.includes(company)
-        ? prev.filter((c) => c !== company)
-        : [...prev, company]
-    );
-  };
+  // const toggleCompany = (company: string) => {
+  //   setSelectedCompanies((prev) =>
+  //     prev.includes(company)
+  //       ? prev.filter((c) => c !== company)
+  //       : [...prev, company]
+  //   );
+  // };
 
   const handleLogout = () => {
     navigate("/login");
   };
 
   // Display helpers (clean UI when many selected)
-  const renderSelected = (items: string[], placeholder: string) => {
-    if (items.length === 0) return placeholder;
-    if (items.length > 2) return `${items.length} selected`;
-    return items.join(", ");
-  };
+  // const renderSelected = (items: string[], placeholder: string) => {
+  //   if (items.length === 0) return placeholder;
+  //   if (items.length > 2) return `${items.length} selected`;
+  //   return items.join(", ");
+  // };
 
   return (
     <div className="h-16 bg-gradient-to-r from-blue-700 to-blue-500 flex items-center justify-between px-6 text-white shadow-md">
@@ -104,7 +104,7 @@ export default function Topbar() {
         )}
       </div> */}
         
-        {/* Company Multi-Select */}
+        {/* Company Multi-Select
         <div className="relative" ref={companyRef}>
           <div
             onClick={() => setCompanyOpen(!companyOpen)}
@@ -135,7 +135,7 @@ export default function Topbar() {
               ))}
             </div>
           )}
-        </div>
+        </div> */}
 
         {/* User Dropdown */}
         <div className="relative" ref={userRef}>

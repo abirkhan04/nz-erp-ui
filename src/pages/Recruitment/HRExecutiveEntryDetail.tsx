@@ -90,7 +90,25 @@ const dropdownOptions = [
 
 const HRExecutiveEntryDetails = () => {
 
-
+    const {
+    register,
+    control,
+    watch,
+    setValue,
+    reset,
+    handleSubmit,
+    formState: { errors },
+  } =
+    useForm<HRExecutiveEntryForm>(
+      {
+        defaultValues: {
+          paymentMode:
+            "BANK",
+          files: [],
+          employeeId: "",
+        },
+      }
+    );
 
   const { data: units = [] } = useGet<Unit[]>({
     key: ["units"],
@@ -99,7 +117,8 @@ const HRExecutiveEntryDetails = () => {
 
   const { data: subUnits = [] } = useGet<any[]>({
     key: ["subUnits"],
-    url: API_ROUTES.SUB_UNITS,
+    url: `${API_ROUTES.SUB_UNITS}/Unit/${watch("company")}`,
+    enabled: !!watch("company"),
   });
 
   const { data: departments = [] } = useGet<any[]>({
@@ -146,25 +165,7 @@ const HRExecutiveEntryDetails = () => {
   const DRAFT_KEY = `HR_EXECUTIVE_DRAFT_${candidateId}_${enrollmentId}`;
 
 
-  const {
-    register,
-    control,
-    watch,
-    setValue,
-    reset,
-    handleSubmit,
-    formState: { errors },
-  } =
-    useForm<HRExecutiveEntryForm>(
-      {
-        defaultValues: {
-          paymentMode:
-            "BANK",
-          files: [],
-          employeeId: "",
-        },
-      }
-    );
+
 
   const { mutate: HRExecutiveEntryPost } = usePost(API_ROUTES.HRExecutiveEntry);
 
@@ -228,7 +229,6 @@ useEffect(() => {
       reset(defaultValues);
     }
   }, [candidateId, enrollmentId, reset,   units,
-  subUnits,
   departments,
   sections,
   cells,

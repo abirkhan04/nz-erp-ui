@@ -82,8 +82,8 @@ const DirectorReview = () => {
       employeeEnrollmentId: item.enrollmentId,
       grossSalary: item.salary,
       proposedMonthlySalary: item.salary,
-      decision: "APPROVE", 
-      remarks: "",        
+      decision: "APPROVE",
+      remarks: "",
     }));
 
   const candidatesKey = useMemo(() => candidates.map((c) => c.employeeId).join("|"), [candidates]);
@@ -118,10 +118,10 @@ const DirectorReview = () => {
   // 4. Selections & Dynamic Calculations for Summary Cards
   const selectedRows = useMemo(() => employeeRows.filter((x) => x.selected), [employeeRows]);
   const selectedCount = selectedRows.length;
-  
+
   const totalGrossSalary = useMemo(() => selectedRows.reduce((sum, item) => sum + (Number(item.grossSalary) || 0), 0), [selectedRows]);
   const totalProposedSalary = useMemo(() => selectedRows.reduce((sum, item) => sum + (Number(item.proposedMonthlySalary) || 0), 0), [selectedRows]);
-  
+
   const allSelected = employeeRows.length > 0 && employeeRows.every((row) => row.selected);
 
   // Dynamic Metrics (calculated instantly from live row states)
@@ -221,7 +221,7 @@ const DirectorReview = () => {
 
         {/* Dynamic Multi-action Single Form wrapper */}
         <form onSubmit={handleSubmit(onSendToIT)}>
-          
+
           {/* ================= Table Header ================= */}
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-xl font-semibold text-slate-800">Pending For Director Review</h2>
@@ -252,8 +252,8 @@ const DirectorReview = () => {
           </div>
 
           {/* ================= Candidate Overview Table ================= */}
-          <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-            <table className="w-full border-collapse">
+          <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
+            <table className="min-w-[1200px] w-full border-collapse">
               <thead className="bg-slate-100">
                 <tr className="text-left text-sm text-slate-700 font-medium">
                   <th className="w-12 px-4 py-3">
@@ -308,9 +308,8 @@ const DirectorReview = () => {
                       </td>
 
                       <td className="px-4 py-3">
-                        <span className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                          employeeRows[formIndex].decision === "APPROVE" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-                        }`}>
+                        <span className={`rounded-full px-3 py-1 text-xs font-semibold ${employeeRows[formIndex].decision === "APPROVE" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                          }`}>
                           {employeeRows[formIndex].decision}
                         </span>
                       </td>
@@ -319,11 +318,10 @@ const DirectorReview = () => {
                         <button
                           type="button"
                           onClick={() => setSelectedCandidate(item)}
-                          className={`rounded-md border px-4 py-2 text-sm font-medium transition ${
-                            selectedCandidate?.id === item.id 
-                              ? "bg-blue-600 border-blue-600 text-white" 
+                          className={`rounded-md border px-4 py-2 text-sm font-medium transition ${selectedCandidate?.id === item.id
+                              ? "bg-blue-600 border-blue-600 text-white"
                               : "border-blue-500 text-blue-600 hover:bg-blue-50"
-                          }`}
+                            }`}
                         >
                           Review
                         </button>
@@ -343,9 +341,8 @@ const DirectorReview = () => {
                   key={index}
                   type="button"
                   onClick={() => setPage(index + 1)}
-                  className={`h-10 w-10 rounded-md border text-sm font-medium transition ${
-                    page === index + 1 ? "bg-blue-600 text-white border-blue-600" : "bg-white border-slate-200 hover:bg-slate-100"
-                  }`}
+                  className={`h-10 w-10 rounded-md border text-sm font-medium transition ${page === index + 1 ? "bg-blue-600 text-white border-blue-600" : "bg-white border-slate-200 hover:bg-slate-100"
+                    }`}
                 >
                   {index + 1}
                 </button>
@@ -359,7 +356,7 @@ const DirectorReview = () => {
           {selectedCandidate && selectedCandidateFormIndex !== -1 && (
             <div className="mt-8 space-y-6">
               <div className="grid grid-cols-12 gap-6">
-                
+
                 {/* Info Block */}
                 <div className="col-span-5 rounded-xl border border-slate-200 bg-white shadow-sm">
                   <div className="border-b border-slate-200 px-6 py-4">
@@ -437,11 +434,11 @@ const DirectorReview = () => {
 
                   <div className="mt-4 flex gap-10 border-t border-slate-100 pt-4">
                     <label className="flex items-center gap-2 cursor-pointer group selection:bg-transparent">
-                      <input 
-                        type="radio" 
-                        value="APPROVE" 
+                      <input
+                        type="radio"
+                        value="APPROVE"
                         className="w-4 h-4 text-green-600 focus:ring-green-500"
-                        {...register(`employees.${selectedCandidateFormIndex}.decision`)} 
+                        {...register(`employees.${selectedCandidateFormIndex}.decision`)}
                       />
                       <span className="font-semibold text-sm text-slate-700 group-hover:text-green-700 transition">
                         Mark Candidate as Approved
@@ -449,11 +446,11 @@ const DirectorReview = () => {
                     </label>
 
                     <label className="flex items-center gap-2 cursor-pointer group selection:bg-transparent">
-                      <input 
-                        type="radio" 
-                        value="REJECT" 
+                      <input
+                        type="radio"
+                        value="REJECT"
                         className="w-4 h-4 text-red-600 focus:ring-red-500"
-                        {...register(`employees.${selectedCandidateFormIndex}.decision`)} 
+                        {...register(`employees.${selectedCandidateFormIndex}.decision`)}
                       />
                       <span className="font-semibold text-sm text-slate-700 group-hover:text-red-700 transition">
                         Mark Candidate as Rejected
@@ -468,7 +465,7 @@ const DirectorReview = () => {
           {/* ================= Global Sticky Footer Metrics / Action Center ================= */}
           <div className="mt-8 rounded-xl border border-slate-200 bg-white p-5 shadow-md">
             <div className="flex flex-wrap items-center justify-between gap-6">
-              
+
               <div className="flex gap-10">
                 <div>
                   <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">Total Received</p>
