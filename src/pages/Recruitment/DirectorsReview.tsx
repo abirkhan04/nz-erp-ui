@@ -6,6 +6,7 @@ import { API_ROUTES } from "../../api/routes";
 import { usePost } from "../../hooks/usePost";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { api } from "../../api/client";
 
 interface SalaryRow {
   selected: boolean;
@@ -48,6 +49,7 @@ const EMPTY_CANDIDATES: Candidate[] = [];
 
 const DirectorReview = () => {
   const navigate = useNavigate();
+  const [image, setImage] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
@@ -111,6 +113,26 @@ const DirectorReview = () => {
   }, [candidates, search]);
 
   useEffect(() => { setPage(1); }, [search]);
+  useEffect(() => {
+    const fetchPhoto = async () => {
+      if (!selectedCandidate?.employeeId) return;
+
+      try {
+        const response = await api.get(
+          `${API_ROUTES.EMPLOYEE_RECRUITMENT}/photo/${selectedCandidate?.employeeId}`,
+          {
+            responseType: "blob",
+          }
+        );
+
+        setImage(response.data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchPhoto();
+  }, [selectedCandidate]);
 
   const totalPages = Math.ceil(filteredData.length / PAGE_SIZE);
   const paginatedData = filteredData.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -319,8 +341,8 @@ const DirectorReview = () => {
                           type="button"
                           onClick={() => setSelectedCandidate(item)}
                           className={`rounded-md border px-4 py-2 text-sm font-medium transition ${selectedCandidate?.id === item.id
-                              ? "bg-blue-600 border-blue-600 text-white"
-                              : "border-blue-500 text-blue-600 hover:bg-blue-50"
+                            ? "bg-blue-600 border-blue-600 text-white"
+                            : "border-blue-500 text-blue-600 hover:bg-blue-50"
                             }`}
                         >
                           Review
@@ -383,8 +405,8 @@ const DirectorReview = () => {
                     <div>
                       <p className="mb-2 text-xs font-medium text-slate-400 uppercase">Photo</p>
                       <div className="flex h-40 items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50 overflow-hidden">
-                        {selectedCandidate.photo ? (
-                          <img src={selectedCandidate.photo} alt="candidate upload" className="h-full w-full object-cover" />
+                        {image ? (
+                          <img src={image} alt="candidate upload" className="h-full w-full object-cover" />
                         ) : (
                           <div className="text-center">
                             <div className="mx-auto mb-2 h-14 w-14 rounded-full bg-slate-300" />
