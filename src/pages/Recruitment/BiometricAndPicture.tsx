@@ -111,7 +111,7 @@ const BiometricCapture = () => {
     const startCamera = async () => {
         setPhoto("");
         try {
-            const mediaStream = await navigator.mediaDevices.getUserMedia({
+            const mediaStream = await navigator?.mediaDevices?.getUserMedia({
                 video: true,
             });
 
