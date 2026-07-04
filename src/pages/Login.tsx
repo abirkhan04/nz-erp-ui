@@ -126,7 +126,7 @@ export default function Login() {
             }}
           />
 
-          <div className="relative z-10 flex flex-col justify-between p-4 w-[84%]">
+          <div className="relative z-10 flex flex-col justify-between p-4 w-[90%]">
 
             {/* Logo */}
             <div>
@@ -163,14 +163,17 @@ export default function Login() {
                 </div>
               </div>
 
-              <div className="mt-4 border-t border-white/20 pt-4 flex justify-center">
-                <p className="text-lg text-gray-200">
-                  Integrated ERP for People, Process and Performance
-                </p>
+              <div className="mt-4 flex flex-col items-center">
+                <div className="inline-flex flex-col items-center">
+                  <div className="w-full border-t border-white/20 mb-4" />
+                  <p className="text-xl text-gray-200 text-center whitespace-nowrap">
+                    Integrated ERP for People, Process and Performance
+                  </p>
+                </div>
               </div>
 
               {/* Modules */}
-              <div className="grid grid-cols-4 gap-x-4 gap-y-4 mt-2">
+              <div className="grid grid-cols-4 gap-x-2 gap-y-4 mt-2">
                 {modules.map((item) => {
                   const Icon = item.icon;
 
@@ -205,9 +208,6 @@ export default function Login() {
 
             {/* Footer */}
             <div className="text-sm text-gray-300">
-              <h3 className="font-semibold text-xl">
-                NZ TEX GROUP
-              </h3>
 
               <div className="flex items-start justify-between mt-4">
                 {/* Left */}
