@@ -17,7 +17,7 @@ export const API_ROUTES = {
   CELL: "Cells",
   DESIGNATION: "Designations",
 
-  ENROLLMENTID: "EmployeeMasters/enrollment-id",
+  ENROLLMENTID: "Employees/enrollment-id",
 
   MEDICAL_FITNESS_CHECK: "MedicalFitnessChecks",
   PHYSICAL_EXAMINATION_SETTINGS: "PhysicalExaminationSettings",
