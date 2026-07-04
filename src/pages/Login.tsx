@@ -126,7 +126,7 @@ export default function Login() {
             }}
           />
 
-          <div className="relative z-10 flex flex-col justify-between p-4 w-[82%]">
+          <div className="relative z-10 flex flex-col justify-between p-4 w-[84%]">
 
             {/* Logo */}
             <div>
