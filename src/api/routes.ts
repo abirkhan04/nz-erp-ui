@@ -33,4 +33,5 @@ export const API_ROUTES = {
   EMPLOYEE_NATURES: "EmployeeNatures",
   IT_ACTIVATION_SUMMARY: "Employees/it-activation-summary",
   IT_DETAIL: "Employees/it-detail",
+  EMPLOYEE_UPLOAD_FILES: "Employees/upload-files",
 };

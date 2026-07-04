@@ -25,6 +25,8 @@ import type { Unit } from "../../types/interfaces";
 import { useGet } from "../../hooks/useGet";
 import { usePost } from "../../hooks/usePost";
 import toast from "react-hot-toast";
+import { api } from "../../api/client";
+import React from "react";
 
 interface HRExecutiveEntryForm {
   employeeId: string;
@@ -158,6 +160,8 @@ const HRExecutiveEntryDetails = () => {
     url: API_ROUTES.EMPLOYEE_NATURES
   })
 
+  const [uploading, setUploading] = React.useState(false);
+
   const navigate =
     useNavigate();
 
@@ -190,7 +194,7 @@ const HRExecutiveEntryDetails = () => {
 
   const DRAFT_KEY = `HR_EXECUTIVE_DRAFT_${candidateId}_${enrollmentId}`;
 
-
+  const [documents, setDocuments] = React.useState<any>();
 
 
   const { mutate: HRExecutiveEntryPost } = usePost(API_ROUTES.HRExecutiveEntry);
@@ -199,6 +203,40 @@ const HRExecutiveEntryDetails = () => {
     watch("paymentMode");
 
   const values = watch();
+
+  const UploadFiles = async () => {
+    try {
+      setUploading(true);
+      const files = watch("files");
+
+      if (!files?.length) {
+        toast.error("Please select file(s) first.");
+        return;
+      }
+
+      const formData = new FormData();
+
+      files.forEach((file) => {
+        formData.append("files", file); // or "file" depending on API
+      });
+
+      const response = await api.post(
+        `${API_ROUTES.EMPLOYEE_UPLOAD_FILES}?employeeEnrollmentId=${enrollmentId}`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      setDocuments(response.data);
+      toast.success("Files uploaded successfully.");
+    } catch (error: any) {
+      toast.error(error?.message ?? "File upload failed.");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -377,7 +415,7 @@ const HRExecutiveEntryDetails = () => {
       gradeId: data.grade || null,
 
       employeeType: 0, // Set according to your enum
-      employeeTypeId: data.employeeCategory,
+      employeeTypeId: data.employeeCategory || null,
 
       shiftId: data.shift,
       employeeNatureId: data.workerType || null,
@@ -409,78 +447,78 @@ const HRExecutiveEntryDetails = () => {
 
       accountType: data.accountType,
 
-      // documents: [
-      //   ...(data.educationCertificate
-      //     ? [
-      //         {
-      //           employeeId: data.employeeId,
-      //           documentType: "EducationCertificate",
-      //           documentNo: "",
-      //           issueDate: "",
-      //           expiryDate: "",
-      //           fileName: "",
-      //           filePath: "",
-      //         },
-      //       ]
-      //     : []),
+      documents: [
+        ...(data.educationCertificate
+          ? [
+            {
+              employeeId: data.employeeId,
+              documentType: "EducationCertificate",
+              documentNo: null,
+              issueDate: null,
+              expiryDate: null,
+              fileName: null,
+              filePath: null,
+            },
+          ]
+          : []),
 
-      //   ...(data.nationalId
-      //     ? [
-      //         {
-      //           employeeId: data.employeeId,
-      //           documentType: "NationalId",
-      //           documentNo: "",
-      //           issueDate: "",
-      //           expiryDate: "",
-      //           fileName: "",
-      //           filePath: "",
-      //         },
-      //       ]
-      //     : []),
+        ...(data.nationalId
+          ? [
+            {
+              employeeId: data.employeeId,
+              documentType: "NationalId",
+              documentNo: null,
+              issueDate: null,
+              expiryDate: null,
+              fileName: null,
+              filePath: null,
+            },
+          ]
+          : []),
 
-      //   ...(data.policeClearance
-      //     ? [
-      //         {
-      //           employeeId: data.employeeId,
-      //           documentType: "PoliceClearance",
-      //           documentNo: "",
-      //           issueDate: "",
-      //           expiryDate: "",
-      //           fileName: "",
-      //           filePath: "",
-      //         },
-      //       ]
-      //     : []),
+        ...(data.policeClearance
+          ? [
+            {
+              employeeId: data.employeeId,
+              documentType: "PoliceClearance",
+              documentNo: null,
+              issueDate: null,
+              expiryDate: null,
+              fileName: null,
+              filePath: null,
+            },
+          ]
+          : []),
 
-      //   ...(data.experienceCertificate
-      //     ? [
-      //         {
-      //           employeeId: data.employeeId,
-      //           documentType: "ExperienceCertificate",
-      //           documentNo: "",
-      //           issueDate: "",
-      //           expiryDate: "",
-      //           fileName: "",
-      //           filePath: "",
-      //         },
-      //       ]
-      //     : []),
+        ...(data.experienceCertificate
+          ? [
+            {
+              employeeId: data.employeeId,
+              documentType: "ExperienceCertificate",
+              documentNo: null,
+              issueDate: null,
+              expiryDate: null,
+              fileName: null,
+              filePath: null,
+            },
+          ]
+          : []),
 
-      //   ...(data.passportPhoto
-      //     ? [
-      //         {
-      //           employeeId: data.employeeId,
-      //           documentType: "PassportPhoto",
-      //           documentNo: "",
-      //           issueDate: "",
-      //           expiryDate: "",
-      //           fileName: "",
-      //           filePath: "",
-      //         },
-      //       ]
-      //     : []),
-      // ],
-      documents: null,
+        ...(data.passportPhoto
+          ? [
+            {
+              employeeId: data.employeeId,
+              documentType: "PassportPhoto",
+              documentNo: null,
+              issueDate: null,
+              expiryDate: null,
+              fileName: null,
+              filePath: null,
+            },
+          ]
+          : []),
+      ],
+      // documents: documents,
 
       tinNumber: "",
 
@@ -608,7 +646,7 @@ const HRExecutiveEntryDetails = () => {
       type: "dropdown",
     },
     {
-      label: "Worker Type",
+      label: "Employee Nature",
       name: "workerType",
       type: "dropdown",
       options: employeeNatures.map((i) => ({
@@ -650,12 +688,13 @@ const HRExecutiveEntryDetails = () => {
       label: "Reporting To",
       name: "reportingTo",
       type: "dropdown",
+      options: [{ label: "CEO", value: "CEO" }, { label: "Manager", value: "Manager" }, { label: "Director", value: "Director" }]
     },
     {
       label: "Employee Category",
-      name:
-        "employeeCategory",
+      name: "employeeCategory",
       type: "dropdown",
+      options: [{ label: "Permanent", value: "123" }, { label: "Temporary", value: "124" }, { label: "Provisional", value: "125" }]
     },
     {
       label: "Work Location",
@@ -1049,7 +1088,15 @@ const HRExecutiveEntryDetails = () => {
               ))}
             </div>
           )}
-
+          <div className="flex justify-end mt-4">
+            <button
+              type="button"
+              onClick={UploadFiles}
+              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
+            >
+              Upload
+            </button>
+          </div>
         </div>
 
         <div className="flex justify-end gap-3">

@@ -16,6 +16,17 @@ export const bloodGroupMap: Record<string, number> = {
   "O-": 7,
 };
 
+export const bloodGroupMapBangla: Record<string, number> = {
+  "এ+": 0,
+  "এ−": 1,
+  "বি+": 2,
+  "বি−": 3,
+  "এবি+": 4,
+  "এবি−": 5,
+  "ও+": 6,
+  "ও−": 7,
+};
+
 export const reverseBloodGroupMap: Record<number, string> = {
   0: "A+",
   1: "A-",
@@ -45,4 +56,28 @@ export type PhysicalExaminationSetting = {
   fieldType: number;
   optionValuesJson: string | null;
   isActive: boolean;
+};
+
+export const religionMap: Record<string, number> = {
+  Islam: 0,
+  Hinduism: 1,
+  Buddhism: 2,
+  Christianity: 3,
+  Other: 4,
+};
+
+export const reverseReligionMap: Record<number, string> = {
+  0: "Islam",
+  1: "Hinduism",
+  2: "Buddhism",
+  3: "Christianity",
+  4: "Other",
+};
+
+export const religionMapBangla: Record<string, number> = {
+  ইসলাম: 0,
+  হিন্দুধর্ম: 1,
+  বৌদ্ধধর্ম: 2,
+  খ্রিস্টধর্ম: 3,
+  অন্যান্য: 4,
 };

@@ -7,6 +7,7 @@ import { useGet } from "../../hooks/useGet";
 import { useEffect } from "react";
 import type { Enrollment, Unit } from "../../types/interfaces";
 import { useNavigate } from "react-router-dom";
+import { bloodGroupMapBangla, religionMapBangla } from "../EmployeeInformation/types";
 
 export interface GateRegistrationForm {
   temporaryId: string;
@@ -57,7 +58,7 @@ type SectionField = {
 
   options?: {
     label: string;
-    value: string;
+    value: string | number;
   }[];
 
   rules?: any;
@@ -146,35 +147,13 @@ const personalInformationFields: SectionField[] =
       label: "ধর্ম",
       name: "religion",
       type: "dropdown",
-      options: [
-        {
-          label: "ইসলাম",
-          value: "Islam",
-        },
-        {
-          label: "হিন্দু",
-          value: "Hindu",
-        },
-      ],
+      options: Object.entries(religionMapBangla).map(([label, value]) => ({ label, value })),
     },
     {
       label: "রক্তের গ্রুপ",
       name: "bloodGroup",
       type: "dropdown",
-      options: [
-        {
-          label: "A+",
-          value: "A+",
-        },
-        {
-          label: "B+",
-          value: "B+",
-        },
-        {
-          label: "O+",
-          value: "O+",
-        },
-      ],
+      options: Object.entries(bloodGroupMapBangla).map(([label, value]) => ({ label, value }))
     },
   ];
 
