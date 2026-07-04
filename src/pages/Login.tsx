@@ -113,275 +113,277 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex overflow-hidden">
-      {/* LEFT PANEL */}
-      <div className="hidden lg:flex w-1/2 relative bg-gradient-to-b from-[#051B4D] via-[#072A72] to-[#04153D] text-white">
+    <div className="min-h-screen bg-gradient-to-br from-[#EDF5FF] via-[#F8FBFF] to-[#EAF3FF] flex items-center justify-center p-8">
+      <div className="w-[80%] max-w-[1400px] min-h-[91vh] bg-white rounded-[4px] overflow-hidden shadow-[0_30px_80px_rgba(0,0,0,0.35)] flex">
+        {/* LEFT PANEL */}
+        <div className="hidden lg:flex w-1/2 relative bg-gradient-to-b from-[#051B4D] via-[#072A72] to-[#04153D] text-white justify-center">
 
-        {/* Background */}
-        <div
-          className="absolute inset-0 bg-cover bg-center opacity-30"
-          style={{
-            backgroundImage: `url(${bgImage})`,
-          }}
-        />
+          {/* Background */}
+          <div
+            className="absolute inset-0 bg-cover bg-center opacity-30"
+            style={{
+              backgroundImage: `url(${bgImage})`,
+            }}
+          />
 
-        <div className="relative z-10 flex flex-col justify-between p-4 w-full">
+          <div className="relative z-10 flex flex-col justify-between p-4 w-[90%]">
 
-          {/* Logo */}
-          <div>
-            <div className="flex items-center gap-4">
-              <div className="h-[150px] w-[150px] flex items-center justify-center">
-                <img
-                  src={logo}
-                  alt="Logo"
-                  className="h-full w-full object-contain"
-                />
+            {/* Logo */}
+            <div>
+              <div className="flex items-center gap-4">
+                <div className="h-[150px] w-[150px] flex items-center justify-center">
+                  <img
+                    src={logo}
+                    alt="Logo"
+                    className="h-full w-full object-contain"
+                  />
+                </div>
+                <div>
+                  <h1
+                    style={{
+                      fontFamily: "Montserrat, sans-serif",
+                      fontWeight: 550,
+                      letterSpacing: "1px",
+                      transform: "scaleX(1.08)",
+                      transformOrigin: "left center",
+                    }}
+                    className="text-[56px] text-white leading-none"
+                  >
+                    SYNEXIS
+                  </h1>
+                  <p
+                    style={{
+                      fontWeight: 600,
+                      letterSpacing: "0.2px",
+                    }}
+                    className="text-[#25C7F6] text-[21px]"
+                  >
+                    Creating Enterprise Synergy
+                  </p>
+                </div>
               </div>
-              <div>
-                <h1
-                  style={{
-                    fontFamily: "Montserrat, sans-serif",
-                    fontWeight: 550,
-                    letterSpacing: "1px",
-                    transform: "scaleX(1.08)",
-                    transformOrigin: "left center",
-                  }}
-                  className="text-[56px] text-white leading-none"
-                >
-                  SYNEXIS
-                </h1>
-                <p
-                  style={{
-                    fontWeight: 600,
-                    letterSpacing: "0.2px",
-                  }}
-                  className="text-[#25C7F6] text-[21px]"
-                >
-                  Creating Enterprise Synergy
+
+              <div className="mt-4 border-t border-white/20 pt-4 flex justify-center">
+                <p className="text-xl text-gray-200">
+                  Integrated ERP for People, Process and Performance
                 </p>
               </div>
-            </div>
 
-            <div className="mt-10 border-t border-white/20 pt-6">
-              <p className="text-xl text-gray-200">
-                Integrated ERP for People, Process and Performance
-              </p>
-            </div>
+              {/* Modules */}
+              <div className="grid grid-cols-4 gap-x-4 gap-y-4 mt-2">
+                {modules.map((item) => {
+                  const Icon = item.icon;
 
-            {/* Modules */}
-            <div className="grid grid-cols-4 gap-x-8 gap-y-10 mt-4">
-              {modules.map((item) => {
-                const Icon = item.icon;
-
-                return (
-                  <div
-                    key={item.title}
-                    className="flex flex-col items-center"
-                  >
+                  return (
                     <div
-                      className={`
-            w-14 h-14
+                      key={item.title}
+                      className="flex flex-col items-center"
+                    >
+                      <div
+                        className={`
+            w-10 h-10
             rounded-full
             border
             ${item.border}
             flex items-center justify-center
           `}
-                    >
-                      <Icon
-                        size={24}
-                        className={item.iconColor}
-                      />
+                      >
+                        <Icon
+                          size={24}
+                          className={item.iconColor}
+                        />
+                      </div>
+
+                      <span className="mt-3 text-[11px] text-center text-white">
+                        {item.title}
+                      </span>
                     </div>
-
-                    <span className="mt-3 text-[11px] text-center text-white">
-                      {item.title}
-                    </span>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
-          </div>
 
-          {/* Footer */}
-          <div className="text-sm text-gray-300">
-            <h3 className="font-semibold text-xl">
-              NZ TEX GROUP
-            </h3>
+            {/* Footer */}
+            <div className="text-sm text-gray-300">
+              <h3 className="font-semibold text-xl">
+                NZ TEX GROUP
+              </h3>
 
-            <div className="flex items-start justify-between mt-4">
-              {/* Left */}
-              <div className="flex items-center gap-3 min-w-fit">
-                {/* <img
+              <div className="flex items-start justify-between mt-4">
+                {/* Left */}
+                <div className="flex items-center gap-3 min-w-fit">
+                  {/* <img
                   src={groupLogo}
                   alt="NZ Tex Group"
                   className="h-6 w-auto"
                 /> */}
 
-                <span className="text-[15px] font-semibold tracking-wide">
-                  NZ TEX GROUP
-                </span>
-              </div>
-
-              {/* Right */}
-              <div className="text-[11px] text-gray-200">
-                <div className="flex gap-3">
-                  <span>NZ Textile</span>
-                  <span>|</span>
-
-                  <span>NZ Fabrics</span>
-                  <span>|</span>
-
-                  <span>NZ Denim</span>
-                  <span>|</span>
-
-                  <span>NZ Spinning</span>
-                  <span>|</span>
-
-                  <span>Dy Flax</span>
+                  <span className="text-[15px] font-semibold tracking-wide">
+                    NZ TEX GROUP
+                  </span>
                 </div>
 
-                <div className="flex gap-3 mt-1">
-                  <span>Head Office</span>
-                  <span>|</span>
+                {/* Right */}
+                <div className="text-[11px] text-gray-200">
+                  <div className="flex gap-3">
+                    <span>NZ Textile</span>
+                    <span>|</span>
 
-                  <span>GHRACS</span>
-                  <span>|</span>
+                    <span>NZ Fabrics</span>
+                    <span>|</span>
 
-                  <span>CHRACS</span>
+                    <span>NZ Denim</span>
+                    <span>|</span>
+
+                    <span>NZ Spinning</span>
+                    <span>|</span>
+
+                    <span>Dy Flax</span>
+                  </div>
+
+                  <div className="flex gap-3 mt-1">
+                    <span>Head Office</span>
+                    <span>|</span>
+
+                    <span>GHRACS</span>
+                    <span>|</span>
+
+                    <span>CHRACS</span>
+                  </div>
                 </div>
               </div>
+
+              <p className="mt-6 text-xs text-gray-400">
+                © 2026 NZ Tex Group. All Rights Reserved.
+              </p>
             </div>
-
-            <p className="mt-6 text-xs text-gray-400">
-              © 2026 NZ Tex Group. All Rights Reserved.
-            </p>
           </div>
         </div>
-      </div>
 
-      {/* RIGHT PANEL */}
-      <div className="w-full lg:w-1/2 bg-[#F6F8FC] flex items-center justify-center p-8">
+        {/* RIGHT PANEL */}
+        <div className="w-full lg:w-1/2 bg-[#F6F8FC] flex items-center justify-center p-8">
 
-        <div className="w-full max-w-md bg-white rounded-[30px] shadow-2xl p-10">
+          <div className="w-full max-w-md bg-white rounded-[30px] shadow-2xl p-10">
 
-          <div className="mb-8">
-            <h2 className="text-4xl font-bold text-[#0F172A]">
-              Welcome to
-              <span className="text-[#2563EB] ml-2">
-                SYNEXIS
-              </span>
-            </h2>
+            <div className="mb-8">
+              <h2 className="text-4xl font-bold text-[#0F172A]">
+                Welcome to
+                <span className="text-[#2563EB] ml-2">
+                  SYNEXIS
+                </span>
+              </h2>
 
-            <p className="text-gray-500 mt-2">
-              Please sign in to continue
-            </p>
-          </div>
-
-          <form
-            onSubmit={handleSubmit(onSubmit)}
-            className="space-y-5"
-          >
-
-            {/* Company */}
-
-            {/* User */}
-            <div>
-              <label className="text-sm font-medium">
-                User ID
-              </label>
-
-              <div className="relative mt-2">
-                <User
-                  size={18}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                />
-
-                <input
-                  {...register("username")}
-                  placeholder="Enter User ID"
-                  className="w-full h-12 border rounded-lg pl-10 pr-4 outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
+              <p className="text-gray-500 mt-2">
+                Please sign in to continue
+              </p>
             </div>
 
-            {/* Password */}
-            <div>
-              <label className="text-sm font-medium">
-                Password
-              </label>
+            <form
+              onSubmit={handleSubmit(onSubmit)}
+              className="space-y-5"
+            >
 
-              <div className="relative mt-2">
-                <Lock
-                  size={18}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                />
+              {/* Company */}
 
-                <input
-                  {...register("password")}
-                  type={
-                    showPassword ? "text" : "password"
-                  }
-                  placeholder="Enter Password"
-                  className="w-full h-12 border rounded-lg pl-10 pr-12 outline-none focus:ring-2 focus:ring-blue-500"
-                />
+              {/* User */}
+              <div>
+                <label className="text-sm font-medium">
+                  User ID
+                </label>
+
+                <div className="relative mt-2">
+                  <User
+                    size={18}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  />
+
+                  <input
+                    {...register("username")}
+                    placeholder="Enter User ID"
+                    className="w-full h-12 border rounded-lg pl-10 pr-4 outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+
+              {/* Password */}
+              <div>
+                <label className="text-sm font-medium">
+                  Password
+                </label>
+
+                <div className="relative mt-2">
+                  <Lock
+                    size={18}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  />
+
+                  <input
+                    {...register("password")}
+                    type={
+                      showPassword ? "text" : "password"
+                    }
+                    placeholder="Enter Password"
+                    className="w-full h-12 border rounded-lg pl-10 pr-12 outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setShowPassword(!showPassword)
+                    }
+                    className="absolute right-3 top-1/2 -translate-y-1/2"
+                  >
+                    {showPassword ? (
+                      <EyeOff size={18} />
+                    ) : (
+                      <Eye size={18} />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Remember */}
+              <div className="flex items-center justify-between text-sm">
+                <label className="flex items-center gap-2">
+                  <input type="checkbox" />
+                  Remember me
+                </label>
 
                 <button
                   type="button"
-                  onClick={() =>
-                    setShowPassword(!showPassword)
-                  }
-                  className="absolute right-3 top-1/2 -translate-y-1/2"
+                  className="text-blue-600"
                 >
-                  {showPassword ? (
-                    <EyeOff size={18} />
-                  ) : (
-                    <Eye size={18} />
-                  )}
+                  Forgot Password?
                 </button>
               </div>
-            </div>
 
-            {/* Remember */}
-            <div className="flex items-center justify-between text-sm">
-              <label className="flex items-center gap-2">
-                <input type="checkbox" />
-                Remember me
-              </label>
-
+              {/* Login */}
               <button
-                type="button"
-                className="text-blue-600"
+                type="submit"
+                disabled={isPending}
+                className="w-full h-12 bg-[#0D4CD3] hover:bg-[#0B42B5] text-white rounded-lg font-semibold transition"
               >
-                Forgot Password?
+                {isPending
+                  ? "Signing In..."
+                  : "Sign In"}
               </button>
-            </div>
 
-            {/* Login */}
-            <button
-              type="submit"
-              disabled={isPending}
-              className="w-full h-12 bg-[#0D4CD3] hover:bg-[#0B42B5] text-white rounded-lg font-semibold transition"
-            >
-              {isPending
-                ? "Signing In..."
-                : "Sign In"}
-            </button>
+              {/* Divider */}
+              <div className="flex items-center gap-4">
+                <div className="flex-1 h-px bg-gray-200" />
+                <span className="text-gray-400 text-sm">
+                  or
+                </span>
+                <div className="flex-1 h-px bg-gray-200" />
+              </div>
 
-            {/* Divider */}
-            <div className="flex items-center gap-4">
-              <div className="flex-1 h-px bg-gray-200" />
-              <span className="text-gray-400 text-sm">
-                or
-              </span>
-              <div className="flex-1 h-px bg-gray-200" />
-            </div>
-
-            <div className="flex justify-center gap-6 text-sm text-gray-500 pt-4">
-              <span>🔒 Secure</span>
-              <span>• Reliable</span>
-              <span>• Integrated</span>
-            </div>
-          </form>
+              <div className="flex justify-center gap-6 text-sm text-gray-500 pt-4">
+                <span>🔒 Secure</span>
+                <span>• Reliable</span>
+                <span>• Integrated</span>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </div>
