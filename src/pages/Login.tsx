@@ -126,7 +126,7 @@ export default function Login() {
             }}
           />
 
-          <div className="relative z-10 flex flex-col justify-between p-4 w-[90%]">
+          <div className="relative z-10 flex flex-col justify-between p-4 w-[86%]">
 
             {/* Logo */}
             <div>
@@ -164,7 +164,7 @@ export default function Login() {
               </div>
 
               <div className="mt-4 border-t border-white/20 pt-4 flex justify-center">
-                <p className="text-xl text-gray-200">
+                <p className="text-lg text-gray-200">
                   Integrated ERP for People, Process and Performance
                 </p>
               </div>
