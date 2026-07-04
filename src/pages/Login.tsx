@@ -165,7 +165,7 @@ export default function Login() {
 
               <div className="mt-4 flex flex-col items-center">
                 <div className="inline-flex flex-col items-center">
-                  <div className="w-full border-t border-white/20 mb-4" />
+                  <div className="w-full border-t border-white/20 mb-2" />
                   <p className="text-xl text-gray-200 text-center whitespace-nowrap">
                     Integrated ERP for People, Process and Performance
                   </p>
@@ -173,7 +173,7 @@ export default function Login() {
               </div>
 
               {/* Modules */}
-              <div className="grid grid-cols-4 gap-x-2 gap-y-4 mt-2">
+              <div className="grid grid-cols-4 gap-x-2 gap-y-4 mt-6">
                 {modules.map((item) => {
                   const Icon = item.icon;
 
