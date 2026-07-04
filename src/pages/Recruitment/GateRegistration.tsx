@@ -29,11 +29,14 @@ export interface GateRegistrationForm {
   presentPostOffice: string;
   presentPoliceStation: string;
   presentDistrict: string;
+  presentDivision: string;
 
+  sameAsPresent: boolean;
   permanentVillageArea: string;
   permanentPostOffice: string;
   permanentPoliceStation: string;
   permanentDistrict: string;
+  permanentDivision: string;
 
   company: string;
   designation: string;
@@ -178,65 +181,81 @@ const personalInformationFields: SectionField[] =
 const addressInformationFields: SectionField[] = [
   // Present Address
   {
-    label: "বর্তমান ঠিকানার গ্রাম / এলাকা",
+    label: "গ্রাম / এলাকা",
     name: "presentVillageArea",
     rules: {
       required: "গ্রাম / এলাকা আবশ্যক",
     },
   },
   {
-    label: "বর্তমান ঠিকানার পোস্ট অফিস",
+    label: "পোস্ট অফিস",
     name: "presentPostOffice",
     rules: {
       required: "পোস্ট অফিস আবশ্যক",
     },
   },
   {
-    label: "বর্তমান ঠিকানার থানা / উপজেলা",
+    label: "থানা / উপজেলা",
     name: "presentPoliceStation",
     rules: {
       required: "থানা / উপজেলা আবশ্যক",
     },
   },
   {
-    label: "বর্তমান ঠিকানার জেলা",
+    label: "জেলা",
     name: "presentDistrict",
     type: "text",
     rules: {
       required: "জেলা আবশ্যক",
     },
   },
+  {
+    label: "বিভাগ",
+    name: "presentDivision",
+    type: "text",
+    rules: {
+      required: "বিভাগ আবশ্যক",
+    },
+  },
 
   // Permanent Address
   {
-    label: "স্থায়ী ঠিকানার গ্রাম / এলাকা",
+    label: "গ্রাম / এলাকা",
     name: "permanentVillageArea",
     rules: {
       required: "গ্রাম / এলাকা আবশ্যক",
     },
   },
   {
-    label: "স্থায়ী ঠিকানার পোস্ট অফিস",
+    label: "পোস্ট অফিস",
     name: "permanentPostOffice",
     rules: {
       required: "পোস্ট অফিস আবশ্যক",
     },
   },
   {
-    label: "স্থায়ী ঠিকানার থানা / উপজেলা",
+    label: "থানা / উপজেলা",
     name: "permanentPoliceStation",
     rules: {
       required: "থানা / উপজেলা আবশ্যক",
     },
   },
   {
-    label: "স্থায়ী ঠিকানার জেলা",
+    label: "জেলা",
     name: "permanentDistrict",
     type: "text",
     rules: {
       required: "জেলা আবশ্যক",
     },
   },
+  {
+    label: "বিভাগ",
+    name: "permanentDivision",
+    type: "text",
+    rules: {
+      required: "বিভাগ আবশ্যক",
+    },
+  }
 ];
 
 
@@ -320,16 +339,21 @@ const GateRegistration = () => {
     control,
     reset,
     getValues,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<GateRegistrationForm>({
     mode: "onTouched",
     defaultValues: {
       temporaryId: "",
+      sameAsPresent: false,
       joiningDate: new Date()
         .toISOString()
         .split("T")[0],
     },
   });
+
+  const sameAsPresent = watch("sameAsPresent");
 
   const getDraftKey = (temporaryId: string) =>
     `gateRegistrationDraft_${temporaryId}`;
@@ -349,6 +373,39 @@ const GateRegistration = () => {
 
     toast.success("ফর্মটি সফলভাবে সংরক্ষণ করা হয়েছে");
   };
+
+  useEffect(() => {
+    if (!sameAsPresent) return;
+
+    setValue(
+      "permanentVillageArea",
+      watch("presentVillageArea")
+    );
+    setValue(
+      "permanentPostOffice",
+      watch("presentPostOffice")
+    );
+    setValue(
+      "permanentPoliceStation",
+      watch("presentPoliceStation")
+    );
+    setValue(
+      "permanentDistrict",
+      watch("presentDistrict")
+    );
+    setValue(
+      "permanentDivision",
+      watch("presentDivision")
+    );
+  }, [
+    sameAsPresent,
+    watch("presentVillageArea"),
+    watch("presentPostOffice"),
+    watch("presentPoliceStation"),
+    watch("presentDistrict"),
+    watch("presentDivision"),
+    setValue,
+  ]);
 
   const handleReset = () => {
     const currentTemporaryId = getValues("temporaryId");
@@ -587,6 +644,20 @@ const GateRegistration = () => {
 
                   {/* Permanent Address */}
                   <div>
+                    <div className="mb-4 flex items-center gap-2">
+                      <input
+                        id="sameAsPresent"
+                        type="checkbox"
+                        {...register("sameAsPresent")}
+                        className="h-4 w-4"
+                      />
+                      <label
+                        htmlFor="sameAsPresent"
+                        className="text-sm font-medium text-slate-700"
+                      >
+                        বর্তমান ঠিকানার মতো
+                      </label>
+                    </div>
                     <h3 className="mb-4 text-base font-semibold text-slate-700 border-b pb-2">
                       স্থায়ী ঠিকানা
                     </h3>
@@ -599,6 +670,7 @@ const GateRegistration = () => {
                         .map((field) => (
                           <CommonInputField
                             key={field.name}
+                            disabled={sameAsPresent}
                             label={field.label}
                             name={field.name as any}
                             type={field.type}

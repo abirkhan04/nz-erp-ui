@@ -142,7 +142,7 @@ const Dashboard: React.FC = () => {
         {/* NZX Group */}
         <div className="mt-12 text-center">
           <h2 className="text-[24px] font-bold text-[#173a80]">
-            NZX GROUP
+            NZ TEX GROUP
           </h2>
 
           <div className="mt-3 flex justify-center">
