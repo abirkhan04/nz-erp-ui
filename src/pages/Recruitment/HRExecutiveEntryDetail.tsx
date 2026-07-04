@@ -447,78 +447,78 @@ const HRExecutiveEntryDetails = () => {
 
       accountType: data.accountType,
 
-      documents: [
-        ...(data.educationCertificate
-          ? [
-            {
-              employeeId: data.employeeId,
-              documentType: "EducationCertificate",
-              documentNo: null,
-              issueDate: null,
-              expiryDate: null,
-              fileName: null,
-              filePath: null,
-            },
-          ]
-          : []),
+      // documents: [
+      //   ...(data.educationCertificate
+      //     ? [
+      //       {
+      //         employeeId: data.employeeId,
+      //         documentType: "EducationCertificate",
+      //         documentNo: null,
+      //         issueDate: null,
+      //         expiryDate: null,
+      //         fileName: null,
+      //         filePath: null,
+      //       },
+      //     ]
+      //     : []),
 
-        ...(data.nationalId
-          ? [
-            {
-              employeeId: data.employeeId,
-              documentType: "NationalId",
-              documentNo: null,
-              issueDate: null,
-              expiryDate: null,
-              fileName: null,
-              filePath: null,
-            },
-          ]
-          : []),
+      //   ...(data.nationalId
+      //     ? [
+      //       {
+      //         employeeId: data.employeeId,
+      //         documentType: "NationalId",
+      //         documentNo: null,
+      //         issueDate: null,
+      //         expiryDate: null,
+      //         fileName: null,
+      //         filePath: null,
+      //       },
+      //     ]
+      //     : []),
 
-        ...(data.policeClearance
-          ? [
-            {
-              employeeId: data.employeeId,
-              documentType: "PoliceClearance",
-              documentNo: null,
-              issueDate: null,
-              expiryDate: null,
-              fileName: null,
-              filePath: null,
-            },
-          ]
-          : []),
+      //   ...(data.policeClearance
+      //     ? [
+      //       {
+      //         employeeId: data.employeeId,
+      //         documentType: "PoliceClearance",
+      //         documentNo: null,
+      //         issueDate: null,
+      //         expiryDate: null,
+      //         fileName: null,
+      //         filePath: null,
+      //       },
+      //     ]
+      //     : []),
 
-        ...(data.experienceCertificate
-          ? [
-            {
-              employeeId: data.employeeId,
-              documentType: "ExperienceCertificate",
-              documentNo: null,
-              issueDate: null,
-              expiryDate: null,
-              fileName: null,
-              filePath: null,
-            },
-          ]
-          : []),
+      //   ...(data.experienceCertificate
+      //     ? [
+      //       {
+      //         employeeId: data.employeeId,
+      //         documentType: "ExperienceCertificate",
+      //         documentNo: null,
+      //         issueDate: null,
+      //         expiryDate: null,
+      //         fileName: null,
+      //         filePath: null,
+      //       },
+      //     ]
+      //     : []),
 
-        ...(data.passportPhoto
-          ? [
-            {
-              employeeId: data.employeeId,
-              documentType: "PassportPhoto",
-              documentNo: null,
-              issueDate: null,
-              expiryDate: null,
-              fileName: null,
-              filePath: null,
-            },
-          ]
-          : []),
-      ],
-      // documents: documents,
+      //   ...(data.passportPhoto
+      //     ? [
+      //       {
+      //         employeeId: data.employeeId,
+      //         documentType: "PassportPhoto",
+      //         documentNo: null,
+      //         issueDate: null,
+      //         expiryDate: null,
+      //         fileName: null,
+      //         filePath: null,
+      //       },
+      //     ]
+      //     : []),
+      // ],
+      documents: documents,
 
       tinNumber: "",
 
@@ -1092,6 +1092,7 @@ const HRExecutiveEntryDetails = () => {
             <button
               type="button"
               onClick={UploadFiles}
+              disabled={uploading}
               className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
             >
               Upload
