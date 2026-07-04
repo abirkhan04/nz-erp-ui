@@ -368,15 +368,6 @@ export default function Login() {
                   : "Sign In"}
               </button>
 
-              {/* Divider */}
-              <div className="flex items-center gap-4">
-                <div className="flex-1 h-px bg-gray-200" />
-                <span className="text-gray-400 text-sm">
-                  or
-                </span>
-                <div className="flex-1 h-px bg-gray-200" />
-              </div>
-
               <div className="flex justify-center gap-6 text-sm text-gray-500 pt-4">
                 <span>🔒 Secure</span>
                 <span>• Reliable</span>
