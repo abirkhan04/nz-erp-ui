@@ -7,7 +7,7 @@ import { useGet } from "../../hooks/useGet";
 import { useEffect } from "react";
 import type { Enrollment, Unit } from "../../types/interfaces";
 import { useNavigate } from "react-router-dom";
-import { bloodGroupMapBangla, religionMapBangla } from "../EmployeeInformation/types";
+import { bloodGroupMapBangla, genderMapBengali, religionMapBangla } from "../EmployeeInformation/types";
 
 export interface GateRegistrationForm {
 
@@ -134,16 +134,10 @@ const personalInformationFields: SectionField[] =
       label: "লিঙ্গ",
       name: "gender",
       type: "dropdown",
-      options: [
-        {
-          label: "পুরুষ",
-          value: "Male",
-        },
-        {
-          label: "মহিলা",
-          value: "Female",
-        },
-      ],
+      options: Object.entries(genderMapBengali).map(([value, label]) => ({
+        label,
+        value: Number(value),
+      }))
     },
     {
       label: "ধর্ম",

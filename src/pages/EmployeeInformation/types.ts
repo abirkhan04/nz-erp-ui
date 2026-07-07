@@ -43,11 +43,19 @@ export const medicalResultMap = new Map<number, string>([
   [1, "Unfit"],
 ]);
 
+
 export const genderMapFromNumber: Record<number, string> = {
-      1: "Male",
-      2: "Female",
-      3: "Other",
-    };
+  1: "Male",
+  2: "Female",
+  3: "Third Gender",
+};
+
+export const genderMapBengali: Record<number, string> = {
+  1: "পুরুষ",
+  2: "মহিলা",
+  3: "তৃতীয় লিঙ্গ",
+};
+
 
 export type PhysicalExaminationSetting = {
   id: string;

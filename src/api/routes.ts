@@ -31,7 +31,7 @@ export const API_ROUTES = {
   DIRECTORS_REVIEW: "Employees/directors-review",
   IT_ACTIVATION: "Employees/it-activation",
   EMPLOYEE_NATURES: "EmployeeNatures",
-  IT_ACTIVATION_SUMMARY: "Employees/it-activation-summary",
+  IT_ACTIVATION_SUMMARY: "EmployeeReports/it-activation-summary",
   IT_DETAIL: "Employees/it-detail",
   EMPLOYEE_UPLOAD_FILES: "Employees/upload-files",
 
