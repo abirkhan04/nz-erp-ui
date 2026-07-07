@@ -56,14 +56,13 @@ interface HRExecutiveEntryForm {
   remarks: string;
 
   paymentMode: string;
+  mobileBankingProvider:string;
 
   bankName: string | null;
   branchName: string;
   accountNumber: string;
-  accountType: string;
 
   bkashNumber: string;
-  accountHolderName: string;
 
   grossSalary: string;
   cashPortion: string;
@@ -112,6 +111,13 @@ const HRExecutiveEntryDetails = () => {
         },
       }
     );
+
+  const mobileBankingOptions = [
+    { label: "bKash", value: "BKASH" },
+    { label: "Nagad", value: "NAGAD" },
+    { label: "Rocket", value: "ROCKET" },
+    { label: "Upay", value: "UPAY" },
+  ];
 
   const { data: units = [] } = useGet<Unit[]>({
     key: ["units"],
@@ -444,8 +450,6 @@ const HRExecutiveEntryDetails = () => {
       branchName: data.branchName,
 
       salaryAccountFlag: data.paymentMode === "BANK",
-
-      accountType: data.accountType,
 
       // documents: [
       //   ...(data.educationCertificate
@@ -797,27 +801,19 @@ const HRExecutiveEntryDetails = () => {
           <div className="flex gap-4 p-4">
 
             {[
-              "BANK",
-              "BKASH",
-              "CASH",
-              "MIXED",
+              { label: "BANK", value: "BANK" },
+              { label: "MOBILE BANKING", value: "MOBILE_BANKING" }, // was "BKASH"
+              { label: "CASH", value: "CASH" },
+              { label: "MIXED", value: "MIXED" },
             ].map((mode) => (
               <button
-                key={mode}
+                key={mode.value}
                 type="button"
-                onClick={() =>
-                  setValue(
-                    "paymentMode",
-                    mode
-                  )
-                }
-                className={`px-6 py-2 border rounded-lg ${paymentMode ===
-                  mode
-                  ? "bg-blue-50 border-blue-500"
-                  : ""
+                onClick={() => setValue("paymentMode", mode.value)}
+                className={`px-6 py-2 border rounded-lg ${paymentMode === mode.value ? "bg-blue-50 border-blue-500" : ""
                   }`}
               >
-                {mode}
+                {mode.label}
               </button>
             ))}
 
@@ -876,55 +872,32 @@ const HRExecutiveEntryDetails = () => {
                     }
                   />
 
-                  <CommonInputField
-                    label="Account Type"
-                    name="accountType"
-                    type="dropdown"
-                    options={
-                      dropdownOptions
-                    }
-                    register={
-                      register
-                    }
-                    control={
-                      control
-                    }
-                    errors={
-                      errors
-                    }
-                  />
-
                 </div>
               )}
 
-            {paymentMode ===
-              "BKASH" && (
-                <div className="grid grid-cols-2 gap-4">
+            {paymentMode === "MOBILE_BANKING" && (  // was "BKASH"
+              <div className="grid grid-cols-2 gap-4">
 
-                  <CommonInputField
-                    label="Bkash Number"
-                    name="bkashNumber"
-                    register={
-                      register
-                    }
-                    errors={
-                      errors
-                    }
-                  />
+                <CommonInputField
+                  label="Mobile Banking Provider"
+                  name="mobileBankingProvider"
+                  type="dropdown"
+                  options={mobileBankingOptions}
+                  register={register}
+                  control={control}
+                  errors={errors}
+                />
 
-                  <CommonInputField
-                    label="Account Holder"
-                    name="accountHolderName"
-                    register={
-                      register
-                    }
-                    errors={
-                      errors
-                    }
-                  />
+                <CommonInputField
+                  label="Mobile Number"
+                  name="bkashNumber"
+                  register={register}
+                  errors={errors}
+                />
 
-                </div>
-              )}
+                {/* ❌ Account Holder field removed */}
+              </div>
+            )}
 
             {paymentMode ===
               "MIXED" && (
