@@ -34,4 +34,8 @@ export const API_ROUTES = {
   IT_ACTIVATION_SUMMARY: "Employees/it-activation-summary",
   IT_DETAIL: "Employees/it-detail",
   EMPLOYEE_UPLOAD_FILES: "Employees/upload-files",
+
+  /// Geo
+  DIVISIONS:  "Geo/divisions",
+  DISTRICTS: "Geo/districts"
 };

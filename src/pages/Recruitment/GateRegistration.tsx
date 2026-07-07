@@ -10,6 +10,8 @@ import { useNavigate } from "react-router-dom";
 import { bloodGroupMapBangla, religionMapBangla } from "../EmployeeInformation/types";
 
 export interface GateRegistrationForm {
+
+
   temporaryId: string;
 
   fullName: string;
@@ -32,7 +34,7 @@ export interface GateRegistrationForm {
   presentDistrict: string;
   presentDivision: string;
 
-  sameAsPresent: boolean;
+  sameAsPermanent: boolean;
   permanentVillageArea: string;
   permanentPostOffice: string;
   permanentPoliceStation: string;
@@ -157,113 +159,60 @@ const personalInformationFields: SectionField[] =
     },
   ];
 
-const addressInformationFields: SectionField[] = [
-  // Present Address
-  {
-    label: "গ্রাম / এলাকা",
-    name: "presentVillageArea",
-    rules: {
-      required: "গ্রাম / এলাকা আবশ্যক",
-    },
-  },
-  {
-    label: "পোস্ট অফিস",
-    name: "presentPostOffice",
-    rules: {
-      required: "পোস্ট অফিস আবশ্যক",
-    },
-  },
-  {
-    label: "থানা / উপজেলা",
-    name: "presentPoliceStation",
-    rules: {
-      required: "থানা / উপজেলা আবশ্যক",
-    },
-  },
-  {
-    label: "জেলা",
-    name: "presentDistrict",
-    type: "text",
-    rules: {
-      required: "জেলা আবশ্যক",
-    },
-  },
-  {
-    label: "বিভাগ",
-    name: "presentDivision",
-    type: "text",
-    rules: {
-      required: "বিভাগ আবশ্যক",
-    },
-  },
 
-  // Permanent Address
-  {
-    label: "গ্রাম / এলাকা",
-    name: "permanentVillageArea",
-    rules: {
-      required: "গ্রাম / এলাকা আবশ্যক",
-    },
-  },
-  {
-    label: "পোস্ট অফিস",
-    name: "permanentPostOffice",
-    rules: {
-      required: "পোস্ট অফিস আবশ্যক",
-    },
-  },
-  {
-    label: "থানা / উপজেলা",
-    name: "permanentPoliceStation",
-    rules: {
-      required: "থানা / উপজেলা আবশ্যক",
-    },
-  },
-  {
-    label: "জেলা",
-    name: "permanentDistrict",
-    type: "text",
-    rules: {
-      required: "জেলা আবশ্যক",
-    },
-  },
-  {
-    label: "বিভাগ",
-    name: "permanentDivision",
-    type: "text",
-    rules: {
-      required: "বিভাগ আবশ্যক",
-    },
-  }
-];
-
-
-
-const referenceInformationFields: SectionField[] = [
-  {
-    label: "রেফারেন্স ব্যক্তির নাম",
-    name: "referenceName",
-  },
-  {
-    label: "রেফারেন্স মোবাইল",
-    name: "referenceMobile",
-  },
-];
-
-const formSections = [
-  {
-    title: "১. ব্যক্তিগত তথ্য",
-    columns: "grid-cols-4",
-    fields: personalInformationFields,
-  },
-  {
-    title: "২. ঠিকানা তথ্য",
-    columns: "grid-cols-2",
-    fields: addressInformationFields,
-  },
-];
 
 const GateRegistration = () => {
+
+
+  const {
+    register,
+    handleSubmit,
+    control,
+    reset,
+    getValues,
+    watch,
+    setValue,
+    formState: { errors },
+  } = useForm<GateRegistrationForm>({
+    mode: "onTouched",
+    defaultValues: {
+      temporaryId: "",
+      sameAsPermanent: false,
+      joiningDate: new Date()
+        .toISOString()
+        .split("T")[0],
+    },
+  });
+
+
+  const { data: divisions = [] } = useGet<any[]>({
+    key: ["divisions"],
+    url: API_ROUTES.DIVISIONS,
+  });
+
+  const { data: permanentDistricts = [] } = useGet<any[]>({
+    key: ["permanentDistricts", watch("permanentDivision")],
+    url: `${API_ROUTES.DIVISIONS}/${watch("permanentDivision")}/districts`,
+    enabled: !!watch("permanentDivision")
+  });
+
+  const { data: permanentThanas = [] } = useGet<any[]>({
+    key: ["permanentThanas", watch("permanentDistrict")],
+    url: `${API_ROUTES.DISTRICTS}/${watch("permanentDistrict")}/thanas`,
+    enabled: !!watch("permanentDistrict")
+  });
+
+  const { data: presentDistricts = [] } = useGet<any[]>({
+    key: ["presentDistricts", watch("presentDivision")],
+    url: `${API_ROUTES.DIVISIONS}/${watch("presentDivision")}/districts`,
+    enabled: !!watch("presentDivision"),
+  });
+
+  const { data: presentThanas = [] } = useGet<any[]>({
+    key: ["presentThanas", watch("presentDistrict")],
+    url: `${API_ROUTES.DISTRICTS}/${watch("presentDistrict")}/thanas`,
+    enabled: !!watch("presentDistrict"),
+  });
 
   const { data: units = [] } = useGet<Unit[]>({
     key: ["units"],
@@ -274,6 +223,138 @@ const GateRegistration = () => {
     key: ["temporaryId"],
     url: API_ROUTES.ENROLLMENTID,
   });
+
+  const addressInformationFields: SectionField[] = [
+    // Present Address
+    {
+      label: "বিভাগ",
+      name: "presentDivision",
+      type: "dropdown",
+      options: divisions.map((i) => ({
+        label: i.divisionName,
+        value: i.id
+      })),
+      rules: {
+        required: "বিভাগ আবশ্যক",
+      },
+    },
+    {
+      label: "জেলা",
+      name: "presentDistrict",
+      type: "dropdown",
+      options: presentDistricts.map(i => ({
+        label: i.districtName,
+        value: i.id
+      })),
+      rules: {
+        required: "জেলা আবশ্যক",
+      },
+    },
+    {
+      label: "থানা / উপজেলা",
+      name: "presentPoliceStation",
+      type: "dropdown",
+      options: presentThanas.map(i => ({
+        label: i.thanaName,
+        value: i.id
+      })),
+      rules: {
+        required: "থানা / উপজেলা আবশ্যক",
+      },
+    },
+    {
+      label: "পোস্ট অফিস",
+      name: "presentPostOffice",
+      rules: {
+        required: "পোস্ট অফিস আবশ্যক",
+      },
+    },
+    {
+      label: "গ্রাম / এলাকা",
+      name: "presentVillageArea",
+      rules: {
+        required: "গ্রাম / এলাকা আবশ্যক",
+      },
+    },
+
+    // Permanent Address
+    {
+      label: "বিভাগ",
+      name: "permanentDivision",
+      type: "dropdown",
+      options: divisions.map((i) => ({
+        label: i.divisionName,
+        value: i.id
+      })),
+      rules: {
+        required: "বিভাগ আবশ্যক",
+      },
+    },
+    {
+      label: "জেলা",
+      name: "permanentDistrict",
+      type: "dropdown",
+      options: permanentDistricts.map((i) => ({
+        label: i.districtName,
+        value: i.id
+      })),
+      rules: {
+        required: "জেলা আবশ্যক",
+      },
+    },
+    {
+      label: "থানা / উপজেলা",
+      name: "permanentPoliceStation",
+      type: "dropdown",
+      options: permanentThanas.map(i => ({
+        label: i.thanaName,
+        value: i.id
+      })),
+      rules: {
+        required: "থানা / উপজেলা আবশ্যক",
+      },
+    },
+    {
+      label: "পোস্ট অফিস",
+      name: "permanentPostOffice",
+      rules: {
+        required: "পোস্ট অফিস আবশ্যক",
+      },
+    },
+    {
+      label: "গ্রাম / এলাকা",
+      name: "permanentVillageArea",
+      rules: {
+        required: "গ্রাম / এলাকা আবশ্যক",
+      },
+    },
+  ];
+
+
+
+  const referenceInformationFields: SectionField[] = [
+    {
+      label: "রেফারেন্স ব্যক্তির নাম",
+      name: "referenceName",
+    },
+    {
+      label: "রেফারেন্স মোবাইল",
+      name: "referenceMobile",
+    },
+  ];
+
+  const formSections = [
+    {
+      title: "১. ব্যক্তিগত তথ্য",
+      columns: "grid-cols-4",
+      fields: personalInformationFields,
+    },
+    {
+      title: "২. ঠিকানা তথ্য",
+      columns: "grid-cols-2",
+      fields: addressInformationFields,
+    },
+  ];
 
   const serviceInformationFields: SectionField[] = [
     {
@@ -312,27 +393,7 @@ const GateRegistration = () => {
 
 
 
-  const {
-    register,
-    handleSubmit,
-    control,
-    reset,
-    getValues,
-    watch,
-    setValue,
-    formState: { errors },
-  } = useForm<GateRegistrationForm>({
-    mode: "onTouched",
-    defaultValues: {
-      temporaryId: "",
-      sameAsPresent: false,
-      joiningDate: new Date()
-        .toISOString()
-        .split("T")[0],
-    },
-  });
-
-  const sameAsPresent = watch("sameAsPresent");
+  const sameAsPermanent = watch("sameAsPermanent");
 
   const getDraftKey = (temporaryId: string) =>
     `gateRegistrationDraft_${temporaryId}`;
@@ -353,38 +414,33 @@ const GateRegistration = () => {
     toast.success("ফর্মটি সফলভাবে সংরক্ষণ করা হয়েছে");
   };
 
+  // Step 1: when sameAsPermanent is checked, only copy the division (root of the chain)
   useEffect(() => {
-    if (!sameAsPresent) return;
+    if (!sameAsPermanent) return;
+    setValue("presentDivision", watch("permanentDivision"));
+    setValue("presentVillageArea", watch("permanentVillageArea"));
+    setValue("presentPostOffice", watch("permanentPostOffice"));
+  }, [sameAsPermanent, watch("permanentDivision")]);
 
-    setValue(
-      "permanentVillageArea",
-      watch("presentVillageArea")
+  // Step 2: once presentDistricts has loaded for that division, copy the district
+  useEffect(() => {
+    if (!sameAsPermanent) return;
+    if (!presentDistricts.length) return; // wait for options to actually exist
+    const match = presentDistricts.find(
+      (d) => String(d.id) === String(watch("permanentDistrict"))
     );
-    setValue(
-      "permanentPostOffice",
-      watch("presentPostOffice")
+    if (match) setValue("presentDistrict", match.id);
+  }, [sameAsPermanent, presentDistricts, watch("permanentDistrict")]);
+
+  // Step 3: once presentThanas has loaded for that district, copy the thana
+  useEffect(() => {
+    if (!sameAsPermanent) return;
+    if (!presentThanas.length) return;
+    const match = presentThanas.find(
+      (t) => String(t.id) === String(watch("permanentPoliceStation"))
     );
-    setValue(
-      "permanentPoliceStation",
-      watch("presentPoliceStation")
-    );
-    setValue(
-      "permanentDistrict",
-      watch("presentDistrict")
-    );
-    setValue(
-      "permanentDivision",
-      watch("presentDivision")
-    );
-  }, [
-    sameAsPresent,
-    watch("presentVillageArea"),
-    watch("presentPostOffice"),
-    watch("presentPoliceStation"),
-    watch("presentDistrict"),
-    watch("presentDivision"),
-    setValue,
-  ]);
+    if (match) setValue("presentPoliceStation", match.id);
+  }, [sameAsPermanent, presentThanas, watch("permanentPoliceStation")]);
 
   const handleReset = () => {
     const currentTemporaryId = getValues("temporaryId");
@@ -597,6 +653,49 @@ const GateRegistration = () => {
                   {/* Present Address */}
                   <div>
                     <h3 className="mb-4 text-base font-semibold text-slate-700 border-b pb-2">
+                      স্থায়ী ঠিকানা
+                    </h3>
+
+                    <div className="grid grid-cols-1 gap-4">
+                      {addressInformationFields
+                        .filter((field) =>
+                          field.name.startsWith("permanent")
+                        )
+                        .map((field) => (
+                          <CommonInputField
+                            key={field.name}
+                            // disabled={sameAsPermanent}
+                            label={field.label}
+                            name={field.name as any}
+                            type={field.type}
+                            options={field.options}
+                            rules={field.rules}
+                            register={register}
+                            errors={errors}
+                            control={control}
+                          />
+                        ))}
+                    </div>
+
+                  </div>
+
+                  {/* Present Address */}
+                  <div>
+                    <div className="mb-4 flex items-center gap-2">
+                      <input
+                        id="sameAsPermanent"
+                        type="checkbox"
+                        {...register("sameAsPermanent")}
+                        className="h-4 w-4"
+                      />
+                      <label
+                        htmlFor="sameAsPermanent"
+                        className="text-sm font-medium text-slate-700"
+                      >
+                        স্থায়ী ঠিকানার মতো
+                      </label>
+                    </div>
+                    <h3 className="mb-4 text-base font-semibold text-slate-700 border-b pb-2">
                       বর্তমান ঠিকানা
                     </h3>
 
@@ -609,6 +708,7 @@ const GateRegistration = () => {
                           <CommonInputField
                             key={field.name}
                             label={field.label}
+                            disabled={sameAsPermanent}
                             name={field.name as any}
                             type={field.type}
                             options={field.options}
@@ -619,48 +719,7 @@ const GateRegistration = () => {
                           />
                         ))}
                     </div>
-                  </div>
 
-                  {/* Permanent Address */}
-                  <div>
-                    <div className="mb-4 flex items-center gap-2">
-                      <input
-                        id="sameAsPresent"
-                        type="checkbox"
-                        {...register("sameAsPresent")}
-                        className="h-4 w-4"
-                      />
-                      <label
-                        htmlFor="sameAsPresent"
-                        className="text-sm font-medium text-slate-700"
-                      >
-                        বর্তমান ঠিকানার মতো
-                      </label>
-                    </div>
-                    <h3 className="mb-4 text-base font-semibold text-slate-700 border-b pb-2">
-                      স্থায়ী ঠিকানা
-                    </h3>
-
-                    <div className="grid grid-cols-1 gap-4">
-                      {addressInformationFields
-                        .filter((field) =>
-                          field.name.startsWith("permanent")
-                        )
-                        .map((field) => (
-                          <CommonInputField
-                            key={field.name}
-                            disabled={sameAsPresent}
-                            label={field.label}
-                            name={field.name as any}
-                            type={field.type}
-                            options={field.options}
-                            rules={field.rules}
-                            register={register}
-                            errors={errors}
-                            control={control}
-                          />
-                        ))}
-                    </div>
                   </div>
                 </div>
               </div>
