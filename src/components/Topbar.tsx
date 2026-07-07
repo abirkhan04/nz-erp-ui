@@ -47,6 +47,7 @@ export default function Topbar() {
   // };
 
   const handleLogout = () => {
+    localStorage.clear();
     navigate("/login");
   };
 

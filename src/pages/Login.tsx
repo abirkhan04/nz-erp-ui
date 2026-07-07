@@ -24,6 +24,7 @@ import {
   Leaf,
   FileText,
 } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 const modules = [
   {
@@ -83,24 +84,23 @@ type FormData = {
 };
 
 export default function Login() {
+  const { login } = useAuth();
   const { register, handleSubmit } = useForm<FormData>();
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
-  const { mutateAsync: login, isPending } = usePost(API_ROUTES.LOGIN);
+  const { mutateAsync: loginMutation, isPending } = usePost(API_ROUTES.LOGIN);
 
   const onSubmit = async (data: FormData) => {
     try {
-      const res: any = await login({
+      const res: any = await loginMutation({
         username: data.username,
         password: data.password,
       });
 
-      const token = res?.id;
+      const token = res?.userId;
 
-      if (token) {
-        localStorage.setItem("token", token);
-      }
+      login(token, res);
 
       navigate("/");
     } catch (error: any) {

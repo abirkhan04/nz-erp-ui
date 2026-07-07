@@ -16,6 +16,7 @@ import { useNavigate } from "react-router-dom";
 import type { LucideIcon } from "lucide-react";
 import { API_ROUTES } from "../api/routes";
 import { useGet } from "../hooks/useGet";
+import { useAuth } from "../context/AuthContext";
 
 interface SummaryCard {
   title: string;
@@ -37,20 +38,23 @@ interface CompanyRecruitment {
 interface ProcessStep {
   step: number;
   title: string;
+  moduleName: string;
   icon: LucideIcon;
   color: string;
-  status: string;
+  status?: string;
   uri?: string;
 }
 
 const RecruitmentDashboard = () => {
 
+  const { hasModule } = useAuth();
+
   const navigate = useNavigate();
-  const {data: activationSummery} = useGet<any>({
+  const { data: activationSummery } = useGet<any>({
     key: ["activationSummery"],
     url: API_ROUTES.IT_ACTIVATION_SUMMARY,
   });
-  const summaryCards:SummaryCard[] = [
+  const summaryCards: SummaryCard[] = [
     {
       title: "TOTAL RECRUITED",
       value: activationSummery?.total,
@@ -85,7 +89,7 @@ const RecruitmentDashboard = () => {
     },
   ];
 
-  const companies:CompanyRecruitment[] = [
+  const companies: CompanyRecruitment[] = [
     {
       company: "NZ Textile Limited",
       workers: 420,
@@ -119,6 +123,7 @@ const RecruitmentDashboard = () => {
   const processFlow: ProcessStep[] = [
     {
       step: 1,
+      moduleName: "GateEntry",
       title: "Gate Registration",
       icon: Building2,
       color: "blue",
@@ -127,6 +132,7 @@ const RecruitmentDashboard = () => {
     },
     {
       step: 2,
+      moduleName: "MedicalCheckup",
       title: "Medical Examination",
       icon: Stethoscope,
       color: "sky",
@@ -136,6 +142,7 @@ const RecruitmentDashboard = () => {
     {
       step: 3,
       title: "HR Executive Entry",
+      moduleName: "HRExecution",
       icon: FileText,
       color: "green",
       status: "DISABLED",
@@ -144,6 +151,7 @@ const RecruitmentDashboard = () => {
     {
       step: 4,
       title: "Biometric & Picture Capture",
+      moduleName: "Biometric",
       icon: Fingerprint,
       color: "orange",
       status: "DISABLED",
@@ -152,6 +160,7 @@ const RecruitmentDashboard = () => {
     {
       step: 5,
       title: "Director Review",
+      moduleName: "DirectorReview",
       icon: UserRound,
       color: "purple",
       status: "DISABLED",
@@ -160,6 +169,7 @@ const RecruitmentDashboard = () => {
     {
       step: 6,
       title: "IT Activation",
+      moduleName: "ITActivation",
       icon: Monitor,
       color: "cyan",
       status: "DISABLED",
@@ -168,6 +178,7 @@ const RecruitmentDashboard = () => {
     {
       step: 7,
       title: "Recruitment Reports",
+      moduleName: "RecruitmentReports",
       icon: FileText,
       color: "pink",
       status: "DISABLED",
@@ -344,17 +355,18 @@ const RecruitmentDashboard = () => {
               colorStyles[item.color as keyof typeof colorStyles];
             return (
               <React.Fragment key={item.step}>
-                <div className="relative
-                                min-w-[200px]
-                                rounded-2xl
-                                bg-white
-                                p-5
-                                shadow-md
-                                hover:shadow-lg
-                                transition-all
-                                duration-300
-                                cursor-pointer
-                                " onClick={() => item.uri && navigate(item.uri)}>
+                <div className={`relative
+                                  min-w-[200px]
+                                  rounded-2xl
+                                  border border-slate-300
+                                  bg-white
+                                  p-5
+                                  shadow-md
+                                  hover:shadow-lg
+                                  transition-all
+                                  duration-300
+                                  ${hasModule(item.moduleName) ? "cursor-pointer" : "cursor-not-allowed  opacity-60"}
+                                `} onClick={() => item.uri && navigate(item.uri)}>
                   <div className={`absolute top-0 left-0 ${styles.badge} text-white px-3 py-1 rounded-br-xl rounded-tl-2xl font-bold`}>
                     {item.step}
                   </div>
@@ -371,10 +383,10 @@ const RecruitmentDashboard = () => {
                     </h4>
                     <span
                       className={`inline-block mt-4 px-4 py-1 rounded-full text-xs font-semibold ${getStatusClass(
-                        item.status
+                        hasModule(item.moduleName)? "Active":  "Disabled"
                       )}`}
                     >
-                      {item.status}
+                       {hasModule(item.moduleName)? "Active":  "Disabled"}
                     </span>
                   </div>
                 </div>
