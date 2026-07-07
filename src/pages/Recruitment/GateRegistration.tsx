@@ -650,8 +650,8 @@ const GateRegistration = () => {
                 </div>
 
                 <div className="grid grid-cols-2 gap-8">
-                  {/* Present Address */}
-                  <div>
+                  {/* Permanent Address */}
+                  <div className="mt-9">
                     <h3 className="mb-4 text-base font-semibold text-slate-700 border-b pb-2">
                       স্থায়ী ঠিকানা
                     </h3>
