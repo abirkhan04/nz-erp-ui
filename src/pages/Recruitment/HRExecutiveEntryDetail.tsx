@@ -35,6 +35,10 @@ interface HRExecutiveEntryForm {
   employeeName: string;
   fatherName: string;
   motherName: string;
+  nomineeName: string;
+  nomineeNID: string;
+  nomineeRelation: string;
+  nomineeMobileNumber: string;
 
   company: string | null;
   subUnit: string | null;
@@ -88,11 +92,11 @@ interface HRExecutiveEntryForm {
 
 const HRExecutiveEntryDetails = () => {
 
-  
-const {data: banks=[]} = useGet({
-  key: ["banks"],
-  url: `${API_ROUTES.BANKS}?includeInactive=false`
-})
+
+  const { data: banks = [] } = useGet({
+    key: ["banks"],
+    url: `${API_ROUTES.BANKS}?includeInactive=false`
+  })
 
   const {
     register,
@@ -469,7 +473,7 @@ const {data: banks=[]} = useGet({
 
   const onSubmit = (data: HRExecutiveEntryForm) => {
     console.log("data here", data);
-     console.log("documents here", documents);
+    console.log("documents here", documents);
     const payload = {
       employeeId: data.employeeId,
       employeeName: data.employeeName,
@@ -477,6 +481,10 @@ const {data: banks=[]} = useGet({
       motherName: data.motherName,
       employeeCode: data.employeeCode,
       mobileNumber: data.mobileNumber,
+      nomineeName: data.nomineeName,
+      nomineeNID: data.nomineeNID,
+      nomineeRelation: data.nomineeRelation,
+      nomineeMobileNumber: data.nomineeMobileNumber,
       employeeEnrollmentId: data.employeeEnrollmentId,
       unitId: data.company,
       subunitId: data.subUnit,
@@ -588,7 +596,7 @@ const {data: banks=[]} = useGet({
       //     ]
       //     : []),
       // ],
-      documents: documents.map(i=> ({fileName: i.item1, filePath: i.item2})),
+      documents: documents.map(i => ({ fileName: i.item1, filePath: i.item2 })),
 
       tinNumber: "",
 
@@ -640,8 +648,37 @@ const {data: banks=[]} = useGet({
       label: "Mother Name",
       name: "motherName",
       type: "text"
+    },
+    {
+      label: "Nominee Name",
+      name: "nomineeName",
+      type: "text"
+    },
+    {
+      label: "Nominee NID",
+      name: "nomineeNID",
+      type: "text"
+    },
+    {
+      label: "Nominee Relation",
+      name: "nomineeRelation",
+      type: "dropdown",
+      options: [
+        { label: "Father", value: "father" },
+        { label: "Mother", value: "mother" },
+        { label: "Spouse", value: "spouse" },
+        { label: "Son", value: "son" },
+        { label: "Daughter", value: "daughter" },
+        { label: "Brother", value: "brother" },
+        { label: "Sister", value: "sister" }
+      ]
+    },
+    {
+      label: "Nominee Mobile Number",
+      name: "nomineeMobileNumber",
+      type: "text"
     }
-  ]
+  ];
 
   const serviceInformationFields = [
     {
@@ -735,7 +772,7 @@ const {data: banks=[]} = useGet({
       label: "Weekly holiday",
       name: "weekday",
       type: "dropdown",
-      options: Object.entries(WeekOffDayMap).map(([value, label])=> ({
+      options: Object.entries(WeekOffDayMap).map(([value, label]) => ({
         label,
         value
       }))
@@ -779,11 +816,11 @@ const {data: banks=[]} = useGet({
       name: "employeeCode",
       type: "text",
       rules: {
-        required:  "Employee Code is required"
+        required: "Employee Code is required"
       }
     },
     {
-      label:  "Mobile Number",
+      label: "Mobile Number",
       name: "mobileNumber",
       type: "text",
       rules: {
@@ -837,7 +874,7 @@ const {data: banks=[]} = useGet({
         </div>
 
         <div className="bg-white rounded-xl mb-6">
-                   <div className="border-b px-4 py-3 font-semibold text-blue-700">
+          <div className="border-b px-4 py-3 font-semibold text-blue-700">
             Employee Information
           </div>
 
@@ -857,6 +894,7 @@ const {data: banks=[]} = useGet({
                   type={
                     field.type as any
                   }
+                  options={field.options}
                   register={
                     register
                   }
@@ -949,7 +987,7 @@ const {data: banks=[]} = useGet({
                     name="bankName"
                     type="dropdown"
                     options={
-                      banks.filter((i:any)=> !i.mobileBankingFlag).map((i:any)=> ({
+                      banks.filter((i: any) => !i.mobileBankingFlag).map((i: any) => ({
                         label: i.bankingName,
                         value: i.id
                       }))
@@ -1001,7 +1039,7 @@ const {data: banks=[]} = useGet({
                   label="Mobile Banking Provider"
                   name="mobileBankingProvider"
                   type="dropdown"
-                  options={banks.filter((i:any)=> i.mobileBankingFlag).map((i:any) => ({
+                  options={banks.filter((i: any) => i.mobileBankingFlag).map((i: any) => ({
                     label: i.bankingName,
                     value: i.id
                   }))}
