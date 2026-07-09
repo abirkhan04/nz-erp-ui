@@ -56,7 +56,7 @@ interface HRExecutiveEntryForm {
   remarks: string;
 
   paymentMode: string;
-  mobileBankingProvider:string;
+  mobileBankingProvider: string;
 
   bankName: string | null;
   branchName: string;
@@ -73,6 +73,8 @@ interface HRExecutiveEntryForm {
   policeClearance: boolean;
   experienceCertificate: boolean;
   passportPhoto: boolean;
+  chairmanCertificate: boolean;
+  signature:boolean;
 
   files: File[];
 }
@@ -678,32 +680,10 @@ const HRExecutiveEntryDetails = () => {
       type: "number",
     },
     {
-      label: "Employment Type",
-      name:
-        "employmentType",
-      type: "text",
-    },
-    {
-      label: "Pay Basis",
-      name: "payBasis",
-      type: "text",
-    },
-    {
-      label: "Reporting To",
-      name: "reportingTo",
-      type: "dropdown",
-      options: [{ label: "CEO", value: "CEO" }, { label: "Manager", value: "Manager" }, { label: "Director", value: "Director" }]
-    },
-    {
       label: "Employee Category",
       name: "employeeCategory",
       type: "dropdown",
       options: [{ label: "Permanent", value: "123" }, { label: "Temporary", value: "124" }, { label: "Provisional", value: "125" }]
-    },
-    {
-      label: "Work Location",
-      name: "workLocation",
-      type: "dropdown",
     },
     {
       label: "Remarks",
@@ -804,7 +784,6 @@ const HRExecutiveEntryDetails = () => {
               { label: "BANK", value: "BANK" },
               { label: "MOBILE BANKING", value: "MOBILE_BANKING" }, // was "BKASH"
               { label: "CASH", value: "CASH" },
-              { label: "MIXED", value: "MIXED" },
             ].map((mode) => (
               <button
                 key={mode.value}
@@ -899,49 +878,6 @@ const HRExecutiveEntryDetails = () => {
               </div>
             )}
 
-            {paymentMode ===
-              "MIXED" && (
-                <div className="grid grid-cols-3 gap-4">
-
-                  <CommonInputField
-                    label="Gross Salary"
-                    name="grossSalary"
-                    type="number"
-                    register={
-                      register
-                    }
-                    errors={
-                      errors
-                    }
-                  />
-
-                  <CommonInputField
-                    label="Cash Portion"
-                    name="cashPortion"
-                    type="number"
-                    register={
-                      register
-                    }
-                    errors={
-                      errors
-                    }
-                  />
-
-                  <CommonInputField
-                    label="Bank Portion"
-                    name="bankPortion"
-                    type="number"
-                    register={
-                      register
-                    }
-                    errors={
-                      errors
-                    }
-                  />
-
-                </div>
-              )}
-
           </div>
         </div>
 
@@ -1002,6 +938,24 @@ const HRExecutiveEntryDetails = () => {
                 )}
               />
               Passport Photo
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                {...register(
+                  "chairmanCertificate"
+                )}
+              />
+              Chairman Certificate
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                {...register(
+                  "signature"
+                )}
+              />
+              Signature
             </label>
 
           </div>

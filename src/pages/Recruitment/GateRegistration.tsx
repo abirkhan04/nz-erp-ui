@@ -11,9 +11,6 @@ import { bloodGroupMapBangla, genderMapBengali, religionMapBangla } from "../Emp
 
 export interface GateRegistrationForm {
 
-
-  temporaryId: string;
-
   fullName: string;
   fatherName: string;
   motherName: string;
@@ -69,25 +66,21 @@ type SectionField = {
 const personalInformationFields: SectionField[] =
   [
     {
-      label: "অস্থায়ী আইডি",
-      name: "temporaryId",
-    },
-    {
-      label: "পূর্ণ নাম",
+      label: "পূর্ণ নাম(বাংলা)",
       name: "fullName",
       rules: {
         required: "পূর্ণ নাম আবশ্যক",
       },
     },
     {
-      label: "পিতার নাম",
+      label: "পিতার নাম(বাংলা)",
       name: "fatherName",
       rules: {
         required: "পিতার নাম আবশ্যক",
       },
     },
     {
-      label: "মাতার নাম",
+      label: "মাতার নাম(বাংলা)",
       name: "motherName",
       rules: {
         required: "মাতার নাম আবশ্যক",
@@ -170,7 +163,6 @@ const GateRegistration = () => {
   } = useForm<GateRegistrationForm>({
     mode: "onTouched",
     defaultValues: {
-      temporaryId: "",
       sameAsPermanent: false,
       joiningDate: new Date()
         .toISOString()
@@ -213,9 +205,9 @@ const GateRegistration = () => {
     url: API_ROUTES.UNITS,
   });
 
-  const { data: temporaryId } = useGet<Enrollment>({
-    key: ["temporaryId"],
-    url: API_ROUTES.ENROLLMENTID,
+  const { data: designations = [] } = useGet<any[]>({
+    key: ["designations"],
+    url: API_ROUTES.DESIGNATION,
   });
 
   const addressInformationFields: SectionField[] = [
@@ -225,7 +217,7 @@ const GateRegistration = () => {
       name: "presentDivision",
       type: "dropdown",
       options: divisions.map((i) => ({
-        label: i.divisionName,
+        label: i.divisionNameBangla,
         value: i.id
       })),
       rules: {
@@ -237,8 +229,10 @@ const GateRegistration = () => {
       name: "presentDistrict",
       type: "dropdown",
       options: presentDistricts.map(i => ({
-        label: i.districtName,
-        value: i.id
+        label: i.districtNameBangla?.trim()
+          ? i.districtNameBangla
+          : i.districtName,
+        value: i.id,
       })),
       rules: {
         required: "জেলা আবশ্যক",
@@ -249,8 +243,10 @@ const GateRegistration = () => {
       name: "presentPoliceStation",
       type: "dropdown",
       options: presentThanas.map(i => ({
-        label: i.thanaName,
-        value: i.id
+        label: i.thanaNameBangla?.trim()
+          ? i.thanaNameBangla
+          : i.thanaName,
+        value: i.id,
       })),
       rules: {
         required: "থানা / উপজেলা আবশ্যক",
@@ -277,7 +273,7 @@ const GateRegistration = () => {
       name: "permanentDivision",
       type: "dropdown",
       options: divisions.map((i) => ({
-        label: i.divisionName,
+        label: i.divisionNameBangla,
         value: i.id
       })),
       rules: {
@@ -289,8 +285,10 @@ const GateRegistration = () => {
       name: "permanentDistrict",
       type: "dropdown",
       options: permanentDistricts.map((i) => ({
-        label: i.districtName,
-        value: i.id
+        label: i.districtNameBangla?.trim()
+          ? i.districtNameBangla
+          : i.districtName,
+        value: i.id,
       })),
       rules: {
         required: "জেলা আবশ্যক",
@@ -301,8 +299,10 @@ const GateRegistration = () => {
       name: "permanentPoliceStation",
       type: "dropdown",
       options: permanentThanas.map(i => ({
-        label: i.thanaName,
-        value: i.id
+        label: i.thanaNameBangla?.trim()
+          ? i.thanaNameBangla
+          : i.thanaName,
+        value: i.id,
       })),
       rules: {
         required: "থানা / উপজেলা আবশ্যক",
@@ -366,6 +366,11 @@ const GateRegistration = () => {
     {
       label: "পদবী",
       name: "designation",
+      type: "dropdown",
+      options: designations.map(i=> ({
+        label: i.designationName,
+        value: i.id
+      })),
       rules: {
         required: "পদবী আবশ্যক",
       },
@@ -389,19 +394,13 @@ const GateRegistration = () => {
 
   const sameAsPermanent = watch("sameAsPermanent");
 
-  const getDraftKey = (temporaryId: string) =>
-    `gateRegistrationDraft_${temporaryId}`;
+  const DRAFT_KEY = "gateRegistrationDraft";
 
   const handleSaveDraft = () => {
     const values = getValues();
 
-    if (!values.temporaryId) {
-      toast.error("Temporary ID পাওয়া যায়নি");
-      return;
-    }
-
     localStorage.setItem(
-      getDraftKey(values.temporaryId),
+      DRAFT_KEY,
       JSON.stringify(values)
     );
 
@@ -437,12 +436,9 @@ const GateRegistration = () => {
   }, [sameAsPermanent, presentThanas, watch("permanentPoliceStation")]);
 
   const handleReset = () => {
-    const currentTemporaryId = getValues("temporaryId");
 
-    localStorage.removeItem(getDraftKey(currentTemporaryId));
 
     reset({
-      temporaryId: currentTemporaryId,
       joiningDate: new Date().toISOString().split("T")[0],
 
       fullName: "",
@@ -470,27 +466,23 @@ const GateRegistration = () => {
     });
   };
 
-  useEffect(() => {
-    if (!temporaryId?.enrollmentId) return;
 
-    const key = getDraftKey(temporaryId.enrollmentId);
-    const draft = localStorage.getItem(key);
+  useEffect(() => {
+    const draft = localStorage.getItem(DRAFT_KEY);
 
     if (draft) {
       reset(JSON.parse(draft));
     } else {
       reset({
-        temporaryId: temporaryId.enrollmentId,
         joiningDate: new Date().toISOString().split("T")[0],
       });
     }
-  }, [temporaryId, reset]);
+  }, [reset]);
 
   const onSubmit = (
     data: GateRegistrationForm
   ) => {
     const payload = {
-      employeeEnrollmentId: data.temporaryId,
       employeeNameBangla: data.fullName,
 
       // TODO: Replace these IDs from dropdown selections
@@ -588,7 +580,7 @@ const GateRegistration = () => {
         );
 
         localStorage.removeItem(
-          getDraftKey(data.temporaryId)
+          DRAFT_KEY
         );
 
         reset();
@@ -743,7 +735,6 @@ const GateRegistration = () => {
                     register={register}
                     errors={errors}
                     control={control}
-                    disabled={field.name === "temporaryId"}
                   />
                 ))}
               </div>
@@ -823,12 +814,12 @@ const GateRegistration = () => {
               সংরক্ষণ
             </button>
 
-            <button
+            {/* <button
               type="button"
               className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
             >
               অস্থায়ী আইডি প্রিন্ট
-            </button>
+            </button> */}
 
             <button
               type="submit"

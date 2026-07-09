@@ -71,10 +71,6 @@ export interface Location {
   isActive: boolean;
 }
 
-export interface Enrollment {
-  enrollmentId: string;
-}
-
 
 export interface Designation {
   id: string;
