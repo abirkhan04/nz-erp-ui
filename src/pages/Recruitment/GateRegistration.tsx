@@ -537,18 +537,20 @@ const GateRegistration = () => {
       relationship: 0,
 
       // Permanent Address
+      permanentDivisionId: data.permanentDivision,
       permanentVillageAreaRoad:
         data.permanentVillageArea,
       permanentPostOffice: data.permanentPostOffice,
-      permanentThana: data.permanentPoliceStation,
-      permanentDistrict: data.permanentDistrict,
+      permanentThanaId: data.permanentPoliceStation,
+      permanentDistrictId: data.permanentDistrict,
 
       // Present Address
+      presentDivisionId: data.presentDivision,
       presentVillageAreaRoad:
         data.presentVillageArea,
       presentPostOffice: data.presentPostOffice,
-      presentThana: data.presentPoliceStation,
-      presentDistrict: data.presentDistrict,
+      presentThanaId: data.presentPoliceStation,
+      presentDistrictId: data.presentDistrict,
 
       securityClearanceBy: "",
       securityClearanceDate:
