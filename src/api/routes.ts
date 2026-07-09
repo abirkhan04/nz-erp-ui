@@ -37,5 +37,7 @@ export const API_ROUTES = {
 
   /// Geo
   DIVISIONS:  "Geo/divisions",
-  DISTRICTS: "Geo/districts"
+  DISTRICTS: "Geo/districts",
+
+  BANKS: "Banks"
 };

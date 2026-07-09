@@ -27,6 +27,7 @@ import { usePost } from "../../hooks/usePost";
 import toast from "react-hot-toast";
 import { api } from "../../api/client";
 import React from "react";
+import { WeekOffDayMap } from "../EmployeeInformation/types";
 
 interface HRExecutiveEntryForm {
   employeeId: string;
@@ -54,6 +55,8 @@ interface HRExecutiveEntryForm {
   employeeCategory: string | null;
   workLocation: string;
   remarks: string;
+  mobileNumber: string;
+  employeeCode: string;
 
   paymentMode: string;
   mobileBankingProvider: string;
@@ -74,25 +77,19 @@ interface HRExecutiveEntryForm {
   experienceCertificate: boolean;
   passportPhoto: boolean;
   chairmanCertificate: boolean;
-  signature:boolean;
+  signature: boolean;
 
   files: File[];
 }
 
 
-
-const dropdownOptions = [
-  {
-    label: "Option 1",
-    value: "1",
-  },
-  {
-    label: "Option 2",
-    value: "2",
-  },
-];
-
 const HRExecutiveEntryDetails = () => {
+
+  
+const {data: banks=[]} = useGet({
+  key: ["banks"],
+  url: `${API_ROUTES.BANKS}?includeInactive=false`
+})
 
   const {
     register,
@@ -113,13 +110,6 @@ const HRExecutiveEntryDetails = () => {
         },
       }
     );
-
-  const mobileBankingOptions = [
-    { label: "bKash", value: "BKASH" },
-    { label: "Nagad", value: "NAGAD" },
-    { label: "Rocket", value: "ROCKET" },
-    { label: "Upay", value: "UPAY" },
-  ];
 
   const { data: units = [] } = useGet<Unit[]>({
     key: ["units"],
@@ -176,6 +166,71 @@ const HRExecutiveEntryDetails = () => {
   const { candidateId, enrollmentId } =
     useParams();
 
+  const { data: employeeOnGate = {} } = useGet<any>({
+    key: ["employeeOnGate", candidateId],
+    url: `${API_ROUTES.EMPLOYEES}/employee-detail/${candidateId}`,
+    enabled: !!candidateId
+  });
+
+  useEffect(() => {
+    if (!employeeOnGate?.id) return;
+
+    reset({
+      employeeId: employeeOnGate.id,
+      employeeEnrollmentId: employeeOnGate.enrollmentId,
+
+      mobileNumber: employeeOnGate.mobileNumber ?? null,
+      company: employeeOnGate.unitId ?? null,
+      subUnit: employeeOnGate.subUnitId ?? null,
+      department: employeeOnGate.departmentId ?? null,
+      section: employeeOnGate.sectionId ?? null,
+      cell: employeeOnGate.cellId ?? null,
+
+      designation: employeeOnGate.designationId ?? null,
+      grade: employeeOnGate.gradeId ?? null,
+      shift: employeeOnGate.shiftId ?? null,
+      weekday: employeeOnGate.weekOffDay?.toString() ?? null,
+      workerType: employeeOnGate.employeeType?.toString() ?? null,
+
+      proposedSalary:
+        employeeOnGate.proposedMonthlySalary?.toString() ?? "",
+
+      joiningDate: employeeOnGate.joiningDate ?? "",
+      probationPeriod:
+        employeeOnGate.probationPeriod?.toString() ?? "",
+
+      employmentType: "",
+      payBasis: "",
+
+      reportingTo: employeeOnGate.reportingTo ?? null,
+      employeeCategory: null,
+      workLocation: "",
+      remarks: "",
+
+      paymentMode: "BANK",
+      mobileBankingProvider: "",
+
+      bankName: null,
+      branchName: "",
+      accountNumber: "",
+      bkashNumber: "",
+
+      grossSalary: "",
+      cashPortion: "",
+      bankPortion: "",
+
+      educationCertificate: false,
+      nationalId: false,
+      policeClearance: false,
+      experienceCertificate: false,
+      passportPhoto: false,
+      chairmanCertificate: false,
+      signature: false,
+
+      files: [],
+    });
+  }, [employeeOnGate, reset]);
+
   const didRestoreRef = useRef(false);
   const restoredSubUnitRef = useRef(false);
   const restoredSectionRef = useRef(false);
@@ -202,7 +257,7 @@ const HRExecutiveEntryDetails = () => {
 
   const DRAFT_KEY = `HR_EXECUTIVE_DRAFT_${candidateId}_${enrollmentId}`;
 
-  const [documents, setDocuments] = React.useState<any>();
+  const [documents, setDocuments] = React.useState<any[]>([]);
 
 
   const { mutate: HRExecutiveEntryPost } = usePost(API_ROUTES.HRExecutiveEntry);
@@ -237,7 +292,8 @@ const HRExecutiveEntryDetails = () => {
           },
         }
       );
-      setDocuments(response.data);
+      setDocuments(response.data.fileNames);
+
       toast.success("Files uploaded successfully.");
     } catch (error: any) {
       toast.error(error?.message ?? "File upload failed.");
@@ -410,9 +466,11 @@ const HRExecutiveEntryDetails = () => {
 
   const onSubmit = (data: HRExecutiveEntryForm) => {
     console.log("data here", data);
-
+     console.log("documents here", documents);
     const payload = {
       employeeId: data.employeeId,
+      employeeCode: data.employeeCode,
+      mobileNumber: data.mobileNumber,
       employeeEnrollmentId: data.employeeEnrollmentId,
       unitId: data.company,
       subunitId: data.subUnit,
@@ -524,7 +582,7 @@ const HRExecutiveEntryDetails = () => {
       //     ]
       //     : []),
       // ],
-      documents: documents,
+      documents: documents.map(i=> ({fileName: i.item1, filePath: i.item2})),
 
       tinNumber: "",
 
@@ -647,9 +705,13 @@ const HRExecutiveEntryDetails = () => {
       },
     },
     {
-      label: "Weekday",
+      label: "Weekly holiday",
       name: "weekday",
       type: "dropdown",
+      options: Object.entries(WeekOffDayMap).map(([value, label])=> ({
+        label,
+        value
+      }))
     },
     {
       label: "Employee Nature",
@@ -684,6 +746,22 @@ const HRExecutiveEntryDetails = () => {
       name: "employeeCategory",
       type: "dropdown",
       options: [{ label: "Permanent", value: "123" }, { label: "Temporary", value: "124" }, { label: "Provisional", value: "125" }]
+    },
+    {
+      label: "Employee Code",
+      name: "employeeCode",
+      type: "text",
+      rules: {
+        required:  "Employee Code is required"
+      }
+    },
+    {
+      label:  "Mobile Number",
+      name: "mobileNumber",
+      type: "text",
+      rules: {
+        required: "Mobile Number is required"
+      }
     },
     {
       label: "Remarks",
@@ -809,7 +887,10 @@ const HRExecutiveEntryDetails = () => {
                     name="bankName"
                     type="dropdown"
                     options={
-                      dropdownOptions
+                      banks.filter((i:any)=> !i.mobileBankingFlag).map((i:any)=> ({
+                        label: i.bankingName,
+                        value: i.id
+                      }))
                     }
                     register={
                       register
@@ -825,10 +906,7 @@ const HRExecutiveEntryDetails = () => {
                   <CommonInputField
                     label="Branch"
                     name="branchName"
-                    type="dropdown"
-                    options={
-                      dropdownOptions
-                    }
+                    type="text"
                     register={
                       register
                     }
@@ -861,7 +939,10 @@ const HRExecutiveEntryDetails = () => {
                   label="Mobile Banking Provider"
                   name="mobileBankingProvider"
                   type="dropdown"
-                  options={mobileBankingOptions}
+                  options={banks.filter((i:any)=> i.mobileBankingFlag).map((i:any) => ({
+                    label: i.bankingName,
+                    value: i.id
+                  }))}
                   register={register}
                   control={control}
                   errors={errors}

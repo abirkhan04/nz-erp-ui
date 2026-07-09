@@ -56,6 +56,15 @@ export const genderMapBengali: Record<number, string> = {
   3: "তৃতীয় লিঙ্গ",
 };
 
+export const WeekOffDayMap = {
+  0: "Friday",
+  1: "Saturday",
+  2: "Sunday",
+  3: "Monday",
+  4: "Tuesday",
+  5: "Wednesday",
+  6: "Thursday",
+};
 
 export type PhysicalExaminationSetting = {
   id: string;

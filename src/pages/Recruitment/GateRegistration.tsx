@@ -502,15 +502,11 @@ const GateRegistration = () => {
 
       // TODO: Convert from dropdown value
       gender:
-        data.gender === "Male"
-          ? 1
-          : data.gender === "Female"
-            ? 2
-            : 3,
+        Number(data.gender),
 
-      religion: 0,
+      religion: Number(data.religion),
 
-      bloodGroup: 0,
+      bloodGroup: Number(data.bloodGroup),
 
       idType:
         data.nidType === "NID"
@@ -561,6 +557,7 @@ const GateRegistration = () => {
           .split("T")[0],
 
       enrolledBy: "",
+      designationId: data.designation,
       enrolledDate:
         new Date()
           .toISOString()
