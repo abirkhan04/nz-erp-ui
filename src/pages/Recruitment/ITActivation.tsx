@@ -23,17 +23,18 @@ interface Candidate {
     bloodGroup: string;
     religion: string;
     nomineeName: string;
+    joiningDate: string;
     nomineeRelation: string;
     mobile: string;
     approvedByDirector: boolean;
     company: string;
     department: string;
-    section: string;
+    sectionName: string;
     cell: string;
-    designation: string;
-    grade: string;
-    shift: string;
-    weekday: string;
+    designationName: string;
+    gradeName: string;
+    shiftName: string;
+    weekOffday: string;
     typeOfWorker: string;
     proposedSalary: number;
     payBasis: string;
@@ -115,7 +116,7 @@ const ITActivationPage: React.FC = () => {
 
     const { data: selected = {} } = useGet<any>({
         key: ["activationSummary", selectedId],
-        url: `${API_ROUTES.IT_DETAIL}/${selectedId}`,
+        url: `${API_ROUTES.EMPLOYEES}/employee-detail/${selectedId}`,
         enabled: !!selectedId,
     });
 
@@ -369,18 +370,18 @@ const ITActivationPage: React.FC = () => {
                             <div>
                                 <InfoRow label="Company" value={selected?.unitName} />
                                 <InfoRow label="Department" value={selected?.department} />
-                                <InfoRow label="Section" value={selected?.section} />
+                                <InfoRow label="Section" value={selected?.sectionName} />
                                 <InfoRow label="Cell" value={selected?.cell} />
-                                <InfoRow label="Designation" value={selected?.designation} />
-                                <InfoRow label="Grade" value={selected?.grade} />
-                                <InfoRow label="Shift" value={selected?.shift} />
-                                <InfoRow label="Weekday" value={selected?.weekday} />
+                                <InfoRow label="Designation" value={selected?.designationName} />
+                                <InfoRow label="Grade" value={selected?.gradeName} />
+                                <InfoRow label="Shift" value={selected?.shiftName} />
+                                <InfoRow label="Week Off day" value={selected?.weekOffDay} />
                             </div>
                             <div>
                                 <InfoRow label="Type of Worker" value={selected?.typeOfWorker} />
                                 <InfoRow label="Proposed Salary" value={`${selected?.proposedMonthlySalary?.toLocaleString()||0} BDT`} />
                                 <InfoRow label="Pay Basis" value={selected?.payBasis} />
-                                <InfoRow label="Date of Joining" value={selected?.dateOfJoining} />
+                                <InfoRow label="Date of Joining" value={selected?.joiningDate} />
                                 <InfoRow label="Probation Period" value={selected?.probationPeriod} />
                                 <InfoRow label="Employment Type" value={selected?.employmentType} />
                                 <InfoRow label="Work Location" value={selected?.workLocation} />

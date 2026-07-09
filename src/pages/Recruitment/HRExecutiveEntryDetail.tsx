@@ -32,6 +32,9 @@ import { WeekOffDayMap } from "../EmployeeInformation/types";
 interface HRExecutiveEntryForm {
   employeeId: string;
   employeeEnrollmentId: string;
+  employeeName: string;
+  fatherName: string;
+  motherName: string;
 
   company: string | null;
   subUnit: string | null;
@@ -469,6 +472,9 @@ const {data: banks=[]} = useGet({
      console.log("documents here", documents);
     const payload = {
       employeeId: data.employeeId,
+      employeeName: data.employeeName,
+      fatherName: data.fatherName,
+      motherName: data.motherName,
       employeeCode: data.employeeCode,
       mobileNumber: data.mobileNumber,
       employeeEnrollmentId: data.employeeEnrollmentId,
@@ -615,6 +621,27 @@ const {data: banks=[]} = useGet({
 
     // mutate(payload);
   };
+
+  const employeeInformationFields = [
+    {
+      label: "Employee Name",
+      name: "employeeName",
+      type: "text",
+      rules: {
+        required: "Employee Name is required"
+      }
+    },
+    {
+      label: "Father Name",
+      name: "fatherName",
+      type: "text"
+    },
+    {
+      label: "Mother Name",
+      name: "motherName",
+      type: "text"
+    }
+  ]
 
   const serviceInformationFields = [
     {
@@ -810,6 +837,41 @@ const {data: banks=[]} = useGet({
         </div>
 
         <div className="bg-white rounded-xl mb-6">
+                   <div className="border-b px-4 py-3 font-semibold text-blue-700">
+            Employee Information
+          </div>
+
+          <div className="grid grid-cols-5 gap-4 p-4">
+
+            {employeeInformationFields.map(
+              (field) => (
+                <CommonInputField
+                  key={field.name}
+                  placeholder={`Enter ${field.label}`}
+                  label={
+                    field.label
+                  }
+                  name={
+                    field.name as any
+                  }
+                  type={
+                    field.type as any
+                  }
+                  register={
+                    register
+                  }
+                  control={
+                    control
+                  }
+                  rules={field.rules}
+                  errors={
+                    errors
+                  }
+                />
+              )
+            )}
+
+          </div>
 
           <div className="border-b px-4 py-3 font-semibold text-blue-700">
             Service Information
