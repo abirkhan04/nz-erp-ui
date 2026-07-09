@@ -355,18 +355,28 @@ const RecruitmentDashboard = () => {
               colorStyles[item.color as keyof typeof colorStyles];
             return (
               <React.Fragment key={item.step}>
-                <div className={`relative
-                                  min-w-[200px]
-                                  rounded-2xl
-                                  border border-slate-300
-                                  bg-white
-                                  p-5
-                                  shadow-md
-                                  hover:shadow-lg
-                                  transition-all
-                                  duration-300
-                                  ${hasModule(item.moduleName) ? "cursor-pointer" : "cursor-not-allowed  opacity-60"}
-                                `} onClick={() => item.uri && navigate(item.uri)}>
+                <div
+                  className={`relative
+                  min-w-[200px]
+                  rounded-2xl
+                  border border-slate-300
+                  bg-white
+                  p-5
+                  shadow-md
+                  hover:shadow-lg
+                  transition-all
+                  duration-300
+                  ${hasModule(item.moduleName)
+                                    ? "cursor-pointer"
+                                    : "cursor-not-allowed opacity-60"
+                    }
+                    `}
+                  onClick={() => {
+                    if (hasModule(item.moduleName) && item.uri) {
+                      navigate(item.uri);
+                    }
+                  }}
+                >
                   <div className={`absolute top-0 left-0 ${styles.badge} text-white px-3 py-1 rounded-br-xl rounded-tl-2xl font-bold`}>
                     {item.step}
                   </div>
@@ -383,10 +393,10 @@ const RecruitmentDashboard = () => {
                     </h4>
                     <span
                       className={`inline-block mt-4 px-4 py-1 rounded-full text-xs font-semibold ${getStatusClass(
-                        hasModule(item.moduleName)? "Active":  "Disabled"
+                        hasModule(item.moduleName) ? "Active" : "Disabled"
                       )}`}
                     >
-                       {hasModule(item.moduleName)? "Active":  "Disabled"}
+                      {hasModule(item.moduleName) ? "Active" : "Disabled"}
                     </span>
                   </div>
                 </div>

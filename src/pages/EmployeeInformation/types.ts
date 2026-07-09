@@ -10,10 +10,10 @@ export const bloodGroupMap: Record<string, number> = {
   "A-": 1,
   "B+": 2,
   "B-": 3,
-  "AB+": 4,
-  "AB-": 5,
-  "O+": 6,
-  "O-": 7,
+  "O+": 4,
+  "O-": 5,
+  "AB+": 6,
+  "AB-": 7,
 };
 
 export const bloodGroupMapBangla: Record<string, number> = {
@@ -21,10 +21,11 @@ export const bloodGroupMapBangla: Record<string, number> = {
   "এ−": 1,
   "বি+": 2,
   "বি−": 3,
-  "এবি+": 4,
-  "এবি−": 5,
-  "ও+": 6,
-  "ও−": 7,
+  "ও+": 4,
+  "ও−": 5,
+  "এবি+": 6,
+  "এবি−": 7,
+
 };
 
 export const reverseBloodGroupMap: Record<number, string> = {
