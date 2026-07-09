@@ -18,6 +18,7 @@ import { usePost } from "../../hooks/usePost";
 import toast from "react-hot-toast";
 import { api } from "../../api/client";
 import { useNavigate } from "react-router-dom";
+import { bloodGroupMap, genderMapFromNumber } from "../EmployeeInformation/types";
 
 export interface Document {
     employeeId: string | undefined;
@@ -39,12 +40,13 @@ interface Candidate {
     bloodGroup: string;
     dateOfJoining: string;
     status: string;
+    joiningDate: string;
 
     fatherName: string;
-    company: string;
+    unitName: string;
     shed: string;
     department: string;
-    section: string;
+    sectionName: string;
     cell: string;
     salary: number;
     workerType: string;
@@ -54,7 +56,7 @@ const PAGE_SIZE = 5;
 
 const BiometricCapture = () => {
 
-    const { data: candidates, refetch } = useGet<Candidate[]>({
+    const { data: candidates=[], refetch } = useGet<Candidate[]>({
         key: ["candidates"],
         url: `${API_ROUTES.EMPLOYEES_BY_STATUS}?status=HRExecutive`,
     });
@@ -226,29 +228,10 @@ const BiometricCapture = () => {
     ] = useState(false);
 
     const filteredData = useMemo(() => {
-        const bloodGroups = [
-            "A+",
-            "A-",
-            "B+",
-            "B-",
-            "O+",
-            "O-",
-            "AB+",
-            "AB-",
-        ] as const;
 
-        const genders = ["Male", "Female", "Other"] as const;
+        if (!search) return candidates;
 
-        const data =
-            candidates?.map((candidate) => ({
-                ...candidate,
-                bloodGroup: bloodGroups[Number(candidate.bloodGroup)] ?? "",
-                gender: genders[Number(candidate.gender)] ?? "",
-            })) ?? [];
-
-        if (!search) return data;
-
-        return data.filter(
+        return candidates.filter(
             (candidate) =>
                 candidate.enrollmentId
                     ?.toLowerCase()
@@ -277,11 +260,12 @@ const BiometricCapture = () => {
         );
 
     const handleCapture =
-        (
+       async  (
             candidate: Candidate
         ) => {
+            const response = await api.get(`${API_ROUTES.EMPLOYEES}/employee-detail/${candidate.employeeId}`)
             setSelectedCandidate(
-                candidate
+                response.data
             );
 
             setPhotoCaptured(false);
@@ -476,13 +460,13 @@ const BiometricCapture = () => {
 
                                         <td className="px-4 py-3">
                                             {
-                                                candidate.gender
+                                                genderMapFromNumber[Number(candidate.gender)]
                                             }
                                         </td>
 
                                         <td className="px-4 py-3">
                                             {
-                                                candidate.bloodGroup
+                                               bloodGroupMap[candidate.bloodGroup]
                                             }
                                         </td>
 
@@ -494,7 +478,6 @@ const BiometricCapture = () => {
 
 
                                         <td className="px-4 py-3 text-center">
-
                                             <button
                                                 onClick={() =>
                                                     handleCapture(
@@ -607,19 +590,19 @@ const BiometricCapture = () => {
                                     <div className="grid grid-cols-[110px_15px_1fr]">
                                         <span className="text-sm text-slate-600">Gender</span>
                                         <span>:</span>
-                                        <span className="font-medium">{selectedCandidate.gender}</span>
+                                        <span className="font-medium">{genderMapFromNumber[Number(selectedCandidate.gender)]}</span>
                                     </div>
 
                                     <div className="grid grid-cols-[110px_15px_1fr]">
                                         <span className="text-sm text-slate-600">Blood Group</span>
                                         <span>:</span>
-                                        <span className="font-medium">{selectedCandidate.bloodGroup}</span>
+                                        <span className="font-medium">{bloodGroupMap[selectedCandidate.bloodGroup]}</span>
                                     </div>
 
                                     <div className="grid grid-cols-[110px_15px_1fr]">
                                         <span className="text-sm text-slate-600">Date of Joining</span>
                                         <span>:</span>
-                                        <span className="font-medium">{selectedCandidate.dateOfJoining}</span>
+                                        <span className="font-medium">{selectedCandidate.joiningDate}</span>
                                     </div>
 
                                     <div className="grid grid-cols-[110px_15px_1fr]">
@@ -636,7 +619,7 @@ const BiometricCapture = () => {
                                     <div className="grid grid-cols-[150px_15px_1fr]">
                                         <span className="text-sm text-slate-600">Company</span>
                                         <span>:</span>
-                                        <span className="font-medium">{selectedCandidate.company}</span>
+                                        <span className="font-medium">{selectedCandidate.unitName}</span>
                                     </div>
 
                                     <div className="grid grid-cols-[150px_15px_1fr]">
@@ -654,7 +637,7 @@ const BiometricCapture = () => {
                                     <div className="grid grid-cols-[150px_15px_1fr]">
                                         <span className="text-sm text-slate-600">Section</span>
                                         <span>:</span>
-                                        <span className="font-medium">{selectedCandidate.section}</span>
+                                        <span className="font-medium">{selectedCandidate.sectionName}</span>
                                     </div>
 
                                     <div className="grid grid-cols-[150px_15px_1fr]">

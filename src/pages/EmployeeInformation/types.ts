@@ -45,15 +45,15 @@ export const medicalResultMap = new Map<number, string>([
 
 
 export const genderMapFromNumber: Record<number, string> = {
-  1: "Male",
-  2: "Female",
-  3: "Third Gender",
+  0: "Male",
+  1: "Female",
+  2: "Third Gender",
 };
 
 export const genderMapBengali: Record<number, string> = {
-  1: "পুরুষ",
-  2: "মহিলা",
-  3: "তৃতীয় লিঙ্গ",
+  0: "পুরুষ",
+  1: "মহিলা",
+  2: "তৃতীয় লিঙ্গ",
 };
 
 export const WeekOffDayMap = {
