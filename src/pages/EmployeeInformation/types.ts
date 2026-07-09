@@ -67,6 +67,12 @@ export const WeekOffDayMap = {
   6: "Thursday",
 };
 
+export const EmployeeNature = {
+    Worker: 0,
+    Staff: 1,
+    Management: 2,
+};
+
 export type PhysicalExaminationSetting = {
   id: string;
   fieldName: string;

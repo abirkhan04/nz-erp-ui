@@ -18,7 +18,7 @@ import { usePost } from "../../hooks/usePost";
 import toast from "react-hot-toast";
 import { api } from "../../api/client";
 import { useNavigate } from "react-router-dom";
-import { bloodGroupMap, genderMapFromNumber } from "../EmployeeInformation/types";
+import { bloodGroupMap, genderMapFromNumber, reverseBloodGroupMap } from "../EmployeeInformation/types";
 
 export interface Document {
     employeeId: string | undefined;
@@ -170,7 +170,7 @@ const BiometricCapture = () => {
             setDocuments([
                 {
                     employeeId: selectedCandidate?.employeeId,
-                    documentType: 0,
+                    documentType: 4,
                     documentNo: "",
                     issueDate: new Date().toISOString().split("T")[0],
                     expiryDate: null,
@@ -467,7 +467,7 @@ const BiometricCapture = () => {
 
                                         <td className="px-4 py-3">
                                             {
-                                               bloodGroupMap[candidate.bloodGroup]
+                                               reverseBloodGroupMap[Number(candidate.bloodGroup)]
                                             }
                                         </td>
 

@@ -4,7 +4,7 @@ import { API_ROUTES } from "../../api/routes";
 import { usePost } from "../../hooks/usePost";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import { genderMapFromNumber, reverseBloodGroupMap } from "../EmployeeInformation/types";
+import { genderMapFromNumber, reverseBloodGroupMap, reverseReligionMap } from "../EmployeeInformation/types";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -344,7 +344,7 @@ const ITActivationPage: React.FC = () => {
                                 <InfoRow label="Date of Birth" value={selected?.dateOfBirth} />
                                 <InfoRow label="Gender" value={genderMapFromNumber[selected?.gender]} />
                                 <InfoRow label="Blood Group" value={reverseBloodGroupMap[selected?.bloodGroup]} />
-                                <InfoRow label="Religion" value={selected?.religion} />
+                                <InfoRow label="Religion" value={reverseReligionMap[selected?.religion]} />
                                 <InfoRow label="Nominee Name" value={selected?.nomineeName} />
                                 <InfoRow label="Nominee Relation" value={selected?.nomineeRelation} />
                                 <InfoRow label="Mobile" value={selected?.mobile} />

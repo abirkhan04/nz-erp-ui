@@ -7,6 +7,7 @@ import { usePost } from "../../hooks/usePost";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../api/client";
+import { reverseBloodGroupMap } from "../EmployeeInformation/types";
 
 interface SalaryRow {
   selected: boolean;
@@ -23,7 +24,7 @@ interface DirectorReviewForm {
 }
 
 interface Candidate {
-  id: number;
+  id: string;
   employeeId: string;
   enrollmentId: string;
   employeeName: string;
@@ -34,11 +35,11 @@ interface Candidate {
   grade: string;
   shift: string;
   weekday: string;
-  salary: number;
+  proposedSalary: number;
   joiningDate: string;
   status: string;
   fatherName: string;
-  dob: string;
+  dateOfBirth: string;
   bloodGroup: string;
   workerType: string;
   photo: string;
@@ -82,8 +83,8 @@ const DirectorReview = () => {
       selected: false,
       employeeId: item.employeeId,
       employeeEnrollmentId: item.enrollmentId,
-      grossSalary: item.salary,
-      proposedMonthlySalary: item.salary,
+      grossSalary: item.proposedSalary,
+      proposedMonthlySalary: item.proposedSalary,
       decision: "APPROVE",
       remarks: "",
     }));
@@ -100,7 +101,7 @@ const DirectorReview = () => {
   // Safely find the exact matching array index for the detail panel candidate
   const selectedCandidateFormIndex = useMemo(() => {
     if (!selectedCandidate) return -1;
-    return employeeRows.findIndex((r) => r.employeeId === selectedCandidate.employeeId);
+    return employeeRows.findIndex((r) => r.employeeId === selectedCandidate.id);
   }, [selectedCandidate, employeeRows]);
 
   // Search Filtering & Pagination
@@ -112,26 +113,42 @@ const DirectorReview = () => {
     );
   }, [candidates, search]);
 
+  const handleClickReview = async (item: Candidate) => {
+    const response = await api.get(`${API_ROUTES.EMPLOYEES}/employee-detail/${item.employeeId}`)
+    setSelectedCandidate(
+      response.data
+    );
+  }
+
   useEffect(() => { setPage(1); }, [search]);
   useEffect(() => {
+    let imageUrl: string;
+
     const fetchPhoto = async () => {
-      if (!selectedCandidate?.employeeId) return;
+      if (!selectedCandidate?.id) return;
 
       try {
         const response = await api.get(
-          `${API_ROUTES.EMPLOYEE_RECRUITMENT}/photo/${selectedCandidate?.employeeId}`,
+          `${API_ROUTES.EMPLOYEES}/image?employeeId=${selectedCandidate.id}`,
           {
             responseType: "blob",
           }
         );
 
-        setImage(response.data);
+        imageUrl = URL.createObjectURL(response.data);
+        setImage(imageUrl);
       } catch (error) {
         console.error(error);
       }
     };
 
     fetchPhoto();
+
+    return () => {
+      if (imageUrl) {
+        URL.revokeObjectURL(imageUrl);
+      }
+    };
   }, [selectedCandidate]);
 
   const totalPages = Math.ceil(filteredData.length / PAGE_SIZE);
@@ -339,7 +356,8 @@ const DirectorReview = () => {
                       <td className="px-4 py-3 text-center">
                         <button
                           type="button"
-                          onClick={() => setSelectedCandidate(item)}
+                          //onClick={() => setSelectedCandidate(item)}
+                          onClick={() => handleClickReview(item)}
                           className={`rounded-md border px-4 py-2 text-sm font-medium transition ${selectedCandidate?.id === item.id
                             ? "bg-blue-600 border-blue-600 text-white"
                             : "border-blue-500 text-blue-600 hover:bg-blue-50"
@@ -388,11 +406,11 @@ const DirectorReview = () => {
                     <div><p className="text-slate-400 text-xs uppercase">Temporary ID</p><p className="font-semibold text-slate-800">{selectedCandidate.enrollmentId}</p></div>
                     <div><p className="text-slate-400 text-xs uppercase">Full Name</p><p className="font-semibold text-slate-800">{selectedCandidate.employeeName}</p></div>
                     <div><p className="text-slate-400 text-xs uppercase">Father's Name</p><p className="font-semibold">{selectedCandidate.fatherName}</p></div>
-                    <div><p className="text-slate-400 text-xs uppercase">Date of Birth</p><p className="font-semibold">{selectedCandidate.dob}</p></div>
-                    <div><p className="text-slate-400 text-xs uppercase">Blood Group</p><p className="font-semibold">{selectedCandidate.bloodGroup}</p></div>
+                    <div><p className="text-slate-400 text-xs uppercase">Date of Birth</p><p className="font-semibold">{selectedCandidate.dateOfBirth}</p></div>
+                    <div><p className="text-slate-400 text-xs uppercase">Blood Group</p><p className="font-semibold">{reverseBloodGroupMap[Number(selectedCandidate.bloodGroup)]}</p></div>
                     <div><p className="text-slate-400 text-xs uppercase">Worker Type</p><p className="font-semibold">{selectedCandidate.workerType}</p></div>
                     <div><p className="text-slate-400 text-xs uppercase">Department</p><p className="font-semibold">{selectedCandidate.department}</p></div>
-                    <div><p className="text-slate-400 text-xs uppercase">Gross Salary</p><p className="font-semibold text-green-700">৳{selectedCandidate.salary?.toLocaleString()}</p></div>
+                    <div><p className="text-slate-400 text-xs uppercase">Gross Salary</p><p className="font-semibold text-green-700">৳{selectedCandidate.proposedSalary?.toLocaleString()}</p></div>
                   </div>
                 </div>
 

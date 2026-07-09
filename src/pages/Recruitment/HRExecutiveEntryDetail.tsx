@@ -27,7 +27,7 @@ import { usePost } from "../../hooks/usePost";
 import toast from "react-hot-toast";
 import { api } from "../../api/client";
 import React from "react";
-import { WeekOffDayMap } from "../EmployeeInformation/types";
+import { EmployeeNature, WeekOffDayMap } from "../EmployeeInformation/types";
 
 interface HRExecutiveEntryForm {
   employeeId: string;
@@ -50,7 +50,7 @@ interface HRExecutiveEntryForm {
   grade: string | null;
   shift: string | null;
   weekday: string | null;
-  workerType: string | null;
+  employeeNature: string | null;
 
   proposedSalary: string;
   joiningDate: string;
@@ -181,12 +181,12 @@ const HRExecutiveEntryDetails = () => {
 
   useEffect(() => {
     if (!employeeOnGate?.id) return;
-
+    console.log("employee on gate-->", employeeOnGate);
     reset({
       employeeId: employeeOnGate.id,
       employeeEnrollmentId: employeeOnGate.enrollmentId,
 
-      mobileNumber: employeeOnGate.mobileNumber ?? null,
+      mobileNumber: employeeOnGate.mobile ?? null,
       company: employeeOnGate.unitId ?? null,
       subUnit: employeeOnGate.subUnitId ?? null,
       department: employeeOnGate.departmentId ?? null,
@@ -197,7 +197,7 @@ const HRExecutiveEntryDetails = () => {
       grade: employeeOnGate.gradeId ?? null,
       shift: employeeOnGate.shiftId ?? null,
       weekday: employeeOnGate.weekOffDay?.toString() ?? null,
-      workerType: employeeOnGate.employeeType?.toString() ?? null,
+      employeeNature: employeeOnGate.employeeType?.toString() ?? null,
 
       proposedSalary:
         employeeOnGate.proposedMonthlySalary?.toString() ?? "",
@@ -323,6 +323,7 @@ const HRExecutiveEntryDetails = () => {
   }, [values, DRAFT_KEY]);
 
   useEffect(() => {
+    if (!employeeOnGate?.id) return;
     if (didRestoreRef.current) return;
     didRestoreRef.current = true;
 
@@ -339,7 +340,7 @@ const HRExecutiveEntryDetails = () => {
       grade: null,
       shift: null,
       weekday: null,
-      workerType: null,
+      employeeNature: null,
       proposedSalary: "13000",
       joiningDate: "2025-06-01",
       probationPeriod: "3",
@@ -365,7 +366,11 @@ const HRExecutiveEntryDetails = () => {
     } else {
       reset(defaultValues);
     }
-  }, [candidateId, enrollmentId, reset]);
+  }, [employeeOnGate,
+    candidateId,
+    enrollmentId,
+    reset,
+    DRAFT_KEY]);
 
   useEffect(() => {
     if (restoredSubUnitRef.current || subUnits.length === 0) return;
@@ -450,7 +455,7 @@ const HRExecutiveEntryDetails = () => {
     const draft = localStorage.getItem(DRAFT_KEY);
     if (draft) {
       const parsed = JSON.parse(draft);
-      if (parsed.workerType != null) setValue("workerType", parsed.workerType);
+      if (parsed.employeeNature != null) setValue("employeeNature", parsed.employeeNature);
     }
     restoredWorkerTypeRef.current = true;
   }, [employeeNatures]);
@@ -494,11 +499,11 @@ const HRExecutiveEntryDetails = () => {
       designationId: data.designation || null,
       gradeId: data.grade || null,
 
-      employeeType: 0, // Set according to your enum
+      // employeeType: 0, // Set according to your enum
       employeeTypeId: data.employeeCategory || null,
 
       shiftId: data.shift,
-      employeeNatureId: data.workerType || null,
+      employeeNatureId: Number(data.employeeNature) || null,
 
       holiday: Number(data.weekday) || 0,
 
@@ -779,11 +784,11 @@ const HRExecutiveEntryDetails = () => {
     },
     {
       label: "Employee Nature",
-      name: "workerType",
+      name: "employeeNature",
       type: "dropdown",
-      options: employeeNatures.map((i) => ({
-        label: i.natureName,
-        value: i.id
+      options: Object.entries(EmployeeNature).map(([label, value]) => ({
+        label,
+        value
       })),
       rules: {
         required: "Select worker type",
