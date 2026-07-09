@@ -13,7 +13,6 @@ import type {
   Cell,
   Company,
   Department,
-  Enrollment,
   FieldConfig,
   Location,
   Section,
@@ -88,7 +87,7 @@ const RecruitmentForm: React.FC<Props> = ({
     url: API_ROUTES.CELL,
   });
 
-  const { data: enrollmentData } = useGet<Enrollment>({
+  const { data: enrollmentData } = useGet<any>({
     key: ["enrollment-id"],
     url: API_ROUTES.ENROLLMENTID,
   });

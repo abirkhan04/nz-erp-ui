@@ -5,7 +5,7 @@ import { API_ROUTES } from "../../api/routes";
 import toast from "react-hot-toast";
 import { useGet } from "../../hooks/useGet";
 import { useEffect } from "react";
-import type { Enrollment, Unit } from "../../types/interfaces";
+import type { Unit } from "../../types/interfaces";
 import { useNavigate } from "react-router-dom";
 import { bloodGroupMapBangla, genderMapBengali, religionMapBangla } from "../EmployeeInformation/types";
 
