@@ -163,7 +163,8 @@ const BiometricCapture = () => {
                 throw new Error("No file returned from upload.");
             }
 
-            const fileName = uploadResponse.fileNames[0];
+            const fileName = uploadResponse.fileNames[0].item1;
+            const filePath = uploadResponse.fileNames[0].item2;
 
             // Update documents
             setDocuments([
@@ -174,7 +175,7 @@ const BiometricCapture = () => {
                     issueDate: new Date().toISOString().split("T")[0],
                     expiryDate: null,
                     fileName,
-                    filePath: fileName, // Change if your backend expects a full path
+                    filePath, // Change if your backend expects a full path
                 },
             ]);
 
@@ -186,7 +187,7 @@ const BiometricCapture = () => {
 
     const biometricSubmitted = () => {
         const payload = {
-            employeeId: selectedCandidate?.employeeId,
+            employeeId: selectedCandidate?.id,
             employeeEnrollmentId: selectedCandidate?.enrollmentId,
             cardNo: "123",
             documents
