@@ -1005,7 +1005,7 @@ const BiometricCapture = () => {
                                     </p>
 
                                     <p className="mt-1 font-semibold">
-                                        {selectedCandidate.company}
+                                        {selectedCandidate.unitName}
                                     </p>
 
                                 </div>
@@ -1041,7 +1041,7 @@ const BiometricCapture = () => {
                                     </p>
 
                                     <p className="mt-1 font-semibold">
-                                        {selectedCandidate.section}
+                                        {selectedCandidate.sectionName}
                                     </p>
 
                                 </div>
