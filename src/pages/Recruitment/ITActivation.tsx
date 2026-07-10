@@ -4,7 +4,7 @@ import { API_ROUTES } from "../../api/routes";
 import { usePost } from "../../hooks/usePost";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import { genderMapFromNumber, reverseBloodGroupMap, reverseReligionMap } from "../EmployeeInformation/types";
+import { EmployeeNature, genderMapFromNumber, reverseBloodGroupMap, reverseReligionMap } from "../EmployeeInformation/types";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -396,8 +396,8 @@ const ITActivationPage: React.FC = () => {
                                 <InfoRow label="Proposed Salary" value={`${selected?.proposedMonthlySalary?.toLocaleString() || 0} BDT`} />
                                 <InfoRow label="Pay Basis" value={selected?.payBasis} />
                                 <InfoRow label="Date of Joining" value={selected?.joiningDate} />
-                                <InfoRow label="Probation Period" value={selected?.probationPeriod} />
-                                <InfoRow label="Employment Type" value={selected?.employmentType} />
+                                <InfoRow label="Probation Period" value={`${selected?.probationPeriod}month`} />
+                                <InfoRow label="Employment Type" value={Object.keys(EmployeeNature)[selected?.employeeType]} />
                                 <InfoRow label="Work Location" value={selected?.workLocation} />
                                 <InfoRow label="Reporting To" value={selected?.reportingTo} />
                             </div>

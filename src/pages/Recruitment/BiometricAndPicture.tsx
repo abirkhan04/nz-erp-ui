@@ -18,7 +18,7 @@ import { usePost } from "../../hooks/usePost";
 import toast from "react-hot-toast";
 import { api } from "../../api/client";
 import { useNavigate } from "react-router-dom";
-import { bloodGroupMap, genderMapFromNumber, reverseBloodGroupMap } from "../EmployeeInformation/types";
+import { EmployeeNature, genderMapFromNumber, reverseBloodGroupMap } from "../EmployeeInformation/types";
 
 export interface Document {
     employeeId: string | undefined;
@@ -49,7 +49,7 @@ interface Candidate {
     sectionName: string;
     cell: string;
     salary: number;
-    workerType: string;
+    employeeType:number;
 }
 
 const PAGE_SIZE = 5;
@@ -597,7 +597,7 @@ const BiometricCapture = () => {
                                     <div className="grid grid-cols-[110px_15px_1fr]">
                                         <span className="text-sm text-slate-600">Blood Group</span>
                                         <span>:</span>
-                                        <span className="font-medium">{bloodGroupMap[selectedCandidate.bloodGroup]}</span>
+                                        <span className="font-medium">{reverseBloodGroupMap[Number(selectedCandidate.bloodGroup)]}</span>
                                     </div>
 
                                     <div className="grid grid-cols-[110px_15px_1fr]">
@@ -609,7 +609,7 @@ const BiometricCapture = () => {
                                     <div className="grid grid-cols-[110px_15px_1fr]">
                                         <span className="text-sm text-slate-600">Type of Worker</span>
                                         <span>:</span>
-                                        <span className="font-medium">{selectedCandidate.workerType}</span>
+                                        <span className="font-medium">{Object.keys(EmployeeNature)[selectedCandidate.employeeType]}</span>
                                     </div>
 
                                 </div>

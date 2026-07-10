@@ -279,12 +279,12 @@ const HRExecutiveEntryDetails = () => {
       section: employeeOnGate.sectionId ?? null,
       cell: employeeOnGate.cellId ?? null,
 
-      designation: employeeOnGate.designationId?? null,
+      designation: employeeOnGate.designationId ?? null,
       grade: employeeOnGate.gradeId ?? null,
       shift: employeeOnGate.shiftId ?? null,
 
       weekday: employeeOnGate.weekOffDay?.toString() ?? null,
-      employeeNature: employeeOnGate.employeeType?.toString() ?? null,
+      employeeNature: '0',
 
       proposedSalary:
         employeeOnGate.proposedMonthlySalary?.toString() ?? "",
@@ -443,7 +443,10 @@ const HRExecutiveEntryDetails = () => {
       employeeTypeId: data.employeeCategory || null,
 
       shiftId: data.shift,
-      employeeNatureId: Number(data.employeeNature) || null,
+      employeeNatureId:
+        data.employeeNature == null || data.employeeNature === ""
+          ? null
+          : Number(data.employeeNature),
 
       holiday: Number(data.weekday) || 0,
 
