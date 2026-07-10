@@ -179,65 +179,6 @@ const HRExecutiveEntryDetails = () => {
     enabled: !!candidateId
   });
 
-  useEffect(() => {
-    if (!employeeOnGate?.id) return;
-    console.log("employee on gate-->", employeeOnGate);
-    reset({
-      employeeId: employeeOnGate.id,
-      employeeEnrollmentId: employeeOnGate.enrollmentId,
-
-      mobileNumber: employeeOnGate.mobile ?? null,
-      company: employeeOnGate.unitId ?? null,
-      subUnit: employeeOnGate.subUnitId ?? null,
-      department: employeeOnGate.departmentId ?? null,
-      section: employeeOnGate.sectionId ?? null,
-      cell: employeeOnGate.cellId ?? null,
-
-      designation: employeeOnGate.designationId ?? null,
-      grade: employeeOnGate.gradeId ?? null,
-      shift: employeeOnGate.shiftId ?? null,
-      weekday: employeeOnGate.weekOffDay?.toString() ?? null,
-      employeeNature: employeeOnGate.employeeType?.toString() ?? null,
-
-      proposedSalary:
-        employeeOnGate.proposedMonthlySalary?.toString() ?? "",
-
-      joiningDate: employeeOnGate.joiningDate ?? "",
-      probationPeriod:
-        employeeOnGate.probationPeriod?.toString() ?? "",
-
-      employmentType: "",
-      payBasis: "",
-
-      reportingTo: employeeOnGate.reportingTo ?? null,
-      employeeCategory: null,
-      workLocation: "",
-      remarks: "",
-
-      paymentMode: "BANK",
-      mobileBankingProvider: "",
-
-      bankName: null,
-      branchName: "",
-      accountNumber: "",
-      bkashNumber: "",
-
-      grossSalary: "",
-      cashPortion: "",
-      bankPortion: "",
-
-      educationCertificate: false,
-      nationalId: false,
-      policeClearance: false,
-      experienceCertificate: false,
-      passportPhoto: false,
-      chairmanCertificate: false,
-      signature: false,
-
-      files: [],
-    });
-  }, [employeeOnGate, reset]);
-
   const didRestoreRef = useRef(false);
   const restoredSubUnitRef = useRef(false);
   const restoredSectionRef = useRef(false);
@@ -327,31 +268,30 @@ const HRExecutiveEntryDetails = () => {
     if (didRestoreRef.current) return;
     didRestoreRef.current = true;
 
-    const defaultValues: any = {
-      employeeId: candidateId ?? "",
-      employeeEnrollmentId: enrollmentId ?? "",
-      company: null,
-      subUnit: null,
-      department: null,
-      section: null,
-      cell: null,
-      bankName: null,
-      designation: null,
-      grade: null,
-      shift: null,
-      weekday: null,
-      employeeNature: null,
-      proposedSalary: "13000",
-      joiningDate: "2025-06-01",
-      probationPeriod: "3",
-      employmentType: "Regular",
-      payBasis: "Monthly",
-      reportingTo: null,
-      employeeCategory: null,
-      workLocation: "1",
-      remarks: "",
-      paymentMode: "BANK",
-      files: [],
+    const defaultValues = {
+      employeeId: employeeOnGate.id,
+      employeeEnrollmentId: employeeOnGate.enrollmentId,
+
+      mobileNumber: employeeOnGate.mobile ?? "",
+      company: employeeOnGate.unitId ?? null,
+      subUnit: employeeOnGate.subUnitId ?? null,
+      department: employeeOnGate.departmentId ?? null,
+      section: employeeOnGate.sectionId ?? null,
+      cell: employeeOnGate.cellId ?? null,
+
+      designation: employeeOnGate.designationId?? null,
+      grade: employeeOnGate.gradeId ?? null,
+      shift: employeeOnGate.shiftId ?? null,
+
+      weekday: employeeOnGate.weekOffDay?.toString() ?? null,
+      employeeNature: employeeOnGate.employeeType?.toString() ?? null,
+
+      proposedSalary:
+        employeeOnGate.proposedMonthlySalary?.toString() ?? "",
+
+      joiningDate: employeeOnGate.joiningDate ?? "",
+      probationPeriod:
+        employeeOnGate.probationPeriod?.toString() ?? "",
     };
 
     const draft = localStorage.getItem(DRAFT_KEY);
