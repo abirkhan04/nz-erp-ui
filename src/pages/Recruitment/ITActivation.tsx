@@ -20,6 +20,7 @@ interface Candidate {
     fatherName: string;
     dateOfBirth: string;
     gender: string;
+    enrollmentId: string;
     bloodGroup: string;
     religion: string;
     nomineeName: string;
@@ -100,11 +101,17 @@ const AvatarIcon: React.FC = () => (
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 const ITActivationPage: React.FC = () => {
+    const [enrollmentId, setEnrollmentId] = useState<string>("");
     const { data: candidates = [], refetch } = useGet<Candidate[]>({
         key: ["candidates"],
         url: `${API_ROUTES.EMPLOYEES_BY_STATUS}?status=DirectorReview`,
     });
 
+    const { data: viewFiles = [] } = useGet<any>({
+        key: ["files", enrollmentId],
+        url: `${API_ROUTES.EMPLOYEES}/view-files/${enrollmentId}`,
+        enabled: !!enrollmentId
+    })
 
 
     const { mutate: ITActivationPost } = usePost<{ message: string; id: string }, any>(
@@ -112,6 +119,7 @@ const ITActivationPage: React.FC = () => {
     );
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedId, setSelectedId] = useState<string>("");
+
     const [dropdownOpen, setDropdownOpen] = useState(false);
 
     const { data: selected = {} } = useGet<any>({
@@ -136,6 +144,7 @@ const ITActivationPage: React.FC = () => {
     useEffect(() => {
         if (candidates.length > 0 && !selectedId) {
             setSelectedId(candidates[0].employeeId);
+            setEnrollmentId(candidates[0].enrollmentId);
         }
     }, [candidates, selectedId]);
 
@@ -162,6 +171,11 @@ const ITActivationPage: React.FC = () => {
     // const handleActivate = () => {
     //     alert(`Activating employee: ${selected.employeeName} (${selected.employeeId})`);
     // };
+
+    const selectCandidate = (candidate: Candidate) => {
+        setSelectedId(candidate.employeeId);
+        setEnrollmentId(candidate.enrollmentId);
+    };
 
     const navigate = useNavigate();
 
@@ -258,7 +272,7 @@ const ITActivationPage: React.FC = () => {
                         {filteredCandidates.map(c => (
                             <div key={c.employeeId}
                                 onMouseDown={() => {
-                                    setSelectedId(c.employeeId);
+                                    selectCandidate(c);
                                     setSearchTerm(c.employeeName);
                                     setDropdownOpen(false);
                                 }}
@@ -379,7 +393,7 @@ const ITActivationPage: React.FC = () => {
                             </div>
                             <div>
                                 <InfoRow label="Type of Worker" value={selected?.typeOfWorker} />
-                                <InfoRow label="Proposed Salary" value={`${selected?.proposedMonthlySalary?.toLocaleString()||0} BDT`} />
+                                <InfoRow label="Proposed Salary" value={`${selected?.proposedMonthlySalary?.toLocaleString() || 0} BDT`} />
                                 <InfoRow label="Pay Basis" value={selected?.payBasis} />
                                 <InfoRow label="Date of Joining" value={selected?.joiningDate} />
                                 <InfoRow label="Probation Period" value={selected?.probationPeriod} />
@@ -414,7 +428,7 @@ const ITActivationPage: React.FC = () => {
                         <span style={{ color: "#fff", fontWeight: 700, fontSize: 13 }}>Activation Summary</span>
                     </div>
                     <div style={{ padding: 16 }}>
-                        <CheckRow label="Total Documents" value={String(selected?.totalDocuments)} />
+                        <CheckRow label="Total Documents" value={viewFiles.length} />
                         <CheckRow label="Information Verified" value={selected?.informationVerified} />
                         <CheckRow label="Final Information Locked" value={selected?.finalInformationLocked} />
                         <CheckRow label="Ready for Activation" value={selected?.readyForActivation} />
@@ -449,7 +463,7 @@ const ITActivationPage: React.FC = () => {
                             <div style={{ fontSize: 12, fontWeight: 700, color: "#0f172a", marginBottom: 8 }}>Quick Switch Candidate</div>
                             {candidates.map(c => (
                                 <div key={c.employeeId}
-                                    onClick={() => setSelectedId(c.employeeId)}
+                                    onClick={() => selectCandidate(c)}
                                     style={{
                                         display: "flex", alignItems: "center", justifyContent: "space-between",
                                         padding: "8px 10px", borderRadius: 8, cursor: "pointer", marginBottom: 4,
@@ -508,7 +522,7 @@ const ITActivationPage: React.FC = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {selected?.documents?.map((doc:Document, i:number) => (
+                                {selected?.documents?.map((doc: Document, i: number) => (
                                     <tr key={i} style={{
                                         borderBottom: "1px solid #f3f4f6",
                                         background: i % 2 === 0 ? "#fff" : "#fafafa",
