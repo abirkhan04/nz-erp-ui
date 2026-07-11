@@ -25,7 +25,6 @@ export const bloodGroupMapBangla: Record<string, number> = {
   "ও−": 5,
   "এবি+": 6,
   "এবি−": 7,
-
 };
 
 export const reverseBloodGroupMap: Record<number, string> = {
@@ -33,10 +32,10 @@ export const reverseBloodGroupMap: Record<number, string> = {
   1: "A-",
   2: "B+",
   3: "B-",
-  4: "AB+",
-  5: "AB-",
-  6: "O+",
-  7: "O-",
+  4: "O+",
+  5: "O-",
+  6: "AB+",
+  7: "AB-",
 };
 
 export const medicalResultMap = new Map<number, string>([
