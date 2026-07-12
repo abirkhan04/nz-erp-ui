@@ -101,6 +101,9 @@ const AvatarIcon: React.FC = () => (
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 const ITActivationPage: React.FC = () => {
+    const PAGE_SIZE = 20;
+
+    const [page, setPage] = useState(1);
     const [enrollmentId, setEnrollmentId] = useState<string>("");
     const { data: candidates = [], refetch } = useGet<Candidate[]>({
         key: ["candidates"],
@@ -140,6 +143,16 @@ const ITActivationPage: React.FC = () => {
         );
     }, [candidates, searchTerm]);
 
+    const totalPages = Math.ceil(filteredCandidates.length / PAGE_SIZE);
+
+    const paginatedData = filteredCandidates.slice(
+        (page - 1) * PAGE_SIZE,
+        page * PAGE_SIZE
+    );
+
+    useEffect(() => {
+        setPage(1);
+    }, [searchTerm]);
 
     useEffect(() => {
         if (candidates.length > 0 && !selectedId) {
@@ -175,6 +188,7 @@ const ITActivationPage: React.FC = () => {
     const selectCandidate = (candidate: Candidate) => {
         setSelectedId(candidate.employeeId);
         setEnrollmentId(candidate.enrollmentId);
+        setSearchTerm(candidate.employeeName);
     };
 
     const navigate = useNavigate();
@@ -319,6 +333,154 @@ const ITActivationPage: React.FC = () => {
                 </div>
             </div>
 
+            {/* ── Candidate Table ── */}
+
+            <div style={{ padding: "16px 24px 0" }}>
+                <div
+                    style={{
+                        background: "#fff",
+                        borderRadius: 12,
+                        border: "1.5px solid #e2e8f0",
+                        boxShadow: "0 1px 6px rgba(0,0,0,0.05)",
+                        overflow: "hidden",
+                    }}
+                >
+                    <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                        <thead>
+                            <tr
+                                style={{
+                                    background: "#f8fafc",
+                                    borderBottom: "2px solid #e2e8f0",
+                                }}
+                            >
+                                <th style={{ padding: "12px" }}>#</th>
+                                <th style={{ padding: "12px" }}>Temporary ID</th>
+                                <th style={{ padding: "12px" }}>Full Name</th>
+                                <th style={{ padding: "12px" }}>Date of Birth</th>
+                                <th style={{ padding: "12px" }}>Gender</th>
+                                <th style={{ padding: "12px" }}>Blood Group</th>
+                                <th style={{ padding: "12px" }}>Joining Date</th>
+                                <th style={{ padding: "12px" }}>Action</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {paginatedData.map((candidate, index) => (
+                                <tr
+                                    key={candidate.employeeId}
+                                    style={{
+                                        borderBottom: "1px solid #f1f5f9",
+                                        background:
+                                            candidate.employeeId === selectedId
+                                                ? "#eff6ff"
+                                                : "#fff",
+                                    }}
+                                >
+                                    <td style={{ padding: "12px" }}>
+                                        {(page - 1) * PAGE_SIZE + index + 1}
+                                    </td>
+
+                                    <td
+                                        style={{
+                                            padding: "12px",
+                                            color: "#2563eb",
+                                            fontWeight: 600,
+                                        }}
+                                    >
+                                        {candidate.enrollmentId}
+                                    </td>
+
+                                    <td style={{ padding: "12px" }}>
+                                        {candidate.employeeName}
+                                    </td>
+
+                                    <td style={{ padding: "12px" }}>
+                                        {candidate.dateOfBirth}
+                                    </td>
+
+                                    <td style={{ padding: "12px" }}>
+                                        {genderMapFromNumber[
+                                            Number(candidate.gender)
+                                        ]}
+                                    </td>
+
+                                    <td style={{ padding: "12px" }}>
+                                        {reverseBloodGroupMap[
+                                            Number(candidate.bloodGroup)
+                                        ]}
+                                    </td>
+
+                                    <td style={{ padding: "12px" }}>
+                                        {candidate.dateOfJoining}
+                                    </td>
+
+                                    <td style={{ padding: "12px", textAlign: "center" }}>
+                                        <button
+                                            onClick={() => selectCandidate(candidate)}
+                                            style={{
+                                                padding: "8px 16px",
+                                                borderRadius: 8,
+                                                border: "1px solid #2563eb",
+                                                color: "#2563eb",
+                                                background: "white",
+                                                cursor: "pointer",
+                                                fontWeight: 600,
+                                            }}
+                                        >
+                                            Select
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+
+                            {paginatedData.length === 0 && (
+                                <tr>
+                                    <td
+                                        colSpan={8}
+                                        style={{
+                                            padding: "24px",
+                                            textAlign: "center",
+                                            color: "#6b7280",
+                                        }}
+                                    >
+                                        No candidate found.
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+
+                    <div
+                        style={{
+                            display: "flex",
+                            justifyContent: "center",
+                            gap: 8,
+                            padding: 16,
+                        }}
+                    >
+                        {Array.from({ length: totalPages }).map((_, index) => (
+                            <button
+                                key={index}
+                                onClick={() => setPage(index + 1)}
+                                style={{
+                                    width: 36,
+                                    height: 36,
+                                    borderRadius: 8,
+                                    border: "1px solid #d1d5db",
+                                    background:
+                                        page === index + 1 ? "#2563eb" : "#fff",
+                                    color:
+                                        page === index + 1 ? "#fff" : "#374151",
+                                    cursor: "pointer",
+                                }}
+                            >
+                                {index + 1}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
             {/* ── Main 3-col Grid ── */}
             <div style={{ padding: "16px 24px", display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
 
@@ -454,41 +616,6 @@ const ITActivationPage: React.FC = () => {
                                         <path d="M20 6 9 17l-5-5" />
                                     </svg>
                                     <span style={{ fontSize: 11.5, color: "#374151", lineHeight: 1.5 }}>{note}</span>
-                                </div>
-                            ))}
-                        </div>
-
-                        {/* Candidate Selector Quick Switch */}
-                        <div style={{ marginTop: 14 }}>
-                            <div style={{ fontSize: 12, fontWeight: 700, color: "#0f172a", marginBottom: 8 }}>Quick Switch Candidate</div>
-                            {candidates.map(c => (
-                                <div key={c.employeeId}
-                                    onClick={() => selectCandidate(c)}
-                                    style={{
-                                        display: "flex", alignItems: "center", justifyContent: "space-between",
-                                        padding: "8px 10px", borderRadius: 8, cursor: "pointer", marginBottom: 4,
-                                        background: c.employeeId === selectedId ? "#eff6ff" : "#f8fafc",
-                                        border: `1.5px solid ${c.employeeId === selectedId ? "#bfdbfe" : "#e2e8f0"}`,
-                                        transition: "all 0.15s",
-                                    }}>
-                                    <div>
-                                        <div style={{ fontSize: 12, fontWeight: 700, color: "#0f172a" }}>{c.employeeName}</div>
-                                        <div style={{ fontSize: 11, color: "#6b7280" }}>{c.employeeId}</div>
-                                    </div>
-                                    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 3 }}>
-                                        <span style={{
-                                            fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 20,
-                                            background: c.readyForActivation ? "#dcfce7" : "#fee2e2",
-                                            color: c.readyForActivation ? "#15803d" : "#dc2626",
-                                        }}>
-                                            {c.readyForActivation ? "Ready" : "Not Ready"}
-                                        </span>
-                                        {c.employeeId === selectedId && (
-                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="3">
-                                                <path d="M20 6 9 17l-5-5" />
-                                            </svg>
-                                        )}
-                                    </div>
                                 </div>
                             ))}
                         </div>
