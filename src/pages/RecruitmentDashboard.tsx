@@ -50,7 +50,7 @@ const RecruitmentDashboard = () => {
   const { hasModule } = useAuth();
 
   const navigate = useNavigate();
-  const { data: activationSummery } = useGet<any>({
+  const { data: activationSummery = {} } = useGet<any>({
     key: ["activationSummery"],
     url: API_ROUTES.IT_ACTIVATION_SUMMARY,
   });
@@ -89,36 +89,7 @@ const RecruitmentDashboard = () => {
     },
   ];
 
-  const companies: CompanyRecruitment[] = [
-    {
-      company: "NZ Textile Limited",
-      workers: 420,
-      staffs: 72,
-      management: 30,
-      total: 522,
-    },
-    {
-      company: "NZ Fabrics Limited",
-      workers: 250,
-      staffs: 48,
-      management: 20,
-      total: 318,
-    },
-    {
-      company: "NZ Denim Limited",
-      workers: 200,
-      staffs: 34,
-      management: 12,
-      total: 246,
-    },
-    {
-      company: "NZ Dyeing Limited",
-      workers: 142,
-      staffs: 32,
-      management: 8,
-      total: 162,
-    },
-  ];
+  const companies : CompanyRecruitment = activationSummery?.companySummaries?.map((item:any)=> ({...item, company: item.companyName})) || [];
 
   const processFlow: ProcessStep[] = [
     {
