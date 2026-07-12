@@ -23,13 +23,12 @@ import CommonInputField from "../../components/CommonInputFields";
 import { API_ROUTES } from "../../api/routes";
 import type { Unit } from "../../types/interfaces";
 import { useGet } from "../../hooks/useGet";
-import { usePost } from "../../hooks/usePost";
 import toast from "react-hot-toast";
 import { api } from "../../api/client";
-import React from "react";
 import { EmployeeNature, WeekOffDayMap } from "../EmployeeInformation/types";
 
 interface HRExecutiveEntryForm {
+  name?: string;
   employeeId: string;
   employeeEnrollmentId: string;
   employeeName: string;
@@ -78,15 +77,13 @@ interface HRExecutiveEntryForm {
   cashPortion: string;
   bankPortion: string;
 
-  educationCertificate: boolean;
-  nationalId: boolean;
-  policeClearance: boolean;
-  experienceCertificate: boolean;
-  passportPhoto: boolean;
-  chairmanCertificate: boolean;
-  signature: boolean;
-
-  files: File[];
+  educationCertificate: File | null;
+  nationalId: File | null;
+  policeClearance: File | null;
+  experienceCertificate: File | null;
+  passportPhoto: File | null;
+  chairmanCertificate: File | null;
+  signature: File | null;
 }
 
 
@@ -112,8 +109,14 @@ const HRExecutiveEntryDetails = () => {
         defaultValues: {
           paymentMode:
             "BANK",
-          files: [],
           employeeId: "",
+          educationCertificate: null,
+          nationalId: null,
+          policeClearance: null,
+          experienceCertificate: null,
+          passportPhoto: null,
+          chairmanCertificate: null,
+          signature: null,
         },
       }
     );
@@ -165,8 +168,6 @@ const HRExecutiveEntryDetails = () => {
     url: API_ROUTES.EMPLOYEE_NATURES
   })
 
-  const [uploading, setUploading] = React.useState(false);
-
   const navigate =
     useNavigate();
 
@@ -205,58 +206,17 @@ const HRExecutiveEntryDetails = () => {
 
   const DRAFT_KEY = `HR_EXECUTIVE_DRAFT_${candidateId}_${enrollmentId}`;
 
-  const [documents, setDocuments] = React.useState<any[]>([]);
-
-
-  const { mutate: HRExecutiveEntryPost } = usePost(API_ROUTES.HRExecutiveEntry);
-
   const paymentMode =
     watch("paymentMode");
 
   const values = watch();
 
-  const UploadFiles = async () => {
-    try {
-      setUploading(true);
-      const files = watch("files");
-
-      if (!files?.length) {
-        toast.error("Please select file(s) first.");
-        return;
-      }
-
-      const formData = new FormData();
-
-      files.forEach((file) => {
-        formData.append("files", file); // or "file" depending on API
-      });
-
-      const response = await api.post(
-        `${API_ROUTES.EMPLOYEE_UPLOAD_FILES}?employeeEnrollmentId=${enrollmentId}`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-      setDocuments(response.data.fileNames);
-
-      toast.success("Files uploaded successfully.");
-    } catch (error: any) {
-      toast.error(error?.message ?? "File upload failed.");
-    } finally {
-      setUploading(false);
-    }
-  };
-
   useEffect(() => {
     const timer = setTimeout(() => {
-      const { files, ...rest } = values;
 
       localStorage.setItem(
         DRAFT_KEY,
-        JSON.stringify(rest)
+        JSON.stringify(values)
       );
     }, 1000);
 
@@ -403,180 +363,213 @@ const HRExecutiveEntryDetails = () => {
   const handleSaveDraft = () => {
     const values = watch();
 
-    // Remove files before saving
-    const { files, ...rest } = values;
-
     localStorage.setItem(
       DRAFT_KEY,
-      JSON.stringify(rest)
+      JSON.stringify(values)
     );
 
     toast.success("Draft saved successfully.");
   };
 
-  const uploadedFiles = watch("files");
-
-  const onSubmit = (data: HRExecutiveEntryForm) => {
+  const onSubmit = async (data: HRExecutiveEntryForm) => {
     console.log("data here", data);
-    console.log("documents here", documents);
-    const payload = {
-      employeeId: data.employeeId,
-      employeeName: data.employeeName,
-      fatherName: data.fatherName,
-      motherName: data.motherName,
-      employeeCode: data.employeeCode,
-      mobileNumber: data.mobileNumber,
-      nomineeName: data.nomineeName,
-      nomineeNID: data.nomineeNID,
-      nomineeRelation: data.nomineeRelation,
-      nomineeMobileNumber: data.nomineeMobileNumber,
-      employeeEnrollmentId: data.employeeEnrollmentId,
-      unitId: data.company,
-      subunitId: data.subUnit,
-      departmentId: data.department,
-      sectionId: data.section,
-      cellId: data.cell || null,
-      designationId: data.designation || null,
-      gradeId: data.grade || null,
 
-      // employeeType: 0, // Set according to your enum
-      employeeTypeId: data.employeeCategory || null,
+    const payload = new FormData();
 
-      shiftId: data.shift,
-      employeeNatureId:
-        data.employeeNature == null || data.employeeNature === ""
-          ? null
-          : Number(data.employeeNature),
+    payload.append("employeeId", data.employeeId ?? "");
+    payload.append("employeeName", data.employeeName ?? "");
+    payload.append("fatherName", data.fatherName ?? "");
+    payload.append("motherName", data.motherName ?? "");
+    payload.append("employeeCode", data.employeeCode ?? "");
+    payload.append("mobileNumber", data.mobileNumber ?? "");
+    payload.append("nomineeName", data.nomineeName ?? "");
+    payload.append("nomineeNID", data.nomineeNID ?? "");
+    payload.append("nomineeRelation", data.nomineeRelation ?? "");
+    payload.append("nomineeMobileNumber", data.nomineeMobileNumber ?? "");
+    payload.append("employeeEnrollmentId", data.employeeEnrollmentId ?? "");
 
-      holiday: Number(data.weekday) || 0,
+    payload.append("unitId", String(data.company));
+    payload.append("subunitId", String(data.subUnit));
+    payload.append("departmentId", String(data.department));
+    payload.append("sectionId", String(data.section));
 
-      joiningDate: data.joiningDate,
-      confirmationDate: data.joiningDate, // Calculate if required
+    payload.append("cellId", data.cell ? String(data.cell) : "");
+    payload.append("designationId", data.designation ? String(data.designation) : "");
+    payload.append("gradeId", data.grade ? String(data.grade) : "");
 
-      proposedMonthlySalary: Number(data.proposedSalary),
-      bankPortion: data.paymentMode === "BANK" ? Number(data.proposedSalary) : 0,
-      cashPortion: data.paymentMode === "CASH" ? Number(data.proposedSalary) : 0,
+    payload.append(
+      "employeeTypeId",
+      data.employeeCategory != null ? String(data.employeeCategory) : ""
+    );
 
-      otherAllowance: {},
+    payload.append("shiftId", String(data.shift));
 
-      salaryAccountId: null,
+    payload.append(
+      "employeeNatureId",
+      data.employeeNature == null || data.employeeNature === ""
+        ? ""
+        : String(Number(data.employeeNature))
+    );
 
-      tax: 0,
+    payload.append(
+      "holiday",
+      String(Number(data.weekday) || 0)
+    );
 
-      paymentMethod: data.paymentMode,
+    payload.append("joiningDate", data.joiningDate);
+    payload.append("confirmationDate", data.joiningDate);
 
-      bankingId: data.bankName || null,
-      accountName: "",
-      accountNo: data.accountNumber,
-      routingNo: "",
-      branchName: data.branchName,
+    payload.append(
+      "proposedMonthlySalary",
+      String(Number(data.proposedSalary))
+    );
 
-      salaryAccountFlag: data.paymentMode === "BANK",
+    payload.append(
+      "bankPortion",
+      String(
+        data.paymentMode === "BANK"
+          ? Number(data.proposedSalary)
+          : 0
+      )
+    );
 
-      // documents: [
-      //   ...(data.educationCertificate
-      //     ? [
-      //       {
-      //         employeeId: data.employeeId,
-      //         documentType: "EducationCertificate",
-      //         documentNo: null,
-      //         issueDate: null,
-      //         expiryDate: null,
-      //         fileName: null,
-      //         filePath: null,
-      //       },
-      //     ]
-      //     : []),
+    payload.append(
+      "cashPortion",
+      String(
+        data.paymentMode === "CASH"
+          ? Number(data.proposedSalary)
+          : 0
+      )
+    );
 
-      //   ...(data.nationalId
-      //     ? [
-      //       {
-      //         employeeId: data.employeeId,
-      //         documentType: "NationalId",
-      //         documentNo: null,
-      //         issueDate: null,
-      //         expiryDate: null,
-      //         fileName: null,
-      //         filePath: null,
-      //       },
-      //     ]
-      //     : []),
+    payload.append("otherAllowance", JSON.stringify({}));
 
-      //   ...(data.policeClearance
-      //     ? [
-      //       {
-      //         employeeId: data.employeeId,
-      //         documentType: "PoliceClearance",
-      //         documentNo: null,
-      //         issueDate: null,
-      //         expiryDate: null,
-      //         fileName: null,
-      //         filePath: null,
-      //       },
-      //     ]
-      //     : []),
+    payload.append("salaryAccountId", "");
 
-      //   ...(data.experienceCertificate
-      //     ? [
-      //       {
-      //         employeeId: data.employeeId,
-      //         documentType: "ExperienceCertificate",
-      //         documentNo: null,
-      //         issueDate: null,
-      //         expiryDate: null,
-      //         fileName: null,
-      //         filePath: null,
-      //       },
-      //     ]
-      //     : []),
+    payload.append("tax", "0");
 
-      //   ...(data.passportPhoto
-      //     ? [
-      //       {
-      //         employeeId: data.employeeId,
-      //         documentType: "PassportPhoto",
-      //         documentNo: null,
-      //         issueDate: null,
-      //         expiryDate: null,
-      //         fileName: null,
-      //         filePath: null,
-      //       },
-      //     ]
-      //     : []),
-      // ],
-      documents: documents.map(i => ({ fileName: i.item1, filePath: i.item2 })),
+    payload.append("paymentMethod", data.paymentMode || "BANK");
 
-      tinNumber: "",
+    payload.append(
+      "bankingId",
+      data.bankName ? String(data.bankName) : ""
+    );
 
-      probationPeriod: Number(data.probationPeriod),
+    payload.append("accountName", "");
+    payload.append("accountNo", data.accountNumber ?? "");
+    payload.append("routingNo", "");
+    payload.append("branchName", data.branchName ?? "");
 
-      reportingTo: data.reportingTo,
+    payload.append(
+      "salaryAccountFlag",
+      String(data.paymentMode === "BANK")
+    );
 
-      processingGroupId: null,
+    payload.append("tinNumber", "");
 
-      grossSalary: Number(data.proposedSalary),
-    };
+    payload.append(
+      "probationPeriod",
+      String(Number(data.probationPeriod))
+    );
 
-    console.log(payload);
+    payload.append(
+      "reportingTo",
+      data.reportingTo ? String(data.reportingTo) : ""
+    );
 
-    HRExecutiveEntryPost(payload, {
-      onSuccess: (response) => {
-        toast.success(
-          `Entry entered successfully ${response.id}`
-        );
-        localStorage.removeItem(DRAFT_KEY);
-        reset();
-      },
+    payload.append("processingGroupId", "");
 
-      onError: (error) => {
-        toast.error(
-          `Entry failed ${error.message}`
-        );
-      },
-    });
+    payload.append(
+      "grossSalary",
+      String(Number(data.proposedSalary))
+    );
+
+    if (data.educationCertificate) {
+      payload.append(
+        "educationCertificate",
+        data.educationCertificate
+      );
+    }
+
+    if (data.nationalId) {
+      payload.append(
+        "nationalId",
+        data.nationalId
+      );
+    }
+
+    if (data.policeClearance) {
+      payload.append(
+        "policeClearance",
+        data.policeClearance
+      );
+    }
+
+    if (data.experienceCertificate) {
+      payload.append(
+        "experienceCertificate",
+        data.experienceCertificate
+      );
+    }
+
+    if (data.passportPhoto) {
+      payload.append(
+        "passportPhoto",
+        data.passportPhoto
+      );
+    }
+
+    if (data.chairmanCertificate) {
+      payload.append(
+        "chairmanCertificate",
+        data.chairmanCertificate
+      );
+    }
+
+    if (data.signature) {
+      payload.append(
+        "signature",
+        data.signature
+      );
+    }
+
+    try {
+      const response = await api.post(
+        API_ROUTES.HRExecutiveEntry,
+        payload,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      toast.success(
+        `Entry entered successfully ${response.data.id}`
+      );
+
+      localStorage.removeItem(DRAFT_KEY);
+
+      reset();
+    }
+    catch (error: any) {
+      toast.error(
+        `Entry failed ${error?.message}`
+      );
+    }
 
     // mutate(payload);
   };
+
+  const documentFields = [
+    { label: "Education Certificate", name: "educationCertificate" },
+    { label: "National ID", name: "nationalId" },
+    { label: "Police Clearance", name: "policeClearance" },
+    { label: "Experience Certificate", name: "experienceCertificate" },
+    { label: "Passport Photo", name: "passportPhoto" },
+    { label: "Chairman Certificate", name: "chairmanCertificate" },
+    { label: "Signature", name: "signature" },
+  ];
 
   const employeeInformationFields = [
     {
@@ -1016,143 +1009,49 @@ const HRExecutiveEntryDetails = () => {
           </div>
 
           <div className="grid grid-cols-2 gap-4 p-4">
+            {documentFields.map((doc) => (
+              <div
+                key={doc.name}
+                className="border rounded-xl p-5 bg-slate-50 hover:border-blue-400 transition"
+              >
+                <label className="block text-sm font-semibold text-gray-700 mb-3">
+                  {doc.label}
+                </label>
 
-            <label>
-              <input
-                type="checkbox"
-                {...register(
-                  "educationCertificate"
-                )}
-              />
-              Education
-              Certificate
-            </label>
-
-            <label>
-              <input
-                type="checkbox"
-                {...register(
-                  "nationalId"
-                )}
-              />
-              National ID
-            </label>
-
-            <label>
-              <input
-                type="checkbox"
-                {...register(
-                  "policeClearance"
-                )}
-              />
-              Police Clearance
-            </label>
-
-            <label>
-              <input
-                type="checkbox"
-                {...register(
-                  "experienceCertificate"
-                )}
-              />
-              Experience
-              Certificate
-            </label>
-
-            <label>
-              <input
-                type="checkbox"
-                {...register(
-                  "passportPhoto"
-                )}
-              />
-              Passport Photo
-            </label>
-            <label>
-              <input
-                type="checkbox"
-                {...register(
-                  "chairmanCertificate"
-                )}
-              />
-              Chairman Certificate
-            </label>
-            <label>
-              <input
-                type="checkbox"
-                {...register(
-                  "signature"
-                )}
-              />
-              Signature
-            </label>
-
-          </div>
-
-        </div>
-
-        <div className="bg-white rounded-xl border-2 border-dashed p-8 mb-6">
-
-          <label className="flex flex-col items-center justify-center cursor-pointer">
-
-            <UploadCloud
-              size={40}
-              className="mb-3 text-blue-600"
-            />
-
-            <p className="font-medium">
-              Click or Drag & Drop Files
-            </p>
-
-            <p className="text-sm text-gray-500">
-              Multiple files are supported
-            </p>
-
-            <input
-              type="file"
-              multiple
-              className="hidden"
-              onChange={(e) => {
-                const files = Array.from(e.target.files ?? []);
-                setValue("files", files);
-              }}
-            />
-          </label>
-
-          {uploadedFiles?.length > 0 && (
-            <div className="mt-6 border rounded-lg">
-              {uploadedFiles.map((file, index) => (
-                <div
-                  key={index}
-                  className="flex justify-between items-center px-4 py-2 border-b last:border-b-0"
+                <label
+                  htmlFor={doc.name}
+                  className="flex flex-col items-center justify-center h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition"
                 >
-                  <span>{file.name}</span>
+                  <UploadCloud className="w-8 h-8 text-blue-500 mb-2" />
 
-                  <button
-                    type="button"
-                    className="text-red-500"
-                    onClick={() => {
-                      setValue(
-                        "files",
-                        uploadedFiles.filter((_, i) => i !== index)
-                      );
-                    }}
-                  >
-                    Remove
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-          <div className="flex justify-end mt-4">
-            <button
-              type="button"
-              onClick={UploadFiles}
-              disabled={uploading}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
-            >
-              Upload
-            </button>
+                  <span className="text-sm font-medium text-gray-700">
+                    Click to upload
+                  </span>
+
+                  <span className="text-xs text-gray-500 mt-1">
+                    PDF, JPG, PNG supported
+                  </span>
+
+                  {(watch(doc.name as keyof HRExecutiveEntryForm) as File | null)?.name && (
+                    <span className="mt-3 text-sm text-green-600 font-medium text-center px-2">
+                      {(watch(doc.name as keyof HRExecutiveEntryForm) as File).name}
+                    </span>
+                  )}
+                </label>
+
+                <input
+                  id={doc.name}
+                  type="file"
+                  className="hidden"
+                  onChange={(e) => {
+                    setValue(
+                      doc.name as keyof HRExecutiveEntryForm,
+                      e.target.files?.[0] ?? null
+                    );
+                  }}
+                />
+              </div>
+            ))}
           </div>
         </div>
 

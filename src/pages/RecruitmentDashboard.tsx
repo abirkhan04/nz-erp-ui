@@ -89,7 +89,7 @@ const RecruitmentDashboard = () => {
     },
   ];
 
-  const companies : CompanyRecruitment = activationSummery?.companySummaries?.map((item:any)=> ({...item, company: item.companyName})) || [];
+  const companies : CompanyRecruitment[] = activationSummery?.companySummaries?.map((item:any)=> ({...item, company: item.companyName})) || [];
 
   const processFlow: ProcessStep[] = [
     {
