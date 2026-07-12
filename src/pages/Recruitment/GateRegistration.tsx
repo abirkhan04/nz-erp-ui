@@ -8,6 +8,7 @@ import { useEffect } from "react";
 import type { Unit } from "../../types/interfaces";
 import { useNavigate } from "react-router-dom";
 import { bloodGroupMapBangla, genderMapBengali, religionMapBangla } from "../EmployeeInformation/types";
+import BanglaInputField from "../../components/BanglaInputField1";
 
 export interface GateRegistrationForm {
 
@@ -48,6 +49,7 @@ export interface GateRegistrationForm {
 
 type SectionField = {
   label: string;
+  bangla?: boolean;
   name: keyof GateRegistrationForm;
   type?:
   | "text"
@@ -68,6 +70,7 @@ const personalInformationFields: SectionField[] =
     {
       label: "পূর্ণ নাম(বাংলা)",
       name: "fullName",
+      bangla: true,
       rules: {
         required: "পূর্ণ নাম আবশ্যক",
       },
@@ -75,6 +78,7 @@ const personalInformationFields: SectionField[] =
     {
       label: "পিতার নাম(বাংলা)",
       name: "fatherName",
+      bangla: true,
       rules: {
         required: "পিতার নাম আবশ্যক",
       },
@@ -82,6 +86,7 @@ const personalInformationFields: SectionField[] =
     {
       label: "মাতার নাম(বাংলা)",
       name: "motherName",
+      bangla: true,
       rules: {
         required: "মাতার নাম আবশ্যক",
       },
@@ -367,7 +372,7 @@ const GateRegistration = () => {
       label: "পদবী",
       name: "designation",
       type: "dropdown",
-      options: designations.map(i=> ({
+      options: designations.map(i => ({
         label: i.designationName,
         value: i.id
       })),
@@ -723,19 +728,30 @@ const GateRegistration = () => {
               </div>
 
               <div className={`grid ${section.columns} gap-4`}>
-                {section.fields.map((field) => (
-                  <CommonInputField
-                    key={field.name}
-                    label={field.label}
-                    name={field.name as any}
-                    type={field.type}
-                    options={field.options}
-                    rules={field.rules}
-                    register={register}
-                    errors={errors}
-                    control={control}
-                  />
-                ))}
+                {section.fields.map((field) =>
+                  field.bangla ? (
+                    <BanglaInputField
+                      key={field.name}
+                      label={field.label}
+                      name={field.name as any}
+                      rules={field.rules}
+                      errors={errors}
+                      control={control}
+                    />
+                  ) : (
+                    <CommonInputField
+                      key={field.name}
+                      label={field.label}
+                      name={field.name as any}
+                      type={field.type}
+                      options={field.options}
+                      rules={field.rules}
+                      register={register}
+                      errors={errors}
+                      control={control}
+                    />
+                  )
+                )}
               </div>
             </div>
           );
