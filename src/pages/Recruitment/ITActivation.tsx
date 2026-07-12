@@ -554,7 +554,6 @@ const ITActivationPage: React.FC = () => {
                                 <InfoRow label="Week Off day" value={selected?.weekOffDay} />
                             </div>
                             <div>
-                                <InfoRow label="Type of Worker" value={selected?.typeOfWorker} />
                                 <InfoRow label="Proposed Salary" value={`${selected?.proposedMonthlySalary?.toLocaleString() || 0} BDT`} />
                                 <InfoRow label="Pay Basis" value={selected?.payBasis} />
                                 <InfoRow label="Date of Joining" value={selected?.joiningDate} />
