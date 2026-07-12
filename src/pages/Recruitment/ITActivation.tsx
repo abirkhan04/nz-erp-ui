@@ -555,12 +555,9 @@ const ITActivationPage: React.FC = () => {
                             </div>
                             <div>
                                 <InfoRow label="Proposed Salary" value={`${selected?.proposedMonthlySalary?.toLocaleString() || 0} BDT`} />
-                                <InfoRow label="Pay Basis" value={selected?.payBasis} />
                                 <InfoRow label="Date of Joining" value={selected?.joiningDate} />
                                 <InfoRow label="Probation Period" value={`${selected?.probationPeriod}month`} />
                                 <InfoRow label="Employment Type" value={Object.keys(EmployeeNature)[selected?.employeeType]} />
-                                <InfoRow label="Work Location" value={selected?.workLocation} />
-                                <InfoRow label="Reporting To" value={selected?.reportingTo} />
                             </div>
                         </div>
                         <div style={{
