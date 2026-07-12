@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { User, ChevronDown } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 export default function Topbar() {
   const [userOpen, setUserOpen] = useState(false);
-
+  const {user} = useAuth();
   // const [companyOpen, setCompanyOpen] = useState(false);
   // const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
 
@@ -145,7 +146,7 @@ export default function Topbar() {
             className="flex items-center gap-2 bg-white/10 px-3 py-1.5 rounded-md cursor-pointer"
           >
             <User size={16} />
-            <span className="text-sm">Admin User</span>
+            <span className="text-sm">{user?.userName}</span>
             <ChevronDown size={14} />
           </div>
 

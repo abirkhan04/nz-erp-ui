@@ -32,6 +32,7 @@ interface Candidate {
     identificationSign: string;
     medicalResult: string;
     remarks: string;
+    selected?: boolean;
 }
 
 interface MedicalExaminationForm {
@@ -94,6 +95,7 @@ const MedicalExamination = () => {
         control,
         register,
         reset,
+        setValue,
         watch,
         handleSubmit,
         formState: { errors },
@@ -123,15 +125,36 @@ const MedicalExamination = () => {
         );
         const examinedByDoctor = localStorage.getItem("token") ?? "";
 
-        const payload = data.candidates.map((candidate) => ({
-            employeeId: candidate.employeeId,
-            enrollmentId: candidate.enrollmentId,
-            identificationSign: candidate.identificationSign,
-            fitness: candidate.medicalResult === "FIT" ? 0 : 1,
-            remarks: candidate.remarks,
-            examinedByDoctor,
-            examinationDateTime: new Date().toISOString(),
-        }));
+        const selectedCandidates =
+            data.candidates.filter(
+                candidate =>
+                    candidate.selected
+            );
+
+        if (selectedCandidates.length === 0) {
+            toast.error("At least one row must be selected");
+            return;
+        }
+        const payload =
+            selectedCandidates.map(
+                candidate => ({
+                    employeeId:
+                        candidate.employeeId,
+                    enrollmentId:
+                        candidate.enrollmentId,
+                    identificationSign:
+                        candidate.identificationSign,
+                    fitness:
+                        candidate.medicalResult === "FIT"
+                            ? 0
+                            : 1,
+                    remarks:
+                        candidate.remarks,
+                    examinedByDoctor,
+                    examinationDateTime:
+                        new Date().toISOString(),
+                })
+            );
 
         MedicalFitnessCheck(payload, {
             onSuccess: (response) => {
@@ -264,9 +287,7 @@ const MedicalExamination = () => {
                 {/* Candidate Medical Examination */}
 
                 <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-
                     {/* Header */}
-
                     <div className="flex items-center justify-between p-4 border-b">
                         <div className="flex items-center gap-3">
                             <h2 className="font-bold text-[#1f2c73] text-sm">
@@ -320,7 +341,21 @@ const MedicalExamination = () => {
 
                             <thead>
                                 <tr className="bg-slate-50 border-b border-slate-100">
+                                    <th className="text-center p-4">
+                                        <input
+                                            type="checkbox"
+                                            onChange={(e) => {
+                                                const checked = e.target.checked;
 
+                                                fields.forEach((_, index) => {
+                                                    setValue(
+                                                        `candidates.${index}.selected`,
+                                                        checked
+                                                    );
+                                                });
+                                            }}
+                                        />
+                                    </th>
                                     <th className="text-left p-4 text-sm font-semibold text-slate-600">
                                         Sr. #
                                     </th>
@@ -338,7 +373,7 @@ const MedicalExamination = () => {
                                     </th>
 
                                     <th className="text-center p-4 text-sm font-semibold text-slate-600">
-                                        Identification Sign
+                                        Identification Mark
                                     </th>
 
                                     <th className="text-center p-4 text-sm font-semibold text-slate-600">
@@ -366,6 +401,14 @@ const MedicalExamination = () => {
                                             hover:bg-slate-50/50
                                             transition-colors"
                                         >
+                                            <td className="p-4 text-center">
+                                                <input
+                                                    type="checkbox"
+                                                    {...register(
+                                                        `candidates.${index}.selected`
+                                                    )}
+                                                />
+                                            </td>
                                             <td className="p-4 text-sm text-slate-700">
                                                 {(currentPage - 1) *
                                                     PAGE_SIZE +
@@ -397,8 +440,21 @@ const MedicalExamination = () => {
                                                     {...register(
                                                         `candidates.${index}.identificationSign`,
                                                         {
-                                                            required:
-                                                                "Required",
+                                                            validate: (value) => {
+                                                                const selected =
+                                                                    watch(
+                                                                        `candidates.${index}.selected`
+                                                                    );
+
+                                                                if (
+                                                                    selected &&
+                                                                    !value
+                                                                ) {
+                                                                    return "Required";
+                                                                }
+
+                                                                return true;
+                                                            },
                                                         }
                                                     )}
                                                     placeholder="Enter Sign"
@@ -440,8 +496,21 @@ const MedicalExamination = () => {
                                                     {...register(
                                                         `candidates.${index}.medicalResult`,
                                                         {
-                                                            required:
-                                                                "Required",
+                                                            validate: (value) => {
+                                                                const selected =
+                                                                    watch(
+                                                                        `candidates.${index}.selected`
+                                                                    );
+
+                                                                if (
+                                                                    selected &&
+                                                                    !value
+                                                                ) {
+                                                                    return "Required";
+                                                                }
+
+                                                                return true;
+                                                            },
                                                         }
                                                     )}
                                                     className={`
@@ -497,8 +566,21 @@ const MedicalExamination = () => {
                                                     {...register(
                                                         `candidates.${index}.remarks`,
                                                         {
-                                                            required:
-                                                                "Required",
+                                                            validate: (value) => {
+                                                                const selected =
+                                                                    watch(
+                                                                        `candidates.${index}.selected`
+                                                                    );
+
+                                                                if (
+                                                                    selected &&
+                                                                    !value
+                                                                ) {
+                                                                    return "Required";
+                                                                }
+
+                                                                return true;
+                                                            },
                                                         }
                                                     )}
                                                     placeholder="Enter Remarks"
