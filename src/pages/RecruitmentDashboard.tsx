@@ -30,7 +30,7 @@ interface SummaryCard {
 interface CompanyRecruitment {
   company: string;
   workers: number;
-  staffs: number;
+  staff: number;
   management: number;
   total: number;
 }
@@ -286,14 +286,14 @@ const RecruitmentDashboard = () => {
             </thead>
 
             <tbody>
-              {companies.map((item, index) => (
+              {companies.map((item: CompanyRecruitment, index: number) => (
                 <tr
                   key={index}
                   className="hover:bg-gray-50 transition"
                 >
                   <td className="p-4">{item.company}</td>
                   <td className="text-center p-4">{item.workers}</td>
-                  <td className="text-center p-4">{item.staffs}</td>
+                  <td className="text-center p-4">{item.staff}</td>
                   <td className="text-center p-4">{item.management}</td>
                   <td className="text-center p-4 font-bold text-blue-600">
                     {item.total}
