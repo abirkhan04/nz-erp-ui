@@ -369,7 +369,7 @@ const HRExecutiveEntryDetails = () => {
     payload.append("employeeCode", data.employeeCode ?? "");
     payload.append("mobileNumber", data.mobileNumber ?? "");
     payload.append("nomineeName", data.nomineeName ?? "");
-    payload.append("nomineeNID", data.nomineeNID ?? "");
+    payload.append("nomineeID", data.nomineeNID ?? "");
     payload.append("nomineeRelation", data.nomineeRelation ?? "");
     payload.append("nomineeMobileNumber", data.nomineeMobileNumber ?? "");
     payload.append("employeeEnrollmentId", data.employeeEnrollmentId ?? "");
@@ -821,7 +821,7 @@ const HRExecutiveEntryDetails = () => {
                   type={
                     field.type as any
                   }
-
+                  options={field.options}
                   register={
                     register
                   }

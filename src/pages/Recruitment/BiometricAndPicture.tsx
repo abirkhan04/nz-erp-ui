@@ -33,6 +33,7 @@ export interface Document {
 interface Candidate {
     id: number;
     employeeId: string;
+    employeeCode: string;
     enrollmentId: string;
     employeeName: string;
     dateOfBirth: string;
@@ -44,7 +45,7 @@ interface Candidate {
 
     fatherName: string;
     unitName: string;
-    shed: string;
+    subUnitName: string;
     department: string;
     sectionName: string;
     cell: string;
@@ -388,7 +389,7 @@ const BiometricCapture = () => {
                                 </th>
 
                                 <th className="px-4 py-3">
-                                    Temporary ID
+                                    Enrollment ID
                                 </th>
 
                                 <th className="px-4 py-3">
@@ -565,9 +566,9 @@ const BiometricCapture = () => {
                                 <div className="space-y-3">
 
                                     <div className="grid grid-cols-[110px_15px_1fr]">
-                                        <span className="text-sm text-slate-600">Temporary ID</span>
+                                        <span className="text-sm text-slate-600">Employee Code</span>
                                         <span>:</span>
-                                        <span className="font-medium">{selectedCandidate.enrollmentId}</span>
+                                        <span className="font-medium">{selectedCandidate.employeeCode}</span>
                                     </div>
 
                                     <div className="grid grid-cols-[110px_15px_1fr]">
@@ -626,7 +627,7 @@ const BiometricCapture = () => {
                                     <div className="grid grid-cols-[150px_15px_1fr]">
                                         <span className="text-sm text-slate-600">Sub Unit / Oblique Shed</span>
                                         <span>:</span>
-                                        <span className="font-medium">{selectedCandidate.shed}</span>
+                                        <span className="font-medium">{selectedCandidate.subUnitName}</span>
                                     </div>
 
                                     <div className="grid grid-cols-[150px_15px_1fr]">
