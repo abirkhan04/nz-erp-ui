@@ -809,7 +809,6 @@ const HRExecutiveEntryDetails = () => {
                   type={
                     field.type as any
                   }
-                  options={field.options}
                   register={
                     register
                   }
