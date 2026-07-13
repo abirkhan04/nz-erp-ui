@@ -1014,11 +1014,11 @@ const BiometricCapture = () => {
                                 <div>
 
                                     <p className="text-sm text-slate-500">
-                                        Shed
+                                        Sub Unit Name
                                     </p>
 
                                     <p className="mt-1 font-semibold">
-                                        {selectedCandidate.shed}
+                                        {selectedCandidate.subUnitName}
                                     </p>
 
                                 </div>
