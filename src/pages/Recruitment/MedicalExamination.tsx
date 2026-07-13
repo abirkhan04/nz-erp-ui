@@ -564,54 +564,22 @@ const MedicalExamination = () => {
 
                                                 <input
                                                     {...register(
-                                                        `candidates.${index}.remarks`,
-                                                        {
-                                                            validate: (value) => {
-                                                                const selected =
-                                                                    watch(
-                                                                        `candidates.${index}.selected`
-                                                                    );
-
-                                                                if (
-                                                                    selected &&
-                                                                    !value
-                                                                ) {
-                                                                    return "Required";
-                                                                }
-
-                                                                return true;
-                                                            },
-                                                        }
+                                                        `candidates.${index}.remarks`
                                                     )}
                                                     placeholder="Enter Remarks"
                                                     className={`
-                            w-full
-                            border
-                            rounded-md
-                            px-3
-                            py-2
-                            text-sm
-                            ${errors
-                                                            ?.candidates?.[
-                                                            index
-                                                        ]
-                                                            ?.remarks
+                                                                w-full
+                                                                border
+                                                                rounded-md
+                                                                px-3
+                                                                py-2
+                                                                text-sm
+                                                                ${errors?.candidates?.[index]?.remarks
                                                             ? "border-red-500"
                                                             : ""
                                                         }
-                          `}
+    `}
                                                 />
-
-                                                {errors
-                                                    ?.candidates?.[
-                                                    index
-                                                ]
-                                                    ?.remarks && (
-                                                        <p className="text-red-500 text-xs mt-1">
-                                                            Required
-                                                        </p>
-                                                    )}
-
                                             </td>
 
 

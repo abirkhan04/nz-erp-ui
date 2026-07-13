@@ -163,11 +163,6 @@ const HRExecutiveEntryDetails = () => {
     url: API_ROUTES.SHIFT,
   });
 
-  const { data: employeeNatures = [] } = useGet<any[]>({
-    key: ["workerTypes"],
-    url: API_ROUTES.EMPLOYEE_NATURES
-  })
-
   const navigate =
     useNavigate();
 
@@ -350,15 +345,6 @@ const HRExecutiveEntryDetails = () => {
     restoredShiftRef.current = true;
   }, [shifts]);
 
-  useEffect(() => {
-    if (restoredWorkerTypeRef.current || employeeNatures.length === 0) return;
-    const draft = localStorage.getItem(DRAFT_KEY);
-    if (draft) {
-      const parsed = JSON.parse(draft);
-      if (parsed.employeeNature != null) setValue("employeeNature", parsed.employeeNature);
-    }
-    restoredWorkerTypeRef.current = true;
-  }, [employeeNatures]);
 
   const handleSaveDraft = () => {
     const values = watch();
@@ -546,6 +532,7 @@ const HRExecutiveEntryDetails = () => {
       localStorage.removeItem(DRAFT_KEY);
 
       reset();
+      navigate("/recruitment/hr-executive-entry")
     }
     catch (error: any) {
       toast.error(
@@ -584,6 +571,31 @@ const HRExecutiveEntryDetails = () => {
       label: "Mother Name",
       name: "motherName",
       type: "text"
+    },
+    {
+      label: "Nominee Name",
+      type: "text",
+      name: "nomineeName",
+    },
+    {
+      label: "Nominee NID",
+      type: "text",
+      name:  "nomineeNID"
+    },
+    {
+      label: "Nominee Relation",
+      type: "dropdown",
+      name: "nomineeRelation",
+      options: [
+        { label: "Father", value: "father" },
+        { label: "Mother", value: "mother" },
+        { label: "Husband", value: "husband" },
+        { label: "Wife", value: "wife" },
+        { label: "Son", value: "son" },
+        { label: "Daughter", value: "daughter" },
+        { label: "Brother", value: "brother" },
+        { label: "Sister", value: "sister" }
+      ]
     },
     {
       label: "Nominee Mobile Number",
@@ -721,7 +733,7 @@ const HRExecutiveEntryDetails = () => {
       label: "Employee Category",
       name: "employeeCategory",
       type: "dropdown",
-      options: Object.entries(EmployeeCategory).map(([label , value])=>({
+      options: Object.entries(EmployeeCategory).map(([label, value]) => ({
         label,
         value
       }))
@@ -809,6 +821,7 @@ const HRExecutiveEntryDetails = () => {
                   type={
                     field.type as any
                   }
+
                   register={
                     register
                   }

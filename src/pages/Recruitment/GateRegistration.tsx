@@ -23,7 +23,7 @@ export interface GateRegistrationForm {
   gender: string;
   religion: string;
   bloodGroup: string;
-  nomineeName: string;
+  nomineeNameBangla: string;
   nomineeRelation: string;
 
   mobileNumber: string;
@@ -153,7 +153,7 @@ const personalInformationFields: SectionField[] =
     },
     {
       label: "নমিনির নাম",
-      name: "nomineeName",
+      name: "nomineeNameBangla",
       type: "text",
       bangla: true
     },
@@ -162,14 +162,14 @@ const personalInformationFields: SectionField[] =
       name: "nomineeRelation",
       type: "dropdown",
       options: [
-        { label: "পিতা", value: "father" },
-        { label: "মাতা", value: "mother" },
-        { label: "স্বামী", value: "husband" },
-        { label: "স্ত্রী", value: "wife" },
-        { label: "পুত্র", value: "son" },
-        { label: "কন্যা", value: "daughter" },
-        { label: "ভাই", value: "brother" },
-        { label: "বোন", value: "sister" }
+        { label: "পিতা", value: "পিতা" },
+        { label: "মাতা", value: "মাতা" },
+        { label: "স্বামী", value: "স্বামী" },
+        { label: "স্ত্রী", value: "স্ত্রী" },
+        { label: "পুত্র", value: "পুত্র" },
+        { label: "কন্যা", value: "কন্যা" },
+        { label: "ভাই", value: "ভাই" },
+        { label: "বোন", value: "বোন" }
       ]
     },
   ];
@@ -551,8 +551,8 @@ const GateRegistration = () => {
       guardianName: data.fatherName,
 
       motherNameBangla: data.motherName,
-      nomineeName: data.nomineeName,
-      nomineeRelation: data.nomineeRelation,
+      nomineeNameBangla: data.nomineeNameBangla,
+      nomineeRelationBangla: data.nomineeRelation,
 
       employeeReference:
         data.referenceName,
