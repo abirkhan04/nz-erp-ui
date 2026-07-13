@@ -72,6 +72,12 @@ export const EmployeeNature = {
     Management: 2,
 };
 
+export const EmployeeCategory = {
+  Permanent: 0,
+  Temporary: 1,
+  Provisional: 2
+}
+
 export type PhysicalExaminationSetting = {
   id: string;
   fieldName: string;

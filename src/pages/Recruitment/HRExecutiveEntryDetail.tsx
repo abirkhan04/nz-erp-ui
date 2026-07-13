@@ -25,7 +25,7 @@ import type { Unit } from "../../types/interfaces";
 import { useGet } from "../../hooks/useGet";
 import toast from "react-hot-toast";
 import { api } from "../../api/client";
-import { EmployeeNature, WeekOffDayMap } from "../EmployeeInformation/types";
+import { EmployeeCategory, EmployeeNature, WeekOffDayMap } from "../EmployeeInformation/types";
 
 interface HRExecutiveEntryForm {
   name?: string;
@@ -405,7 +405,7 @@ const HRExecutiveEntryDetails = () => {
     payload.append("shiftId", String(data.shift));
 
     payload.append(
-      "employeeNatureId",
+      "employeeNature",
       data.employeeNature == null || data.employeeNature === ""
         ? ""
         : String(Number(data.employeeNature))
@@ -536,12 +536,7 @@ const HRExecutiveEntryDetails = () => {
     try {
       const response = await api.post(
         API_ROUTES.HRExecutiveEntry,
-        payload,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
+        payload
       );
 
       toast.success(
@@ -589,30 +584,6 @@ const HRExecutiveEntryDetails = () => {
       label: "Mother Name",
       name: "motherName",
       type: "text"
-    },
-    {
-      label: "Nominee Name",
-      name: "nomineeName",
-      type: "text"
-    },
-    {
-      label: "Nominee NID",
-      name: "nomineeNID",
-      type: "text"
-    },
-    {
-      label: "Nominee Relation",
-      name: "nomineeRelation",
-      type: "dropdown",
-      options: [
-        { label: "Father", value: "father" },
-        { label: "Mother", value: "mother" },
-        { label: "Spouse", value: "spouse" },
-        { label: "Son", value: "son" },
-        { label: "Daughter", value: "daughter" },
-        { label: "Brother", value: "brother" },
-        { label: "Sister", value: "sister" }
-      ]
     },
     {
       label: "Nominee Mobile Number",
@@ -750,7 +721,10 @@ const HRExecutiveEntryDetails = () => {
       label: "Employee Category",
       name: "employeeCategory",
       type: "dropdown",
-      options: [{ label: "Permanent", value: "123" }, { label: "Temporary", value: "124" }, { label: "Provisional", value: "125" }]
+      options: Object.entries(EmployeeCategory).map(([label , value])=>({
+        label,
+        value
+      }))
     },
     {
       label: "Employee Code",

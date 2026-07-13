@@ -303,10 +303,10 @@ const RecruitmentDashboard = () => {
 
               <tr className="bg-[#f3f5fa] font-bold text-blue-600">
                 <td className="p-4">TOTAL</td>
-                <td className="text-center p-4">1,012</td>
-                <td className="text-center p-4">186</td>
-                <td className="text-center p-4">50</td>
-                <td className="text-center p-4">1,248</td>
+                <td className="text-center p-4">{activationSummery?.workers}</td>
+                <td className="text-center p-4">{activationSummery?.staff}</td>
+                <td className="text-center p-4">{activationSummery?.management}</td>
+                <td className="text-center p-4">{activationSummery?.total}</td>
               </tr>
             </tbody>
           </table>

@@ -23,6 +23,8 @@ export interface GateRegistrationForm {
   gender: string;
   religion: string;
   bloodGroup: string;
+  nomineeName: string;
+  nomineeRelation: string;
 
   mobileNumber: string;
 
@@ -148,6 +150,27 @@ const personalInformationFields: SectionField[] =
       name: "bloodGroup",
       type: "dropdown",
       options: Object.entries(bloodGroupMapBangla).map(([label, value]) => ({ label, value }))
+    },
+    {
+      label: "নমিনির নাম",
+      name: "nomineeName",
+      type: "text",
+      bangla: true
+    },
+    {
+      label: "নমিনির সাথে সম্পর্ক",
+      name: "nomineeRelation",
+      type: "dropdown",
+      options: [
+        { label: "পিতা", value: "father" },
+        { label: "মাতা", value: "mother" },
+        { label: "স্বামী", value: "husband" },
+        { label: "স্ত্রী", value: "wife" },
+        { label: "পুত্র", value: "son" },
+        { label: "কন্যা", value: "daughter" },
+        { label: "ভাই", value: "brother" },
+        { label: "বোন", value: "sister" }
+      ]
     },
   ];
 
@@ -528,18 +551,16 @@ const GateRegistration = () => {
       guardianName: data.fatherName,
 
       motherNameBangla: data.motherName,
-
-      referenceType: 1,
+      nomineeName: data.nomineeName,
+      nomineeRelation: data.nomineeRelation,
 
       employeeReference:
         data.referenceName,
 
-      referencePersonId: "",
 
       referenceMobileNumber:
         data.referenceMobile,
 
-      relationship: 0,
 
       // Permanent Address
       permanentDivisionId: data.permanentDivision,
