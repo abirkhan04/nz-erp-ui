@@ -25,7 +25,7 @@ interface HRCandidate {
     examinationDate: string;
 }
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 20;
 
 const HRExecutiveEntry = () => {
     const { data: candidates } = useGet<HRCandidate[]>({

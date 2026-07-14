@@ -39,7 +39,7 @@ interface MedicalExaminationForm {
     candidates: Candidate[];
 }
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 20;
 
 const MedicalExamination = () => {
 

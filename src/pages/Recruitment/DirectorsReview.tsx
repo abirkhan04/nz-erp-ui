@@ -7,7 +7,7 @@ import { usePost } from "../../hooks/usePost";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../api/client";
-import { reverseBloodGroupMap } from "../EmployeeInformation/types";
+import { EmployeeNature, reverseBloodGroupMap } from "../EmployeeInformation/types";
 
 interface SalaryRow {
   selected: boolean;
@@ -26,6 +26,11 @@ interface DirectorReviewForm {
 interface Candidate {
   id: string;
   employeeId: string;
+  unitName: string;
+  subUnitName: string;
+  designationName: string;
+  gradeName: string;
+  employeeCode: string;
   enrollmentId: string;
   employeeName: string;
   department: string;
@@ -35,17 +40,18 @@ interface Candidate {
   grade: string;
   shift: string;
   weekday: string;
+  proposedMonthlySalary: number;
   proposedSalary: number;
   joiningDate: string;
   status: string;
   fatherName: string;
   dateOfBirth: string;
   bloodGroup: string;
-  workerType: string;
+  employeeType: number;
   photo: string;
 }
 
-const PAGE_SIZE = 2;
+const PAGE_SIZE = 20;
 const EMPTY_CANDIDATES: Candidate[] = [];
 
 const DirectorReview = () => {
@@ -402,15 +408,72 @@ const DirectorReview = () => {
                   <div className="border-b border-slate-200 px-6 py-4">
                     <h3 className="text-lg font-semibold text-slate-800">Candidate Details</h3>
                   </div>
-                  <div className="grid grid-cols-2 gap-x-8 gap-y-4 p-6 text-sm text-slate-600">
-                    <div><p className="text-slate-400 text-xs uppercase">Temporary ID</p><p className="font-semibold text-slate-800">{selectedCandidate.enrollmentId}</p></div>
-                    <div><p className="text-slate-400 text-xs uppercase">Full Name</p><p className="font-semibold text-slate-800">{selectedCandidate.employeeName}</p></div>
-                    <div><p className="text-slate-400 text-xs uppercase">Father's Name</p><p className="font-semibold">{selectedCandidate.fatherName}</p></div>
-                    <div><p className="text-slate-400 text-xs uppercase">Date of Birth</p><p className="font-semibold">{selectedCandidate.dateOfBirth}</p></div>
-                    <div><p className="text-slate-400 text-xs uppercase">Blood Group</p><p className="font-semibold">{reverseBloodGroupMap[Number(selectedCandidate.bloodGroup)]}</p></div>
-                    <div><p className="text-slate-400 text-xs uppercase">Worker Type</p><p className="font-semibold">{selectedCandidate.workerType}</p></div>
-                    <div><p className="text-slate-400 text-xs uppercase">Department</p><p className="font-semibold">{selectedCandidate.department}</p></div>
-                    <div><p className="text-slate-400 text-xs uppercase">Gross Salary</p><p className="font-semibold text-green-700">৳{selectedCandidate.proposedSalary?.toLocaleString()}</p></div>
+                  <div className="grid grid-cols-3 gap-x-8 gap-y-4 p-6 text-sm text-slate-600">
+                    <div>
+                      <p className="text-slate-400 text-xs uppercase">Employee Code</p>
+                      <p className="font-semibold text-slate-800">{selectedCandidate.employeeCode}</p>
+                    </div>
+
+                    <div>
+                      <p className="text-slate-400 text-xs uppercase">Full Name</p>
+                      <p className="font-semibold text-slate-800">{selectedCandidate.employeeName}</p>
+                    </div>
+
+                    <div>
+                      <p className="text-slate-400 text-xs uppercase">Father's Name</p>
+                      <p className="font-semibold">{selectedCandidate.fatherName}</p>
+                    </div>
+
+                    <div>
+                      <p className="text-slate-400 text-xs uppercase">Date of Birth</p>
+                      <p className="font-semibold">{selectedCandidate.dateOfBirth}</p>
+                    </div>
+
+                    <div>
+                      <p className="text-slate-400 text-xs uppercase">Blood Group</p>
+                      <p className="font-semibold">
+                        {reverseBloodGroupMap[Number(selectedCandidate.bloodGroup)]}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="text-slate-400 text-xs uppercase">Employee Nature</p>
+                      <p className="font-semibold">
+                        {Object.keys(EmployeeNature)[selectedCandidate.employeeType]}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="text-slate-400 text-xs uppercase">Department</p>
+                      <p className="font-semibold">{selectedCandidate.department}</p>
+                    </div>
+
+                    <div>
+                      <p className="text-slate-400 text-xs uppercase">Unit</p>
+                      <p className="font-semibold">{selectedCandidate.unitName}</p>
+                    </div>
+
+                    <div>
+                      <p className="text-slate-400 text-xs uppercase">Sub Unit</p>
+                      <p className="font-semibold">{selectedCandidate.subUnitName}</p>
+                    </div>
+
+                    <div>
+                      <p className="text-slate-400 text-xs uppercase">Designation</p>
+                      <p className="font-semibold">{selectedCandidate.designationName}</p>
+                    </div>
+
+                    <div>
+                      <p className="text-slate-400 text-xs uppercase">Grade</p>
+                      <p className="font-semibold">{selectedCandidate.gradeName}</p>
+                    </div>
+
+                    <div>
+                      <p className="text-slate-400 text-xs uppercase">Gross Salary</p>
+                      <p className="font-semibold text-green-700">
+                        ৳{selectedCandidate.proposedMonthlySalary?.toLocaleString()}
+                      </p>
+                    </div>
                   </div>
                 </div>
 

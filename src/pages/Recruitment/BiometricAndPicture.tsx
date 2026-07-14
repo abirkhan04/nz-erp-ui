@@ -53,7 +53,7 @@ interface Candidate {
     employeeType:number;
 }
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 20;
 
 const BiometricCapture = () => {
 
