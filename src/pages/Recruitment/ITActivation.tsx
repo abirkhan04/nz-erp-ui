@@ -638,11 +638,24 @@ const ITActivationPage: React.FC = () => {
             </div>
 
             {/* ── Documents & Records ── */}
-            <div style={{ padding: "0 24px 16px" }}>
-                <div style={{
-                    background: "#fff", borderRadius: 12, border: "1.5px solid #e2e8f0",
-                    boxShadow: "0 1px 6px rgba(0,0,0,0.05)", overflow: "hidden",
-                }}>
+            <div
+                style={{
+                    padding: "0 24px 16px",
+                    display: "flex",
+                    justifyContent: "center", // horizontal center
+                }}
+            >
+                <div
+                    style={{
+                        width: "100%",
+                        maxWidth: 500, // make it thinner
+                        background: "#fff",
+                        borderRadius: 12,
+                        border: "1.5px solid #e2e8f0",
+                        boxShadow: "0 1px 6px rgba(0,0,0,0.05)",
+                        overflow: "hidden",
+                    }}
+                >
                     <div style={{
                         background: "linear-gradient(90deg, #0f2044 0%, #1a3a6b 100%)",
                         padding: "10px 16px",
