@@ -216,9 +216,9 @@ const RecruitmentDashboard = () => {
         <div className="flex justify-between items-center mb-5">
           <h2 className="font-bold text-[#1f2c73] text-xl">
             RECRUITMENT SUMMARY
-            <span className="ml-2 text-gray-500 text-sm font-medium">
+            {/* <span className="ml-2 text-gray-500 text-sm font-medium">
               (May 1, 2025 - May 20, 2025)
-            </span>
+            </span> */}
           </h2>
 
           <button className="border px-4 py-2 rounded-lg text-blue-600 hover:bg-blue-50" onClick={() => navigate("/")}>
