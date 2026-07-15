@@ -110,3 +110,20 @@ export const religionMapBangla: Record<string, number> = {
   খ্রিস্টধর্ম: 3,
   অন্যান্য: 4,
 };
+
+export const reverseDocumentTypeMap: Record<number, string> = {
+  0: "NID",
+  1: "Passport",
+  2: "Birth Certificate",
+  3: "Driving License",
+  4: "Photo",
+  5: "Biometric",
+  6: "FingerPrint",
+  7: "Education Certificate",
+  8: "Police Clearance",
+  9: "Experience Certificate",
+  10: "Passport Photo",
+  11: "Chairman Certificate",
+  12: "Signature",
+  13: "Other",
+};

@@ -4,14 +4,16 @@ import { API_ROUTES } from "../../api/routes";
 import { usePost } from "../../hooks/usePost";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import { EmployeeNature, genderMapFromNumber, reverseBloodGroupMap, reverseReligionMap } from "../EmployeeInformation/types";
+import { EmployeeNature, genderMapFromNumber, reverseBloodGroupMap, reverseDocumentTypeMap, reverseReligionMap } from "../EmployeeInformation/types";
+import { api } from "../../api/client";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 interface Document {
-    type: string;
+    documentType: number;
     description: string;
-    status: "Ready" | "Pending" | "Missing";
+    filePath: string;
+    //status: "Ready" | "Pending" | "Missing";
 }
 
 interface Candidate {
@@ -104,17 +106,13 @@ const ITActivationPage: React.FC = () => {
     const PAGE_SIZE = 20;
 
     const [page, setPage] = useState(1);
-    const [enrollmentId, setEnrollmentId] = useState<string>("");
+    const [, setEnrollmentId] = useState<string>("");
     const { data: candidates = [], refetch } = useGet<Candidate[]>({
         key: ["candidates"],
         url: `${API_ROUTES.EMPLOYEES_BY_STATUS}?status=DirectorReview`,
     });
 
-    const { data: viewFiles = [] } = useGet<any>({
-        key: ["files", enrollmentId],
-        url: `${API_ROUTES.EMPLOYEES}/view-files/${enrollmentId}`,
-        enabled: !!enrollmentId
-    })
+
 
 
     const { mutate: ITActivationPost } = usePost<{ message: string; id: string }, any>(
@@ -130,6 +128,14 @@ const ITActivationPage: React.FC = () => {
         url: `${API_ROUTES.EMPLOYEES}/employee-detail/${selectedId}`,
         enabled: !!selectedId,
     });
+
+    const { data: documentResponse = {} } = useGet<any>({
+        key: ["documents", selectedId],
+        url: `${API_ROUTES.EMPLOYEES}/uploaded-documents/${selectedId}`,
+        enabled: !!selectedId
+    })
+
+    const documents = documentResponse?.files || [];
 
     const filteredCandidates = useMemo(() => {
         const keyword = searchTerm.trim().toLowerCase();
@@ -153,6 +159,36 @@ const ITActivationPage: React.FC = () => {
     useEffect(() => {
         setPage(1);
     }, [searchTerm]);
+
+    const loadDocument = async (doc: Document) => {
+        try {
+            const response = await api.get(
+                `${API_ROUTES.EMPLOYEES}/image-by-path?path=${encodeURIComponent(doc.filePath)}`,
+                {
+                    responseType: "blob",
+                }
+            );
+
+            const blob = response.data;
+
+            console.log(blob.type); // Check this
+
+            if (blob.type === "application/octet-stream") {
+                const pdfBlob = new Blob([response.data], {
+                    type: "application/pdf",
+                });
+
+                const url = URL.createObjectURL(pdfBlob);
+                window.open(url, "_blank");
+            } else {
+                const url = window.URL.createObjectURL(blob);
+                window.open(url, "_blank");
+            }
+
+        } catch (error) {
+            console.error("Failed to load document", error);
+        }
+    };
 
     useEffect(() => {
         if (candidates.length > 0 && !selectedId) {
@@ -514,7 +550,7 @@ const ITActivationPage: React.FC = () => {
                                 )}
                             </div>
                             <div style={{ flex: 1, minWidth: 0 }}>
-                                <InfoRow label="Temporary ID" value={selected?.employeeId} />
+                                <InfoRow label="Employee Code" value={selected?.employeeCode} />
                                 <InfoRow label="Full Name" value={selected?.employeeName} />
                                 <InfoRow label="Father's Name" value={selected?.fatherName} />
                                 <InfoRow label="Date of Birth" value={selected?.dateOfBirth} />
@@ -586,7 +622,7 @@ const ITActivationPage: React.FC = () => {
                         <span style={{ color: "#fff", fontWeight: 700, fontSize: 13 }}>Activation Summary</span>
                     </div>
                     <div style={{ padding: 16 }}>
-                        <CheckRow label="Total Documents" value={viewFiles.length} />
+                        <CheckRow label="Total Documents" value={String(documents.length)} />
                         <CheckRow label="Information Verified" value={selected?.informationVerified} />
                         <CheckRow label="Final Information Locked" value={selected?.finalInformationLocked} />
                         <CheckRow label="Ready for Activation" value={selected?.readyForActivation} />
@@ -636,7 +672,7 @@ const ITActivationPage: React.FC = () => {
                         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
                             <thead>
                                 <tr style={{ background: "#f8fafc", borderBottom: "2px solid #e2e8f0" }}>
-                                    {["#", "Document Type", "Description", "Status"].map(h => (
+                                    {["#", "Document Type"].map(h => (
                                         <th key={h} style={{
                                             padding: "8px 12px", textAlign: "left",
                                             color: "#374151", fontWeight: 700, fontSize: 12,
@@ -645,15 +681,13 @@ const ITActivationPage: React.FC = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {selected?.documents?.map((doc: Document, i: number) => (
+                                {documents?.map((doc: Document, i: number) => (
                                     <tr key={i} style={{
                                         borderBottom: "1px solid #f3f4f6",
                                         background: i % 2 === 0 ? "#fff" : "#fafafa",
                                     }}>
                                         <td style={{ padding: "9px 12px", color: "#6b7280", fontWeight: 600 }}>{i + 1}</td>
-                                        <td style={{ padding: "9px 12px", color: "#0f172a", fontWeight: 600 }}>{doc.type}</td>
-                                        <td style={{ padding: "9px 12px", color: "#6b7280" }}>{doc.description}</td>
-                                        <td style={{ padding: "9px 12px" }}><StatusBadge status={doc.status} /></td>
+                                        <td style={{ padding: "9px 12px", color: "#0f172a", fontWeight: 600, cursor: "pointer" }} onClick={() => loadDocument(doc)}>{reverseDocumentTypeMap[doc.documentType]}</td>
                                     </tr>
                                 ))}
                             </tbody>
