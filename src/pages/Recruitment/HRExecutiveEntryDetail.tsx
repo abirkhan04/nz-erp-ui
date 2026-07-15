@@ -11,6 +11,16 @@ import {
 } from "lucide-react";
 
 import {
+  GraduationCap,
+  IdCard,
+  ShieldCheck,
+  Briefcase,
+    Image,
+  BadgeCheck,
+  PenLine,
+} from "lucide-react";
+
+import {
   useForm,
 } from "react-hook-form";
 
@@ -546,13 +556,55 @@ const HRExecutiveEntryDetails = () => {
   };
 
   const documentFields = [
-    { label: "Education Certificate", name: "educationCertificate" },
-    { label: "National ID", name: "nationalId" },
-    { label: "Police Clearance", name: "policeClearance" },
-    { label: "Experience Certificate", name: "experienceCertificate" },
-    { label: "Passport Photo", name: "passportPhoto" },
-    { label: "Chairman Certificate", name: "chairmanCertificate" },
-    { label: "Signature", name: "signature" },
+    {
+      label: "Education Certificate",
+      name: "educationCertificate",
+      icon: GraduationCap,
+      iconBg: "bg-green-100",
+      iconColor: "text-green-500",
+    },
+    {
+      label: "National ID",
+      name: "nationalId",
+      icon: IdCard,
+      iconBg: "bg-green-100",
+      iconColor: "text-green-500",
+    },
+    {
+      label: "Police Clearance",
+      name: "policeClearance",
+      icon: ShieldCheck,
+      iconBg: "bg-purple-100",
+      iconColor: "text-purple-500",
+    },
+    {
+      label: "Experience Certificate",
+      name: "experienceCertificate",
+      icon: Briefcase,
+      iconBg: "bg-orange-100",
+      iconColor: "text-orange-500",
+    },
+    {
+      label: "Passport Photo",
+      name: "passportPhoto",
+      icon: Image,
+      iconBg: "bg-blue-100",
+      iconColor: "text-blue-500",
+    },
+    {
+      label: "Chairman Certificate",
+      name: "chairmanCertificate",
+      icon: BadgeCheck,
+      iconBg: "bg-pink-100",
+      iconColor: "text-pink-500",
+    },
+    {
+      label: "Signature",
+      name: "signature",
+      icon: PenLine,
+      iconBg: "bg-cyan-100",
+      iconColor: "text-cyan-500",
+    },
   ];
 
   const employeeInformationFields = [
@@ -997,81 +1049,106 @@ const HRExecutiveEntryDetails = () => {
           </div>
 
           <div className="grid grid-cols-7 gap-4 p-4">
-            {documentFields.map((doc) => (
-              <div className="flex flex-col">
-                <div
-                  key={doc.name}
-                  className="border rounded-xl p-5 bg-slate-50 hover:border-blue-400 transition"
-                >
-                  <label className="block text-sm font-semibold text-gray-700 mb-3">
-                    {doc.label}
-                  </label>
+            {documentFields.map((doc) => {
+              const Icon = doc.icon;
 
-                  <label
-                    htmlFor={doc.name}
-                    className="flex flex-col items-center justify-center h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition"
-                  >
-                    <UploadCloud className="w-8 h-8 text-blue-500 mb-2" />
+              return (
+                <div className="flex flex-col" key={doc.name}>
+                  <div className="border rounded-xl p-5 bg-slate-50 hover:border-blue-400 transition">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div
+                        className={`w-10 h-10 rounded-full flex items-center justify-center ${doc.iconBg}`}
+                      >
+                        <Icon className={`w-5 h-5 ${doc.iconColor}`} />
+                      </div>
 
-                    <span className="text-sm font-medium text-gray-700">
-                      Click to upload
-                    </span>
+                      <label className="text-sm font-semibold text-gray-700">
+                        {doc.label}
+                      </label>
+                    </div>
 
-                    <span className="text-xs text-gray-500 mt-1">
-                      PDF, JPG, PNG supported
-                    </span>
+                    <label
+                      htmlFor={doc.name}
+                      className="flex flex-col items-center justify-center h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition"
+                    >
+                      <UploadCloud className="w-8 h-8 text-blue-500 mb-2" />
 
-                    {(watch(doc.name as keyof HRExecutiveEntryForm) as File | null)?.name && (
-                      <span className="mt-3 text-sm text-green-600 font-medium text-center px-2 break-all max-w-full">
-                        {(watch(doc.name as keyof HRExecutiveEntryForm) as File).name}
+                      <span className="text-sm font-medium text-gray-700">
+                        Click to upload
                       </span>
-                    )}
-                  </label>
 
-                  <input
-                    id={doc.name}
-                    type="file"
-                    className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
+                      <span className="text-xs text-gray-500 mt-1">
+                        PDF, JPG, PNG supported
+                      </span>
 
-                      if (!file) return;
+                      {(watch(doc.name as keyof HRExecutiveEntryForm) as File | null)
+                        ?.name && (
+                          <span className="mt-3 text-sm text-green-600 font-medium text-center px-2 break-all max-w-full">
+                            {
+                              (
+                                watch(doc.name as keyof HRExecutiveEntryForm) as File
+                              ).name
+                            }
+                          </span>
+                        )}
+                    </label>
 
-                      const allowedTypes = [
-                        "application/pdf",
-                        "image/png",
-                        "image/jpeg",
-                      ];
+                    <input
+                      id={doc.name}
+                      type="file"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
 
-                      if (!allowedTypes.includes(file.type)) {
-                        setError(doc.name as keyof HRExecutiveEntryForm, {
-                          type: "manual",
-                          message: "Only PDF, PNG, JPG and JPEG files are allowed.",
-                        });
+                        if (!file) return;
 
-                        e.target.value = "";
-                        setValue(doc.name as keyof HRExecutiveEntryForm, null);
+                        const allowedTypes = [
+                          "application/pdf",
+                          "image/png",
+                          "image/jpeg",
+                        ];
 
-                        return;
+                        if (!allowedTypes.includes(file.type)) {
+                          setError(doc.name as keyof HRExecutiveEntryForm, {
+                            type: "manual",
+                            message:
+                              "Only PDF, PNG, JPG and JPEG files are allowed.",
+                          });
+
+                          e.target.value = "";
+                          setValue(
+                            doc.name as keyof HRExecutiveEntryForm,
+                            null
+                          );
+
+                          return;
+                        }
+
+                        clearErrors(
+                          doc.name as keyof HRExecutiveEntryForm
+                        );
+
+                        setValue(
+                          doc.name as keyof HRExecutiveEntryForm,
+                          file,
+                          { shouldValidate: true }
+                        );
+                      }}
+                    />
+                  </div>
+
+                  {errors[doc.name as keyof HRExecutiveEntryForm] && (
+                    <p className="text-red-500 text-xs mt-2">
+                      {
+                        errors[
+                          doc.name as keyof HRExecutiveEntryForm
+                        ]?.message
                       }
-
-                      clearErrors(doc.name as keyof HRExecutiveEntryForm);
-
-                      setValue(
-                        doc.name as keyof HRExecutiveEntryForm,
-                        file,
-                        { shouldValidate: true }
-                      );
-                    }}
-                  />
+                    </p>
+                  )}
                 </div>
-                {errors[doc.name as keyof HRExecutiveEntryForm] && (
-                  <p className="text-red-500 text-xs mt-2">
-                    {errors[doc.name as keyof HRExecutiveEntryForm]?.message}
-                  </p>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
