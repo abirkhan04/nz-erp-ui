@@ -102,6 +102,8 @@ const HRExecutiveEntryDetails = () => {
     setValue,
     reset,
     handleSubmit,
+    setError,
+    clearErrors,
     formState: { errors },
   } =
     useForm<HRExecutiveEntryForm>(
@@ -580,7 +582,7 @@ const HRExecutiveEntryDetails = () => {
     {
       label: "Nominee NID",
       type: "text",
-      name:  "nomineeNID"
+      name: "nomineeNID"
     },
     {
       label: "Nominee Relation",
@@ -996,46 +998,78 @@ const HRExecutiveEntryDetails = () => {
 
           <div className="grid grid-cols-7 gap-4 p-4">
             {documentFields.map((doc) => (
-              <div
-                key={doc.name}
-                className="border rounded-xl p-5 bg-slate-50 hover:border-blue-400 transition"
-              >
-                <label className="block text-sm font-semibold text-gray-700 mb-3">
-                  {doc.label}
-                </label>
-
-                <label
-                  htmlFor={doc.name}
-                  className="flex flex-col items-center justify-center h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition"
+              <div className="flex flex-col">
+                <div
+                  key={doc.name}
+                  className="border rounded-xl p-5 bg-slate-50 hover:border-blue-400 transition"
                 >
-                  <UploadCloud className="w-8 h-8 text-blue-500 mb-2" />
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">
+                    {doc.label}
+                  </label>
 
-                  <span className="text-sm font-medium text-gray-700">
-                    Click to upload
-                  </span>
+                  <label
+                    htmlFor={doc.name}
+                    className="flex flex-col items-center justify-center h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition"
+                  >
+                    <UploadCloud className="w-8 h-8 text-blue-500 mb-2" />
 
-                  <span className="text-xs text-gray-500 mt-1">
-                    PDF, JPG, PNG supported
-                  </span>
-
-                  {(watch(doc.name as keyof HRExecutiveEntryForm) as File | null)?.name && (
-                    <span className="mt-3 text-sm text-green-600 font-medium text-center px-2 break-all max-w-full">
-                      {(watch(doc.name as keyof HRExecutiveEntryForm) as File).name}
+                    <span className="text-sm font-medium text-gray-700">
+                      Click to upload
                     </span>
-                  )}
-                </label>
 
-                <input
-                  id={doc.name}
-                  type="file"
-                  className="hidden"
-                  onChange={(e) => {
-                    setValue(
-                      doc.name as keyof HRExecutiveEntryForm,
-                      e.target.files?.[0] ?? null
-                    );
-                  }}
-                />
+                    <span className="text-xs text-gray-500 mt-1">
+                      PDF, JPG, PNG supported
+                    </span>
+
+                    {(watch(doc.name as keyof HRExecutiveEntryForm) as File | null)?.name && (
+                      <span className="mt-3 text-sm text-green-600 font-medium text-center px-2 break-all max-w-full">
+                        {(watch(doc.name as keyof HRExecutiveEntryForm) as File).name}
+                      </span>
+                    )}
+                  </label>
+
+                  <input
+                    id={doc.name}
+                    type="file"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+
+                      if (!file) return;
+
+                      const allowedTypes = [
+                        "application/pdf",
+                        "image/png",
+                        "image/jpeg",
+                      ];
+
+                      if (!allowedTypes.includes(file.type)) {
+                        setError(doc.name as keyof HRExecutiveEntryForm, {
+                          type: "manual",
+                          message: "Only PDF, PNG, JPG and JPEG files are allowed.",
+                        });
+
+                        e.target.value = "";
+                        setValue(doc.name as keyof HRExecutiveEntryForm, null);
+
+                        return;
+                      }
+
+                      clearErrors(doc.name as keyof HRExecutiveEntryForm);
+
+                      setValue(
+                        doc.name as keyof HRExecutiveEntryForm,
+                        file,
+                        { shouldValidate: true }
+                      );
+                    }}
+                  />
+                </div>
+                {errors[doc.name as keyof HRExecutiveEntryForm] && (
+                  <p className="text-red-500 text-xs mt-2">
+                    {errors[doc.name as keyof HRExecutiveEntryForm]?.message}
+                  </p>
+                )}
               </div>
             ))}
           </div>
