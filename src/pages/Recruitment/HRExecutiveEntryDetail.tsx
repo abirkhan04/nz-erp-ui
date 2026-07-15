@@ -994,7 +994,7 @@ const HRExecutiveEntryDetails = () => {
             Documents Collected
           </div>
 
-          <div className="grid grid-cols-2 gap-4 p-4">
+          <div className="grid grid-cols-7 gap-4 p-4">
             {documentFields.map((doc) => (
               <div
                 key={doc.name}
@@ -1019,7 +1019,7 @@ const HRExecutiveEntryDetails = () => {
                   </span>
 
                   {(watch(doc.name as keyof HRExecutiveEntryForm) as File | null)?.name && (
-                    <span className="mt-3 text-sm text-green-600 font-medium text-center px-2">
+                    <span className="mt-3 text-sm text-green-600 font-medium text-center px-2 break-all max-w-full">
                       {(watch(doc.name as keyof HRExecutiveEntryForm) as File).name}
                     </span>
                   )}
