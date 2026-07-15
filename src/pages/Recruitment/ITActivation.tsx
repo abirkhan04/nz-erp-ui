@@ -63,24 +63,6 @@ const InfoRow: React.FC<{ label: string; value: string | number }> = ({ label, v
     </div>
 );
 
-const StatusBadge: React.FC<{ status: "Ready" | "Pending" | "Missing" }> = ({ status }) => {
-    const colors: Record<string, { bg: string; text: string; dot: string }> = {
-        Ready: { bg: "#dcfce7", text: "#15803d", dot: "#16a34a" },
-        Pending: { bg: "#fef9c3", text: "#92400e", dot: "#d97706" },
-        Missing: { bg: "#fee2e2", text: "#dc2626", dot: "#ef4444" },
-    };
-    const c = colors[status];
-    return (
-        <span style={{
-            display: "inline-flex", alignItems: "center", gap: 5, padding: "2px 10px",
-            borderRadius: 20, background: c.bg, color: c.text, fontSize: 12, fontWeight: 600,
-        }}>
-            <span style={{ width: 7, height: 7, borderRadius: "50%", background: c.dot, display: "inline-block" }} />
-            {status}
-        </span>
-    );
-};
-
 const CheckRow: React.FC<{ label: string; value: boolean | string }> = ({ label, value }) => (
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 0", borderBottom: "1px solid #f3f4f6", fontSize: 13 }}>
         <span style={{ color: "#6b7280" }}>{label}</span>
