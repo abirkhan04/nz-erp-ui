@@ -196,6 +196,8 @@ const ITActivationPage: React.FC = () => {
                 html2canvas: {
                     scale: 2,
                     useCORS: true,
+                    width: appointmentRef.current.scrollWidth,
+                    windowWidth: appointmentRef.current.scrollWidth,
                 },
                 jsPDF: {
                     unit: "mm",
@@ -206,15 +208,12 @@ const ITActivationPage: React.FC = () => {
             .outputPdf("blob");
 
         // Temporary download
-
         const url = URL.createObjectURL(blob);
 
-        window.open(url, "_blank");
-
-        // Optional cleanup after some time
-        setTimeout(() => {
-            URL.revokeObjectURL(url);
-        }, 10000);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "appointment-letter.pdf";
+        a.click();
 
         const formData = new FormData();
 
