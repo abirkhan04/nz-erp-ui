@@ -8,6 +8,7 @@ import { EmployeeNature, genderMapFromNumber, reverseBloodGroupMap, reverseDocum
 import { api } from "../../api/client";
 import { AppointmentLetter } from "../../documents/AppointmentLetter";
 import html2pdf from "html2pdf.js";
+import { MedicalReport } from "../../documents/MedicalReport";
 
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -90,6 +91,7 @@ const AvatarIcon: React.FC = () => (
 const ITActivationPage: React.FC = () => {
     const PAGE_SIZE = 20;
     const appointmentRef = useRef<HTMLDivElement>(null);
+    const medicalReportRef = useRef<HTMLDivElement>(null);
 
     const [page, setPage] = useState(1);
     const [, setEnrollmentId] = useState<string>("");
@@ -187,6 +189,7 @@ const ITActivationPage: React.FC = () => {
     const handleActivateNext = async () => {
         // Generate appointment letter
         if (!appointmentRef.current) return;
+        if (!medicalReportRef.current) return;
 
         const blob = await html2pdf()
             .from(appointmentRef.current)
@@ -207,13 +210,42 @@ const ITActivationPage: React.FC = () => {
             })
             .outputPdf("blob");
 
-        // Temporary download
-        const url = URL.createObjectURL(blob);
+        // // Temporary download
+        // const url = URL.createObjectURL(blob);
 
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "appointment-letter.pdf";
-        a.click();
+        // const a = document.createElement("a");
+        // a.href = url;
+        // a.download = "appointment-letter.pdf";
+        // a.click();
+
+
+        const blob1 = await html2pdf()
+            .from(medicalReportRef.current)
+            .set({
+                margin: 0,
+                filename: "medical-report.pdf",
+                html2canvas: {
+                    scale: 2,
+                    useCORS: true,
+                    letterRendering: true,
+                },
+                jsPDF: {
+                    unit: "mm",
+                    format: "a4",
+                    orientation: "portrait",
+                },
+            })
+            .outputPdf("blob");
+
+        // Temporary download
+        const url1 = URL.createObjectURL(blob1);
+
+        const a1 = document.createElement("a");
+        a1.href = url1;
+        a1.download = "medical-report.pdf";
+        setTimeout(() => {
+            a1.click();
+        }, 500);
 
         const formData = new FormData();
 
@@ -824,6 +856,11 @@ const ITActivationPage: React.FC = () => {
                 >
                     <AppointmentLetter
                         ref={appointmentRef}
+                        employee={selected}
+                    />
+
+                    <MedicalReport
+                        ref={medicalReportRef}
                         employee={selected}
                     />
                 </div>
