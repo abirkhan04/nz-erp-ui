@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useGet } from "../../hooks/useGet";
 import { API_ROUTES } from "../../api/routes";
 import { usePost } from "../../hooks/usePost";
@@ -6,6 +6,9 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { EmployeeNature, genderMapFromNumber, reverseBloodGroupMap, reverseDocumentTypeMap, reverseReligionMap } from "../EmployeeInformation/types";
 import { api } from "../../api/client";
+import { AppointmentLetter } from "../../documents/AppointmentLetter";
+import html2pdf from "html2pdf.js";
+
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -86,6 +89,7 @@ const AvatarIcon: React.FC = () => (
 
 const ITActivationPage: React.FC = () => {
     const PAGE_SIZE = 20;
+    const appointmentRef = useRef<HTMLDivElement>(null);
 
     const [page, setPage] = useState(1);
     const [, setEnrollmentId] = useState<string>("");
@@ -180,23 +184,67 @@ const ITActivationPage: React.FC = () => {
     }, [candidates, selectedId]);
 
 
-    const handleActivateNext = () => {
-        // Payload to be provided by user later
-        ITActivationPost({ employeeId: selectedId, employeeEnrollmentId: selected.enrollmentId }, {
-            onSuccess: async (response) => {
-                toast.success(
-                    `IT Activation completed${response.id}`
-                );
-                await refetch();
-                setSelectedId(""); // Reset selected candidate after activation
-            },
+    const handleActivateNext = async () => {
+        // Generate appointment letter
+        if (!appointmentRef.current) return;
 
-            onError: (error) => {
-                toast.error(
-                    `IT Activation failed. Error: ${error.message}`
-                );
-            },
-        });
+        const blob = await html2pdf()
+            .from(appointmentRef.current)
+            .set({
+                margin: 10,
+                filename: "appointment-letter.pdf",
+                html2canvas: {
+                    scale: 2,
+                    useCORS: true,
+                },
+                jsPDF: {
+                    unit: "mm",
+                    format: "a4",
+                    orientation: "portrait",
+                },
+            })
+            .outputPdf("blob");
+
+        // Temporary download
+
+        const url = URL.createObjectURL(blob);
+
+        window.open(url, "_blank");
+
+        // Optional cleanup after some time
+        setTimeout(() => {
+            URL.revokeObjectURL(url);
+        }, 10000);
+
+        const formData = new FormData();
+
+        formData.append(
+            "file",
+            blob,
+            "appointment-letter.pdf"
+        );
+
+        await api.post(
+            "/api/employees/upload-appointment-letter",
+            formData
+        );
+
+        // Payload to be provided by user later
+        // ITActivationPost({ employeeId: selectedId, employeeEnrollmentId: selected.enrollmentId }, {
+        //     onSuccess: async (response) => {
+        //         toast.success(
+        //             `IT Activation completed${response.id}`
+        //         );
+        //         await refetch();
+        //         setSelectedId(""); // Reset selected candidate after activation
+        //     },
+
+        //     onError: (error) => {
+        //         toast.error(
+        //             `IT Activation failed. Error: ${error.message}`
+        //         );
+        //     },
+        // });
     };
 
     // const handleActivate = () => {
@@ -754,6 +802,7 @@ const ITActivationPage: React.FC = () => {
                     </svg>
                 </button>
 
+
                 <button style={{
                     display: "flex", alignItems: "center", gap: 7, marginLeft: "auto",
                     background: "#fff", border: "1.5px solid #ef4444",
@@ -765,6 +814,20 @@ const ITActivationPage: React.FC = () => {
                     </svg>
                     Cancel Activation
                 </button>
+                <div
+                    style={{
+                        position: "fixed",
+                        left: "-10000px",
+                        top: 0,
+                        width: "210mm",
+                        background: "white",
+                    }}
+                >
+                    <AppointmentLetter
+                        ref={appointmentRef}
+                        employee={selected}
+                    />
+                </div>
             </div>
 
             {/* ── Warning Footer ── */}
