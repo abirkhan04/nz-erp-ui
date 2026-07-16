@@ -237,45 +237,55 @@ const ITActivationPage: React.FC = () => {
             })
             .outputPdf("blob");
 
-        // Temporary download
-        const url1 = URL.createObjectURL(blob1);
-
-        const a1 = document.createElement("a");
-        a1.href = url1;
-        a1.download = "medical-report.pdf";
-        setTimeout(() => {
-            a1.click();
-        }, 500);
-
         const formData = new FormData();
 
         formData.append(
-            "file",
+            "appointmentLetter",
             blob,
-            "appointment-letter.pdf"
+            "appointmentLetter"
         );
 
-        await api.post(
-            "/api/employees/upload-appointment-letter",
-            formData
+        formData.append(
+            "medicalReport",
+            blob1,
+            "medicalReport"
         );
 
-        // Payload to be provided by user later
-        // ITActivationPost({ employeeId: selectedId, employeeEnrollmentId: selected.enrollmentId }, {
-        //     onSuccess: async (response) => {
-        //         toast.success(
-        //             `IT Activation completed${response.id}`
-        //         );
-        //         await refetch();
-        //         setSelectedId(""); // Reset selected candidate after activation
-        //     },
+        formData.append(
+            "employeeId",
+            selectedId
+        );
 
-        //     onError: (error) => {
-        //         toast.error(
-        //             `IT Activation failed. Error: ${error.message}`
-        //         );
-        //     },
-        // });
+        formData.append(
+            "employeeEnrollmentId",
+            selected.enrollmentId
+        );
+
+        try {
+            const response = await api.post(
+                API_ROUTES.IT_ACTIVATION,
+                formData,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    },
+                }
+            );
+
+            toast.success(
+                `IT Activation completed ${response.data.id}`
+            );
+
+            await refetch();
+
+            setSelectedId("");
+        } catch (error: any) {
+            toast.error(
+                `IT Activation failed. Error: ${error.response?.data?.message ||
+                error.message
+                }`
+            );
+        }
     };
 
     // const handleActivate = () => {
