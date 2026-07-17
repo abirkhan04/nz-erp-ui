@@ -134,3 +134,9 @@ export const reverseDocumentTypeMap: Record<number, string> = {
     19: "Nominee NID",
     20: "Other",
 };
+
+export const idTypeMapBangla: Record<string, number> = {
+  "জাতীয় পরিচয়পত্র": 0,
+  "জন্ম নিবন্ধন": 1,
+  "পাসপোর্ট": 2,
+};

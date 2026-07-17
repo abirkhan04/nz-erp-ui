@@ -7,7 +7,7 @@ import { useGet } from "../../hooks/useGet";
 import { useEffect } from "react";
 import type { Unit } from "../../types/interfaces";
 import { useNavigate } from "react-router-dom";
-import { bloodGroupMapBangla, genderMapBengali, religionMapBangla } from "../EmployeeInformation/types";
+import { bloodGroupMapBangla, genderMapBengali, idTypeMapBangla, religionMapBangla } from "../EmployeeInformation/types";
 import BanglaInputField from "../../components/BanglaInputField1";
 import { api } from "../../api/client";
 
@@ -68,6 +68,14 @@ type SectionField = {
   rules?: any;
 };
 
+const mobileValidation = {
+  required: "মোবাইল নম্বর আবশ্যক",
+  pattern: {
+    value: /^01[3-9]\d{8}$/,
+    message: "সঠিক ১১ সংখ্যার মোবাইল নম্বর প্রদান করুন",
+  },
+};
+
 const personalInformationFields: SectionField[] =
   [
     {
@@ -98,16 +106,10 @@ const personalInformationFields: SectionField[] =
       label: "পরিচয়পত্রের ধরন",
       name: "nidType",
       type: "dropdown",
-      options: [
-        {
-          label: "জাতীয় পরিচয়পত্র",
-          value: "NID",
-        },
-        {
-          label: "জন্ম নিবন্ধন",
-          value: "BIRTH",
-        },
-      ],
+      options: Object.entries(idTypeMapBangla).map(([label , value])=> ({
+        label,
+        value
+      })),
     },
     {
       label: "পরিচয়পত্র নম্বর",
@@ -127,9 +129,7 @@ const personalInformationFields: SectionField[] =
     {
       label: "মোবাইল নম্বর",
       name: "mobileNumber",
-      rules: {
-        required: "মোবাইল নম্বর আবশ্যক",
-      },
+      rules: mobileValidation,
     },
     {
       label: "লিঙ্গ",
@@ -365,6 +365,7 @@ const GateRegistration = ({
     {
       label: "রেফারেন্স মোবাইল",
       name: "referenceMobile",
+      rules: mobileValidation
     },
   ];
 
@@ -632,18 +633,14 @@ const GateRegistration = ({
       bloodGroup: Number(data.bloodGroup),
 
       idType:
-        data.nidType === "NID"
-          ? 1
-          : data.nidType === "Birth Certificate"
-            ? 2
-            : 3,
+        Number(data.nidType),
 
       idNumber: data.nidNumber,
 
       mobileNumber: data.mobileNumber,
 
       guardianType: 1,
-      guardianName: data.fatherName,
+      fatherNameBangla: data.fatherName,
 
       motherNameBangla: data.motherName,
       nomineeNameBangla: data.nomineeNameBangla,
