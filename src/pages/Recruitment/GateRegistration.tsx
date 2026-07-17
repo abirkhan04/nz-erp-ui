@@ -9,6 +9,7 @@ import type { Unit } from "../../types/interfaces";
 import { useNavigate } from "react-router-dom";
 import { bloodGroupMapBangla, genderMapBengali, religionMapBangla } from "../EmployeeInformation/types";
 import BanglaInputField from "../../components/BanglaInputField1";
+import { api } from "../../api/client";
 
 export interface GateRegistrationForm {
 
@@ -176,7 +177,9 @@ const personalInformationFields: SectionField[] =
 
 
 
-const GateRegistration = () => {
+const GateRegistration = ({
+  candidate,
+}: any) => {
 
 
   const {
@@ -496,6 +499,98 @@ const GateRegistration = () => {
 
 
   useEffect(() => {
+    // Edit mode
+    if (candidate) {
+      const religionReverseMap = Object.fromEntries(
+        Object.entries(religionMapBangla).map(([k, v]) => [k, String(v)])
+      );
+
+      const genderReverseMap = Object.fromEntries(
+        Object.entries(genderMapBengali).map(([k, v]) => [v, k])
+      );
+
+      const bloodGroupReverseMap = Object.fromEntries(
+        Object.entries(bloodGroupMapBangla).map(([k, v]) => [k, String(v)])
+      );
+      reset({
+        fullName: candidate.employeeNameBangla ?? "",
+        fatherName: candidate.fatherNameBangla ?? "",
+        motherName: candidate.motherNameBangla ?? "",
+
+        nidType:
+          candidate.idType,
+
+        nidNumber: candidate.idNumber ?? "",
+        dateOfBirth: candidate.dateOfBirth ?? "",
+
+        gender:
+          genderReverseMap[candidate.gender] ?? "",
+
+        religion:
+          religionReverseMap[candidate.religion] ?? "",
+
+        bloodGroup:
+          bloodGroupReverseMap[candidate.bloodGroup] ?? "",
+
+        nomineeNameBangla:
+          candidate.nomineeNameBangla ?? "",
+
+        nomineeRelation:
+          candidate.nomineeRelationBangla ?? "",
+
+        mobileNumber:
+          candidate.mobileNumber ?? "",
+
+        presentVillageArea:
+          candidate.presentVillageAreaRoad ?? "",
+
+        presentPostOffice:
+          candidate.presentPostOffice ?? "",
+
+        presentPoliceStation:
+          candidate.presentThanaId ?? "",
+
+        presentDistrict:
+          candidate.presentDistrictId ?? "",
+
+        presentDivision:
+          candidate.presentDivisionId ?? "",
+
+        permanentVillageArea:
+          candidate.permanentVillageAreaRoad ?? "",
+
+        permanentPostOffice:
+          candidate.permanentPostOffice ?? "",
+
+        permanentPoliceStation:
+          candidate.permanentThanaId ?? "",
+
+        permanentDistrict:
+          candidate.permanentDistrictId ?? "",
+
+        permanentDivision:
+          candidate.permanentDivisionId ?? "",
+
+        company: candidate.unitId ?? "",
+
+        designation:
+          candidate.designationId?? "",
+
+        joiningDate:
+          candidate.joiningDate ?? "",
+
+        referenceName:
+          candidate.employeeReference ?? "",
+
+        referenceMobile:
+          candidate.referenceMobileNumber ?? "",
+
+        sameAsPermanent: false,
+      });
+      return;
+    }
+
+    // Create mode
     const draft = localStorage.getItem(DRAFT_KEY);
 
     if (draft) {
@@ -505,9 +600,9 @@ const GateRegistration = () => {
         joiningDate: new Date().toISOString().split("T")[0],
       });
     }
-  }, [reset]);
+  }, [candidate, reset]);
 
-  const onSubmit = (
+  const onSubmit =async (
     data: GateRegistrationForm
   ) => {
     const payload = {
@@ -597,6 +692,25 @@ const GateRegistration = () => {
           .toISOString()
           .split("T")[0],
     };
+
+    if (candidate) {
+      try {
+        await api.put(
+          `${API_ROUTES.GATE_REGISTRATION}/${candidate.employeeId}`,
+          payload
+        );
+
+        toast.success(
+          "গেট রেজিস্ট্রেশন সফলভাবে আপডেট হয়েছে"
+        );
+      } catch (error: any) {
+        toast.error(
+          `আপডেট ব্যর্থ হয়েছে। ত্রুটি: ${error.message}`
+        );
+      }
+
+      return;
+    }
 
     GateRegistrationPost(payload, {
       onSuccess: (response) => {

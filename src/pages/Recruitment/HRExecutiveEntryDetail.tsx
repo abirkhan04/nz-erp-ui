@@ -15,7 +15,7 @@ import {
   IdCard,
   ShieldCheck,
   Briefcase,
-    Image,
+  Image,
   BadgeCheck,
   PenLine,
 } from "lucide-react";
@@ -36,6 +36,7 @@ import { useGet } from "../../hooks/useGet";
 import toast from "react-hot-toast";
 import { api } from "../../api/client";
 import { EmployeeCategory, EmployeeNature, WeekOffDayMap } from "../EmployeeInformation/types";
+import GateRegistration from "./GateRegistration";
 
 interface HRExecutiveEntryForm {
   name?: string;
@@ -98,6 +99,8 @@ interface HRExecutiveEntryForm {
 
 
 const HRExecutiveEntryDetails = () => {
+
+
 
 
   const { data: banks = [] } = useGet({
@@ -186,6 +189,12 @@ const HRExecutiveEntryDetails = () => {
     url: `${API_ROUTES.EMPLOYEES}/employee-detail/${candidateId}`,
     enabled: !!candidateId
   });
+
+  const { data: candidateOnGate } = useGet<any>({
+    key: ["appointment_letter", candidateId],
+    url: `${API_ROUTES.EMPLOYEE_REPORTS}/candidate-entry/${candidateId}`,
+    enabled: !!candidateId
+  })
 
   const didRestoreRef = useRef(false);
   const restoredSubUnitRef = useRef(false);
@@ -815,7 +824,21 @@ const HRExecutiveEntryDetails = () => {
     }
   ];
 
-  return (
+  return (<>
+
+    {
+      candidateOnGate && (
+        <details className="border border-gray-300 rounded-lg overflow-hidden bg-white">
+          <summary className="cursor-pointer px-4 py-3 font-semibold bg-gray-100 hover:bg-gray-200 select-none">
+            Gate Registration - {candidateOnGate.name}
+          </summary>
+
+          <div className="p-4">
+            <GateRegistration candidate={candidateOnGate} />
+          </div>
+        </details>
+      )
+    }
     <form
       onSubmit={handleSubmit(
         onSubmit
@@ -1186,6 +1209,7 @@ const HRExecutiveEntryDetails = () => {
 
       </div>
     </form>
+  </>
   );
 };
 
