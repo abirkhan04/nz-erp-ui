@@ -110,6 +110,18 @@ const ITActivationPage: React.FC = () => {
         enabled: !!selectedId,
     });
 
+    const { data: employeeOnAppointment = {} } = useGet<any>({
+        key: ["appointment_letter",selectedId],
+        url: `${API_ROUTES.EMPLOYEE_REPORTS}/candidate-entry/${selectedId}`,
+        enabled: !!selectedId
+    })
+
+    const { data: employeeOnMedical = {} } = useGet<any>({
+        key: ["medical-report", selectedId],
+        url: `${API_ROUTES.EMPLOYEE_REPORTS}/medical-report/${selectedId}`,
+        enabled: !!selectedId
+    })
+
     const { data: documentResponse = {} } = useGet<any>({
         key: ["documents", selectedId],
         url: `${API_ROUTES.EMPLOYEES}/uploaded-documents/${selectedId}`,
@@ -203,7 +215,7 @@ const ITActivationPage: React.FC = () => {
             })
             .outputPdf("blob");
 
-        // // Temporary download
+        // Temporary download
         // const url = URL.createObjectURL(blob);
 
         // const a = document.createElement("a");
@@ -229,6 +241,13 @@ const ITActivationPage: React.FC = () => {
                 },
             })
             .outputPdf("blob");
+
+        // Temporary download
+        const url = URL.createObjectURL(blob1);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "medical-report.pdf";
+        a.click();
 
         const formData = new FormData();
 
@@ -256,31 +275,31 @@ const ITActivationPage: React.FC = () => {
 
         formData.append("employeeCode", selected.employeeCode);
 
-        try {
-            const response = await api.post(
-                API_ROUTES.IT_ACTIVATION,
-                formData,
-                {
-                    headers: {
-                        "Content-Type": "multipart/form-data",
-                    },
-                }
-            );
+        // try {
+        //     const response = await api.post(
+        //         API_ROUTES.IT_ACTIVATION,
+        //         formData,
+        //         {
+        //             headers: {
+        //                 "Content-Type": "multipart/form-data",
+        //             },
+        //         }
+        //     );
 
-            toast.success(
-                `IT Activation completed ${response.data.id}`
-            );
+        //     toast.success(
+        //         `IT Activation completed ${response.data.id}`
+        //     );
 
-            await refetch();
+        //     await refetch();
 
-            setSelectedId("");
-        } catch (error: any) {
-            toast.error(
-                `IT Activation failed. Error: ${error.response?.data?.message ||
-                error.message
-                }`
-            );
-        }
+        //     setSelectedId("");
+        // } catch (error: any) {
+        //     toast.error(
+        //         `IT Activation failed. Error: ${error.response?.data?.message ||
+        //         error.message
+        //         }`
+        //     );
+        // }
     };
 
     // const handleActivate = () => {
@@ -861,12 +880,12 @@ const ITActivationPage: React.FC = () => {
                 >
                     <AppointmentLetter
                         ref={appointmentRef}
-                        employee={selected}
+                        employee={employeeOnAppointment}
                     />
 
                     <MedicalReport
                         ref={medicalReportRef}
-                        employee={selected}
+                        employee={employeeOnMedical}
                     />
                 </div>
             </div>

@@ -103,13 +103,13 @@ export const MedicalReport = forwardRef<
                             gap: "3mm",
                         }}
                     >
-                        <img
+                        {/* <img
                             src="/logo.png"
                             alt=""
                             style={{
                                 width: "22mm",
                             }}
-                        />
+                        /> */}
 
                         <div>
                             <div
@@ -409,7 +409,7 @@ export const MedicalReport = forwardRef<
                                 <LabelValue
                                     label="পরীক্ষিত রক্তের গ্রুপ"
                                     value={
-                                        employee.testedBloodGroup
+                                        employee.bloodGroup
                                     }
                                 />
                                 <LabelValue
