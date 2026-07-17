@@ -261,6 +261,8 @@ const ITActivationPage: React.FC = () => {
             selected.enrollmentId
         );
 
+        formData.append("employeeCode", selected.employeeCode);
+
         try {
             const response = await api.post(
                 API_ROUTES.IT_ACTIVATION,

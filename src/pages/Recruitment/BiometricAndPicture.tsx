@@ -98,7 +98,7 @@ const BiometricCapture = () => {
         formData.append("files", file);
 
         const { data } = await api.post(
-            `Employees/upload-files?employeeEnrollmentId=${selectedCandidate?.enrollmentId}`,
+            `Employees/upload-files?employeeCode=${selectedCandidate?.employeeCode}`,
             formData,
             {
                 headers: {
@@ -197,6 +197,8 @@ const BiometricCapture = () => {
         BiometricCapturePost(payload, {
             onSuccess: (response) => {
                 toast.success(response.message);
+                setSelectedCandidate(null);
+                setPhoto("");
                 refetch();
             },
 
@@ -1188,65 +1190,6 @@ const BiometricCapture = () => {
                                 Send To Director Review
 
                             </button>
-
-                        </div>
-
-                        {/* ===================================================== */}
-                        {/* Footer Summary */}
-                        {/* ===================================================== */}
-
-                        <div className="mt-10 rounded-xl border border-slate-200 bg-slate-50 p-5">
-
-                            <div className="flex flex-wrap items-center justify-between">
-
-                                <div>
-
-                                    <p className="text-sm text-slate-500">
-                                        Selected Candidate
-                                    </p>
-
-                                    <h4 className="mt-1 font-semibold text-slate-800">
-                                        {selectedCandidate.employeeName}
-                                    </h4>
-
-                                </div>
-
-                                <div>
-
-                                    <p className="text-sm text-slate-500">
-                                        Temporary ID
-                                    </p>
-
-                                    <h4 className="mt-1 font-semibold text-slate-800">
-                                        {selectedCandidate.enrollmentId}
-                                    </h4>
-
-                                </div>
-
-                                <div>
-
-                                    <p className="text-sm text-slate-500">
-                                        Capture Progress
-                                    </p>
-
-                                    <h4 className="mt-1 font-semibold">
-
-                                        {photoCaptured &&
-                                            fingerprintCaptured ? (
-                                            <span className="text-green-600">
-                                                Ready For Director Review
-                                            </span>
-                                        ) : (
-                                            <span className="text-orange-600">
-                                                Capture Remaining
-                                            </span>
-                                        )}
-
-                                    </h4>
-
-                                </div>
-
-                            </div>
 
                         </div>
                     </>
