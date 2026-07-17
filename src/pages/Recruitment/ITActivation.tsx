@@ -1,7 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useGet } from "../../hooks/useGet";
 import { API_ROUTES } from "../../api/routes";
-import { usePost } from "../../hooks/usePost";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { EmployeeNature, genderMapFromNumber, reverseBloodGroupMap, reverseDocumentTypeMap, reverseReligionMap } from "../EmployeeInformation/types";
@@ -100,12 +99,6 @@ const ITActivationPage: React.FC = () => {
         url: `${API_ROUTES.EMPLOYEES_BY_STATUS}?status=DirectorReview`,
     });
 
-
-
-
-    const { mutate: ITActivationPost } = usePost<{ message: string; id: string }, any>(
-        API_ROUTES.IT_ACTIVATION
-    );
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedId, setSelectedId] = useState<string>("");
 
