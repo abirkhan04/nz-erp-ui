@@ -541,10 +541,6 @@ const MedicalExamination = () => {
                                                     <option value="UNFIT">
                                                         UNFIT
                                                     </option>
-
-                                                    <option value="PENDING">
-                                                        PENDING
-                                                    </option>
                                                 </select>
 
                                                 {errors

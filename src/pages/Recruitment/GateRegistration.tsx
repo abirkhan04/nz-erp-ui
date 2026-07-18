@@ -8,7 +8,7 @@ import { useEffect } from "react";
 import type { Unit } from "../../types/interfaces";
 import { useNavigate } from "react-router-dom";
 import { bloodGroupMapBangla, genderMapBengali, idTypeMapBangla, religionMapBangla } from "../EmployeeInformation/types";
-import BanglaInputField from "../../components/BanglaInputField1";
+import BanglaInputField from "../../components/BanglaInputField";
 import { api } from "../../api/client";
 
 export interface GateRegistrationForm {
@@ -287,6 +287,7 @@ const GateRegistration = ({
     {
       label: "পোস্ট অফিস",
       name: "presentPostOffice",
+      bangla: true,
       rules: {
         required: "পোস্ট অফিস আবশ্যক",
       },
@@ -294,6 +295,7 @@ const GateRegistration = ({
     {
       label: "গ্রাম / এলাকা",
       name: "presentVillageArea",
+      bangla: true,
       rules: {
         required: "গ্রাম / এলাকা আবশ্যক",
       },
@@ -343,6 +345,7 @@ const GateRegistration = ({
     {
       label: "পোস্ট অফিস",
       name: "permanentPostOffice",
+      bangla: true,
       rules: {
         required: "পোস্ট অফিস আবশ্যক",
       },
@@ -350,6 +353,7 @@ const GateRegistration = ({
     {
       label: "গ্রাম / এলাকা",
       name: "permanentVillageArea",
+      bangla: true,
       rules: {
         required: "গ্রাম / এলাকা আবশ্যক",
       },
@@ -362,6 +366,7 @@ const GateRegistration = ({
     {
       label: "রেফারেন্স ব্যক্তির নাম",
       name: "referenceName",
+      bangla: true
     },
     {
       label: "রেফারেন্স মোবাইল",
@@ -443,17 +448,17 @@ const GateRegistration = ({
   // Step 1: when sameAsPermanent is checked, only copy the division (root of the chain)
   useEffect(() => {
     if (!sameAsPermanent) return;
-      clearErrors([
-    "presentDivision",
-    "presentDistrict",
-    "presentPoliceStation",
-    "presentVillageArea",
-    "presentPostOffice",
-  ]);
+    clearErrors([
+      "presentDivision",
+      "presentDistrict",
+      "presentPoliceStation",
+      "presentVillageArea",
+      "presentPostOffice",
+    ]);
     setValue("presentDivision", watch("permanentDivision"));
     setValue("presentVillageArea", watch("permanentVillageArea"));
     setValue("presentPostOffice", watch("permanentPostOffice"));
-  }, [sameAsPermanent, watch("permanentDivision"), clearErrors], );
+  }, [sameAsPermanent, watch("permanentDivision"), clearErrors],);
 
   // Step 2: once presentDistricts has loaded for that division, copy the district
   useEffect(() => {
@@ -639,7 +644,7 @@ const GateRegistration = ({
     );
   }, [candidate, permanentDistricts]);
 
-    useEffect(() => {
+  useEffect(() => {
     if (!candidate) return;
     if (!presentThanas.length) return;
 
@@ -840,7 +845,16 @@ const GateRegistration = ({
                         .filter((field) =>
                           field.name.startsWith("permanent")
                         )
-                        .map((field) => (
+                        .map((field) => (field.bangla ? (
+                          <BanglaInputField
+                            key={field.name}
+                            label={field.label}
+                            name={field.name as any}
+                            rules={field.rules}
+                            errors={errors}
+                            control={control}
+                          />
+                        ) :
                           <CommonInputField
                             key={field.name}
                             // disabled={sameAsPermanent}
@@ -883,7 +897,16 @@ const GateRegistration = ({
                         .filter((field) =>
                           field.name.startsWith("present")
                         )
-                        .map((field) => (
+                        .map((field) => (field.bangla ? (
+                          <BanglaInputField
+                            key={field.name}
+                            label={field.label}
+                            name={field.name as any}
+                            rules={field.rules}
+                            errors={errors}
+                            control={control}
+                          />
+                        ) :
                           <CommonInputField
                             key={field.name}
                             label={field.label}
@@ -982,7 +1005,16 @@ const GateRegistration = ({
             </div>
 
             <div className="grid grid-cols-1 gap-4">
-              {referenceInformationFields.map((field) => (
+              {referenceInformationFields.map((field) => (field.bangla ? (
+                          <BanglaInputField
+                            key={field.name}
+                            label={field.label}
+                            name={field.name as any}
+                            rules={field.rules}
+                            errors={errors}
+                            control={control}
+                          />
+                        ) :
                 <CommonInputField
                   key={field.name}
                   label={field.label}
