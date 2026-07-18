@@ -30,13 +30,13 @@ type CommonInputFieldProps<T extends FieldValues> = {
   control?: Control<T>;
 
   type?:
-    | "text"
-    | "number"
-    | "date"
-    | "email"
-    | "dropdown"
-    | "searchable-dropdown"
-    | "radio";
+  | "text"
+  | "number"
+  | "date"
+  | "email"
+  | "dropdown"
+  | "searchable-dropdown"
+  | "radio";
 
   options?: Option[];
 
@@ -72,6 +72,11 @@ const CommonInputField = <T extends FieldValues>({
   onSearchChange,
   onOptionSelect,
 }: CommonInputFieldProps<T>) => {
+
+  const isRequired =
+    typeof rules?.required === "object"
+      ? rules.required.value
+      : !!rules?.required;
   const [searchText, setSearchText] =
     useState("");
 
@@ -92,8 +97,8 @@ const CommonInputField = <T extends FieldValues>({
 
   const errorMessage =
     errors?.[name]?.message as
-      | string
-      | undefined;
+    | string
+    | undefined;
 
   useEffect(() => {
     const handleClickOutside = (
@@ -126,6 +131,9 @@ const CommonInputField = <T extends FieldValues>({
     <div className={className}>
       <label className={labelClass}>
         {label}
+        {isRequired && (
+          <span className="ml-1 text-red-500">*</span>
+        )}
       </label>
 
       {type === "dropdown" ? (
@@ -149,7 +157,7 @@ const CommonInputField = <T extends FieldValues>({
           ))}
         </select>
       ) : type ===
-          "searchable-dropdown" &&
+        "searchable-dropdown" &&
         control ? (
         <Controller
           control={control}
@@ -233,11 +241,10 @@ const CommonInputField = <T extends FieldValues>({
           {options.map((option) => (
             <label
               key={option.value}
-              className={`flex items-center gap-2 text-sm ${
-                disabled
+              className={`flex items-center gap-2 text-sm ${disabled
                   ? "opacity-60 cursor-not-allowed"
                   : ""
-              }`}
+                }`}
             >
               <input
                 type="radio"

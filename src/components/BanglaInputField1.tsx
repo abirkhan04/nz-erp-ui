@@ -54,6 +54,10 @@ const BanglaInputField = <
   className = "",
   disabled = false,
 }: BanglaInputFieldProps<T>) => {
+  const isRequired =
+    typeof rules?.required === "object"
+      ? rules.required.value
+      : !!rules?.required;
   const [
     romanBuffer,
     setRomanBuffer,
@@ -72,13 +76,16 @@ const BanglaInputField = <
 
   const errorMessage =
     errors?.[name]?.message as
-      | string
-      | undefined;
+    | string
+    | undefined;
 
   return (
     <div className={className}>
-      <label className="block text-sm font-medium text-gray-700 mb-1">
-        {label}
+      <label className="flex items-center text-sm font-medium text-gray-700 mb-1">
+        <span>{label}</span>
+        {isRequired && (
+          <span className="ml-1 text-red-500">*</span>
+        )}
       </label>
 
       <Controller
