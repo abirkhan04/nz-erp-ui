@@ -106,7 +106,7 @@ const personalInformationFields: SectionField[] =
       label: "পরিচয়পত্রের ধরন",
       name: "nidType",
       type: "dropdown",
-      options: Object.entries(idTypeMapBangla).map(([label , value])=> ({
+      options: Object.entries(idTypeMapBangla).map(([label, value]) => ({
         label,
         value
       })),
@@ -190,6 +190,7 @@ const GateRegistration = ({
     getValues,
     watch,
     setValue,
+    clearErrors,
     formState: { errors },
   } = useForm<GateRegistrationForm>({
     mode: "onTouched",
@@ -442,10 +443,17 @@ const GateRegistration = ({
   // Step 1: when sameAsPermanent is checked, only copy the division (root of the chain)
   useEffect(() => {
     if (!sameAsPermanent) return;
+      clearErrors([
+    "presentDivision",
+    "presentDistrict",
+    "presentPoliceStation",
+    "presentVillageArea",
+    "presentPostOffice",
+  ]);
     setValue("presentDivision", watch("permanentDivision"));
     setValue("presentVillageArea", watch("permanentVillageArea"));
     setValue("presentPostOffice", watch("permanentPostOffice"));
-  }, [sameAsPermanent, watch("permanentDivision")]);
+  }, [sameAsPermanent, watch("permanentDivision"), clearErrors], );
 
   // Step 2: once presentDistricts has loaded for that division, copy the district
   useEffect(() => {
@@ -548,14 +556,14 @@ const GateRegistration = ({
         presentPostOffice:
           candidate.presentPostOffice ?? "",
 
-        presentPoliceStation:
-          candidate.presentThanaId ?? "",
+        // presentPoliceStation:
+        //   candidate.presentThanaId ?? "",
 
-        presentDistrict:
-          candidate.presentDistrictId ?? "",
+        // presentDistrict:
+        //   candidate.presentDistrictId ?? "",
 
-        presentDivision:
-          candidate.presentDivisionId ?? "",
+        // presentDivision:
+        //   candidate.presentDivisionId ?? "",
 
         permanentVillageArea:
           candidate.permanentVillageAreaRoad ?? "",
@@ -563,19 +571,19 @@ const GateRegistration = ({
         permanentPostOffice:
           candidate.permanentPostOffice ?? "",
 
-        permanentPoliceStation:
-          candidate.permanentThanaId ?? "",
+        // permanentPoliceStation:
+        //   candidate.permanentThanaId ?? "",
 
-        permanentDistrict:
-          candidate.permanentDistrictId ?? "",
+        // permanentDistrict:
+        //   candidate.permanentDistrictId ?? "",
 
-        permanentDivision:
-          candidate.permanentDivisionId ?? "",
+        // permanentDivision:
+        //   candidate.permanentDivisionId ?? "",
 
         company: candidate.unitId ?? "",
 
         designation:
-          candidate.designationId?? "",
+          candidate.designationId ?? "",
 
         joiningDate:
           candidate.joiningDate ?? "",
@@ -603,7 +611,56 @@ const GateRegistration = ({
     }
   }, [candidate, reset]);
 
-  const onSubmit =async (
+  useEffect(() => {
+    if (!candidate) return;
+    if (!divisions.length) return;
+
+    setValue("presentDivision", candidate.presentDivisionId);
+    setValue("permanentDivision", candidate.permanentDivisionId);
+  }, [candidate, divisions]);
+
+  useEffect(() => {
+    if (!candidate) return;
+    if (!presentDistricts.length) return;
+
+    setValue(
+      "presentDistrict",
+      candidate.presentDistrictId
+    );
+  }, [candidate, presentDistricts]);
+
+  useEffect(() => {
+    if (!candidate) return;
+    if (!permanentDistricts.length) return;
+
+    setValue(
+      "permanentDistrict",
+      candidate.permanentDistrictId
+    );
+  }, [candidate, permanentDistricts]);
+
+    useEffect(() => {
+    if (!candidate) return;
+    if (!presentThanas.length) return;
+
+    setValue(
+      "presentPoliceStation",
+      candidate.presentThanaId
+    );
+  }, [candidate, presentThanas]);
+
+  useEffect(() => {
+    if (!candidate) return;
+    if (!permanentThanas.length) return;
+
+    setValue(
+      "permanentPoliceStation",
+      candidate.permanentThanaId
+    );
+  }, [candidate, permanentThanas]);
+
+
+  const onSubmit = async (
     data: GateRegistrationForm
   ) => {
     const payload = {
