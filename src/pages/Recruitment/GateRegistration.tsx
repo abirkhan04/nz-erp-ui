@@ -510,17 +510,17 @@ const GateRegistration = ({
   useEffect(() => {
     // Edit mode
     if (candidate) {
-      const religionReverseMap = Object.fromEntries(
-        Object.entries(religionMapBangla).map(([k, v]) => [k, String(v)])
-      );
+      // const religionReverseMap = Object.fromEntries(
+      //   Object.entries(religionMapBangla).map(([k, v]) => [k, String(v)])
+      // );
 
-      const genderReverseMap = Object.fromEntries(
-        Object.entries(genderMapBengali).map(([k, v]) => [v, k])
-      );
+      // const genderReverseMap = Object.fromEntries(
+      //   Object.entries(genderMapBengali).map(([k, v]) => [v, k])
+      // );
 
-      const bloodGroupReverseMap = Object.fromEntries(
-        Object.entries(bloodGroupMapBangla).map(([k, v]) => [k, String(v)])
-      );
+      // const bloodGroupReverseMap = Object.fromEntries(
+      //   Object.entries(bloodGroupMapBangla).map(([k, v]) => [k, String(v)])
+      // );
       reset({
         fullName: candidate.employeeNameBangla ?? "",
         fatherName: candidate.fatherNameBangla ?? "",
@@ -533,13 +533,13 @@ const GateRegistration = ({
         dateOfBirth: candidate.dateOfBirth ?? "",
 
         gender:
-          genderReverseMap[candidate.gender] ?? "",
+          candidate.gender,
 
         religion:
-          religionReverseMap[candidate.religion] ?? "",
+          candidate.religion,
 
         bloodGroup:
-          bloodGroupReverseMap[candidate.bloodGroup] ?? "",
+          candidate.bloodGroup,
 
         nomineeNameBangla:
           candidate.nomineeNameBangla ?? "",
