@@ -903,6 +903,7 @@ const GateRegistration = ({
                             rules={field.rules}
                             errors={errors}
                             control={control}
+                            disabled={sameAsPermanent}
                           />
                         ) :
                           <CommonInputField
