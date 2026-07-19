@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
   ArrowRight,
-  Bell,
   BriefcaseBusiness,
   ChevronDown,
   CircleCheck,
