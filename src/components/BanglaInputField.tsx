@@ -114,10 +114,14 @@ const BanglaInputField = <
             }
             disabled={disabled}
             placeholder={placeholder}
-            className="
+            className={`
               w-full border border-gray-300 rounded-lg px-3 py-2 text-sm
               focus:outline-none focus:ring-2 focus:ring-blue-500
-            "
+             ${disabled
+                ? "bg-gray-100 text-gray-500 cursor-not-allowed"
+                : ""
+              }
+            `}
             onChange={(e) =>
               field.onChange(
                 e.target.value
