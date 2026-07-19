@@ -672,6 +672,13 @@ const HRExecutiveEntryDetails = () => {
     },
   ];
 
+  const mobileNumberValidation = {
+  required: "Mobile Number is required",
+  pattern: {
+    value: /^01\d{9}$/,
+    message: "Mobile Number must be 11 digits and start with 01",
+  },
+};
   const employeeInformationFields = [
     {
       label: "Employee Name",
@@ -719,7 +726,8 @@ const HRExecutiveEntryDetails = () => {
     {
       label: "Nominee Mobile Number",
       name: "nomineeMobileNumber",
-      type: "text"
+      type: "text",
+      rules: mobileNumberValidation
     }
   ];
 
@@ -869,9 +877,7 @@ const HRExecutiveEntryDetails = () => {
       label: "Mobile Number",
       name: "mobileNumber",
       type: "text",
-      rules: {
-        required: "Mobile Number is required"
-      }
+      rules: mobileNumberValidation
     },
     {
       label: "Remarks",
