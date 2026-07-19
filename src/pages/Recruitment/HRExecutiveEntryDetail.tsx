@@ -88,6 +88,14 @@ interface HRExecutiveEntryForm {
   cashPortion: string;
   bankPortion: string;
 
+  permanentVillageAreaRoad: string;
+  permanentPostOffice: string;
+
+  sameAsPermanent: boolean;
+
+  presentVillageAreaRoad: string;
+  presentPostOffice: string;
+
   educationCertificate: File | null;
   nationalId: File | null;
   policeClearance: File | null;
@@ -132,9 +140,37 @@ const HRExecutiveEntryDetails = () => {
           passportPhoto: null,
           chairmanCertificate: null,
           signature: null,
+          permanentVillageAreaRoad: "",
+          permanentPostOffice: "",
+
+          sameAsPermanent: false,
+
+          presentVillageAreaRoad: "",
+          presentPostOffice: "",
         },
       }
     );
+
+  const sameAsPermanent = watch("sameAsPermanent");
+
+  useEffect(() => {
+    if (!sameAsPermanent) return;
+
+    setValue(
+      "presentVillageAreaRoad",
+      watch("permanentVillageAreaRoad")
+    );
+
+    setValue(
+      "presentPostOffice",
+      watch("permanentPostOffice")
+    );
+  }, [
+    sameAsPermanent,
+    watch("permanentVillageAreaRoad"),
+    watch("permanentPostOffice"),
+    setValue,
+  ]);
 
   const { data: units = [] } = useGet<Unit[]>({
     key: ["units"],
@@ -491,6 +527,26 @@ const HRExecutiveEntryDetails = () => {
       String(Number(data.proposedSalary))
     );
 
+    payload.append(
+      "permanentVillageAreaRoad",
+      data.permanentVillageAreaRoad ?? ""
+    );
+
+    payload.append(
+      "permanentPostOffice",
+      data.permanentPostOffice ?? ""
+    );
+
+    payload.append(
+      "presentVillageAreaRoad",
+      data.presentVillageAreaRoad ?? ""
+    );
+
+    payload.append(
+      "presentPostOffice",
+      data.presentPostOffice ?? ""
+    );
+
     if (data.educationCertificate) {
       payload.append(
         "educationCertificate",
@@ -824,6 +880,7 @@ const HRExecutiveEntryDetails = () => {
     }
   ];
 
+
   return (<>
 
     {
@@ -953,6 +1010,50 @@ const HRExecutiveEntryDetails = () => {
             )}
 
           </div>
+        </div>
+        <div className="border-b px-4 py-3 font-semibold text-blue-700">
+          Address Information
+        </div>
+        <div className="grid grid-cols-2 gap-4 p-4">
+          <CommonInputField
+            label="Permanent Village / Area / Road"
+            name="permanentVillageAreaRoad"
+            register={register}
+            control={control}
+            errors={errors}
+          />
+          <CommonInputField
+            label="Permanent Post Office"
+            name="permanentPostOffice"
+            register={register}
+            control={control}
+            errors={errors}
+          />
+          <div className="col-span-2">
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                {...register("sameAsPermanent")}
+              />
+              Same as Permanent Address
+            </label>
+          </div>
+          <CommonInputField
+            label="Present Village / Area / Road"
+            name="presentVillageAreaRoad"
+            register={register}
+            control={control}
+            errors={errors}
+            disabled={sameAsPermanent}
+          />
+          <CommonInputField
+            label="Present Post Office"
+            name="presentPostOffice"
+            register={register}
+            control={control}
+            errors={errors}
+            disabled={sameAsPermanent}
+          />
         </div>
         <div className="bg-white rounded-xl mb-6">
 
@@ -1104,16 +1205,45 @@ const HRExecutiveEntryDetails = () => {
                         PDF, JPG, PNG supported
                       </span>
 
-                      {(watch(doc.name as keyof HRExecutiveEntryForm) as File | null)
-                        ?.name && (
-                          <span className="mt-3 text-sm text-green-600 font-medium text-center px-2 break-all max-w-full">
-                            {
-                              (
-                                watch(doc.name as keyof HRExecutiveEntryForm) as File
-                              ).name
-                            }
-                          </span>
-                        )}
+                      {(() => {
+                        const file = watch(doc.name as keyof HRExecutiveEntryForm) as File | null;
+
+                        return (
+                          file && (
+                            <div className="mt-3 flex flex-col items-center gap-2">
+                              <span className="text-sm text-green-600 font-medium text-center px-2 break-all">
+                                {file.name}
+                              </span>
+
+                              <button
+                                type="button"
+                                className="text-xs text-red-600 hover:text-red-700 underline"
+                                onClick={(e) => {
+                                  e.preventDefault();
+
+                                  setValue(
+                                    doc.name as keyof HRExecutiveEntryForm,
+                                    null,
+                                    { shouldValidate: true }
+                                  );
+
+                                  clearErrors(doc.name as keyof HRExecutiveEntryForm);
+
+                                  const input = document.getElementById(
+                                    doc.name
+                                  ) as HTMLInputElement | null;
+
+                                  if (input) {
+                                    input.value = "";
+                                  }
+                                }}
+                              >
+                                Remove File
+                              </button>
+                            </div>
+                          )
+                        );
+                      })()}
                     </label>
 
                     <input

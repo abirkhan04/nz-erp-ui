@@ -76,6 +76,18 @@ const mobileValidation = {
   },
 };
 
+export const banglaOnlyValidation = {
+  validate: (value?: string) => {
+    if (!value?.trim()) {
+      return true; // Allow empty for optional fields
+    }
+
+    return /^[\u0980-\u09FF\s.,\-()/:'"০-৯]+$/u.test(value)
+      ? true
+      : "শুধুমাত্র বাংলা ভাষায় লিখুন";
+  },
+};
+
 const personalInformationFields: SectionField[] =
   [
     {
@@ -84,6 +96,7 @@ const personalInformationFields: SectionField[] =
       bangla: true,
       rules: {
         required: "পূর্ণ নাম আবশ্যক",
+        ...banglaOnlyValidation
       },
     },
     {
@@ -92,6 +105,7 @@ const personalInformationFields: SectionField[] =
       bangla: true,
       rules: {
         required: "পিতার নাম আবশ্যক",
+        ...banglaOnlyValidation
       },
     },
     {
@@ -100,6 +114,7 @@ const personalInformationFields: SectionField[] =
       bangla: true,
       rules: {
         required: "মাতার নাম আবশ্যক",
+        ...banglaOnlyValidation
       },
     },
     {
@@ -156,7 +171,10 @@ const personalInformationFields: SectionField[] =
       label: "নমিনির নাম",
       name: "nomineeNameBangla",
       type: "text",
-      bangla: true
+      bangla: true,
+      rules: {
+        ...banglaOnlyValidation        
+       }
     },
     {
       label: "নমিনির সাথে সম্পর্ক",
@@ -290,6 +308,7 @@ const GateRegistration = ({
       bangla: true,
       rules: {
         required: "পোস্ট অফিস আবশ্যক",
+        ...banglaOnlyValidation
       },
     },
     {
@@ -298,6 +317,7 @@ const GateRegistration = ({
       bangla: true,
       rules: {
         required: "গ্রাম / এলাকা আবশ্যক",
+        ...banglaOnlyValidation
       },
     },
 
@@ -348,6 +368,7 @@ const GateRegistration = ({
       bangla: true,
       rules: {
         required: "পোস্ট অফিস আবশ্যক",
+        ...banglaOnlyValidation
       },
     },
     {
@@ -356,6 +377,7 @@ const GateRegistration = ({
       bangla: true,
       rules: {
         required: "গ্রাম / এলাকা আবশ্যক",
+        ...banglaOnlyValidation
       },
     },
   ];
@@ -366,7 +388,10 @@ const GateRegistration = ({
     {
       label: "রেফারেন্স ব্যক্তির নাম",
       name: "referenceName",
-      bangla: true
+      bangla: true,
+      rules:  {
+        ...banglaOnlyValidation
+      }
     },
     {
       label: "রেফারেন্স মোবাইল",
@@ -515,17 +540,6 @@ const GateRegistration = ({
   useEffect(() => {
     // Edit mode
     if (candidate) {
-      // const religionReverseMap = Object.fromEntries(
-      //   Object.entries(religionMapBangla).map(([k, v]) => [k, String(v)])
-      // );
-
-      // const genderReverseMap = Object.fromEntries(
-      //   Object.entries(genderMapBengali).map(([k, v]) => [v, k])
-      // );
-
-      // const bloodGroupReverseMap = Object.fromEntries(
-      //   Object.entries(bloodGroupMapBangla).map(([k, v]) => [k, String(v)])
-      // );
       reset({
         fullName: candidate.employeeNameBangla ?? "",
         fatherName: candidate.fatherNameBangla ?? "",
@@ -556,34 +570,18 @@ const GateRegistration = ({
           candidate.mobileNumber ?? "",
 
         presentVillageArea:
-          candidate.presentVillageAreaRoad ?? "",
+          candidate.presentVillageAreaRoadBangla ?? "",
 
         presentPostOffice:
-          candidate.presentPostOffice ?? "",
+          candidate.presentPostOfficeBangla ?? "",
 
-        // presentPoliceStation:
-        //   candidate.presentThanaId ?? "",
-
-        // presentDistrict:
-        //   candidate.presentDistrictId ?? "",
-
-        // presentDivision:
-        //   candidate.presentDivisionId ?? "",
 
         permanentVillageArea:
-          candidate.permanentVillageAreaRoad ?? "",
+          candidate.permanentVillageAreaRoadBangla ?? "",
 
         permanentPostOffice:
-          candidate.permanentPostOffice ?? "",
+          candidate.permanentPostOfficeBangla ?? "",
 
-        // permanentPoliceStation:
-        //   candidate.permanentThanaId ?? "",
-
-        // permanentDistrict:
-        //   candidate.permanentDistrictId ?? "",
-
-        // permanentDivision:
-        //   candidate.permanentDivisionId ?? "",
 
         company: candidate.unitId ?? "",
 
@@ -594,7 +592,7 @@ const GateRegistration = ({
           candidate.joiningDate ?? "",
 
         referenceName:
-          candidate.employeeReference ?? "",
+          candidate.employeeReferenceBangla ?? "",
 
         referenceMobile:
           candidate.referenceMobileNumber ?? "",
@@ -1061,7 +1059,7 @@ const GateRegistration = ({
               type="submit"
               className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
             >
-              মেডিকেল পরীক্ষায় প্রেরণ
+             {candidate? "তথ্য হালনাগাদ করুন": "মেডিকেল পরীক্ষায় প্রেরণ"} 
             </button>
 
           </div>
