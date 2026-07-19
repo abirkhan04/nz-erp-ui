@@ -419,7 +419,7 @@ const GateRegistration = ({
       name: "company",
       type: "dropdown",
       options: units.map((unit) => ({
-        label: unit.unitName,
+        label: unit.unitNameBangla || unit.unitName,
         value: unit.id,
       })),
       rules: {
@@ -431,7 +431,7 @@ const GateRegistration = ({
       name: "designation",
       type: "dropdown",
       options: designations.map(i => ({
-        label: i.designationName,
+        label: i.designationNameBangla || i.designationName,
         value: i.id
       })),
       rules: {

@@ -232,6 +232,7 @@ export interface Unit {
   id: string;
   unitCode: string;
   unitName: string;
+  unitNameBangla: string;
   createdOn: string;
   createdBy: string;
   updatedOn: string;
