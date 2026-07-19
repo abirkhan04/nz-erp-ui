@@ -1,17 +1,19 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   ArrowRight,
   Bell,
   BriefcaseBusiness,
+  ChevronDown,
   CircleCheck,
-  CircleUser,
   Clock3,
   TriangleAlert,
+  User,
   UserX,
   Users,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { dashboardMenus } from "./DashboardMenus";
+import { useAuth } from "../context/AuthContext";
 import bgImage from "../assets/db-background.png";
 import logo from "../assets/logo.png";
 
@@ -62,6 +64,30 @@ const stats = [
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const [userOpen, setUserOpen] = useState(false);
+  const userRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (userRef.current && !userRef.current.contains(e.target as Node)) {
+        setUserOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/login", { replace: true });
+  };
 
   return (
     <div className="relative min-h-screen overflow-x-hidden">
@@ -110,17 +136,48 @@ const Dashboard: React.FC = () => {
 
           <div className="flex items-center gap-4">
             <div className="rounded-xl bg-white/10 px-4 py-2 text-white backdrop-blur-sm">
-              Tuesday, May 20, 2025
+              {new Date().toLocaleDateString("en-US", {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
             </div>
 
-            <div className="relative">
+            {/* <div className="relative">
               <Bell className="h-6 w-6 text-white" />
               <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white">
                 8
               </span>
-            </div>
+            </div> */}
 
-            <CircleUser className="h-9 w-9 text-white" />
+            <div className="relative" ref={userRef}>
+              <button
+                onClick={() => setUserOpen((prev) => !prev)}
+                className="flex items-center gap-2 rounded-xl bg-white/10 px-3 py-2 text-white backdrop-blur-sm transition hover:bg-white/20"
+              >
+                <User className="h-5 w-5" />
+                <span className="max-w-[180px] truncate text-sm font-medium">
+                  {user?.userName}
+                </span>
+                <ChevronDown
+                  size={16}
+                  className={`transition-transform ${userOpen ? "rotate-180" : ""
+                    }`}
+                />
+              </button>
+
+              {userOpen && (
+                <div className="absolute right-0 mt-2 w-44 overflow-hidden rounded-xl bg-white shadow-xl z-50">
+                  <button
+                    onClick={handleLogout}
+                    className="w-full px-4 py-3 text-left text-sm text-slate-700 hover:bg-slate-100"
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
