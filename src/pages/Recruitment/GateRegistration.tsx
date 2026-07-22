@@ -53,6 +53,7 @@ export interface GateRegistrationForm {
 type SectionField = {
   label: string;
   bangla?: boolean;
+  isPlaceholderVisible?: boolean;
   name: keyof GateRegistrationForm;
   type?:
   | "text"
@@ -418,6 +419,7 @@ const GateRegistration = ({
       label: "কোম্পানি",
       name: "company",
       type: "dropdown",
+      isPlaceholderVisible: false,
       options: units.map((unit) => ({
         label: unit.unitNameBangla || unit.unitName,
         value: unit.id,
@@ -984,6 +986,7 @@ const GateRegistration = ({
                   key={field.name}
                   label={field.label}
                   name={field.name as any}
+                  isPlaceholderVisible = {field.isPlaceholderVisible}
                   type={field.type}
                   options={field.options}
                   rules={field.rules}

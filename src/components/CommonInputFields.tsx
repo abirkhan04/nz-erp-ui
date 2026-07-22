@@ -26,6 +26,7 @@ type CommonInputFieldProps<T extends FieldValues> = {
   label: string;
   name: Path<T>;
   register: UseFormRegister<T>;
+  isPlaceholderVisible?: boolean;
   errors: FieldErrors<T>;
   control?: Control<T>;
 
@@ -67,6 +68,7 @@ const CommonInputField = <T extends FieldValues>({
   options = [],
   rules,
   placeholder,
+  isPlaceholderVisible = true,
   className = "",
   disabled = false,
   onSearchChange,
@@ -142,10 +144,10 @@ const CommonInputField = <T extends FieldValues>({
           disabled={disabled}
           className={inputClass}
         >
-          <option value="">
+          {isPlaceholderVisible && <option value="">
             {placeholder ||
               `Select ${label}`}
-          </option>
+          </option>}
 
           {options.map((option) => (
             <option

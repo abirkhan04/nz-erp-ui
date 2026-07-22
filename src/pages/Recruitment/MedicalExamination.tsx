@@ -229,6 +229,11 @@ const MedicalExamination = () => {
     return (
         <form
             onSubmit={handleSubmit(onSubmit)}
+            onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                    e.preventDefault();
+                }
+            }}
             className="min-h-screen bg-slate-50 p-6"
         >
             <div className="max-w-[1600px] mx-auto">
