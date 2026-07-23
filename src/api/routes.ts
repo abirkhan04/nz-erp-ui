@@ -36,11 +36,12 @@ export const API_ROUTES = {
   EMPLOYEE_UPLOAD_FILES: "Employees/upload-files",
 
   /// Geo
-  DIVISIONS:  "Geo/divisions",
+  DIVISIONS: "Geo/divisions",
   DISTRICTS: "Geo/districts",
 
   BANKS: "Banks",
 
   // Reports
   EMPLOYEE_REPORTS: "EmployeeReports"
+
 };

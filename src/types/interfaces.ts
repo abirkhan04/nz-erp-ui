@@ -240,3 +240,34 @@ export interface Unit {
   isActive: boolean;
   isCompliant: boolean;
 }
+
+export interface EmployeeMasterDto {
+  employeeId: number;
+  employeeCode: string;
+  employeeName: string;
+
+  departmentName: string;
+  sectionName: string;
+  cellName: string;
+
+  designationName: string;
+
+  employeeNature: string;
+
+  joiningDate: string;
+
+  isActive: boolean;
+}
+
+export interface EmployeeMasterFilterModel {
+  unitId?: number;
+  subUnitId?: number;
+  departmentId?: number;
+  sectionId?: number;
+  cellId?: number;
+  employeeNatureId?: number;
+  includeInactive?: boolean;
+
+  joiningFromDate?: string;
+  joiningToDate?: string;
+}

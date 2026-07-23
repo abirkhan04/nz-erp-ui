@@ -149,10 +149,11 @@ const RecruitmentDashboard = () => {
     {
       step: 7,
       title: "Recruitment Reports",
-      moduleName: "RecruitmentReports",
+      moduleName: "Recruitment Reports",
       icon: FileText,
       color: "pink",
       status: "DISABLED",
+      uri: "/recruitment/recruitment-reports"
     },
   ];
 

@@ -140,3 +140,4 @@ export const idTypeMapBangla: Record<string, number> = {
   "জন্ম নিবন্ধন": 1,
   "পাসপোর্ট": 2,
 };
+
