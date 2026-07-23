@@ -328,7 +328,7 @@ const RecruitmentDashboard = () => {
               <React.Fragment key={item.step}>
                 <div
                   className={`relative
-                  min-w-[200px]
+                  min-w-[152px]
                   rounded-2xl
                   border border-slate-300
                   bg-white
@@ -352,7 +352,7 @@ const RecruitmentDashboard = () => {
                     {item.step}
                   </div>
 
-                  <div className="pt-8 text-center">
+                  <div className="pt-0 text-center">
                     <div
                       className={`w-16 h-16 mx-auto rounded-full ${styles.bg} shadow-sm flex items-center justify-center mb-4`}
                     >
@@ -363,7 +363,7 @@ const RecruitmentDashboard = () => {
                       {item.title}
                     </h4>
                     <span
-                      className={`inline-block mt-4 px-4 py-1 rounded-full text-xs font-semibold ${getStatusClass(
+                      className={`inline-block mt-2 px-4 py-1 rounded-full text-xs font-semibold ${getStatusClass(
                         hasModule(item.moduleName) ? "Active" : "Disabled"
                       )}`}
                     >
