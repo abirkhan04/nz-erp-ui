@@ -8,12 +8,6 @@ import { API_ROUTES } from "../../../../api/routes";
 import { useGet } from "../../../../hooks/useGet";
 import { EmployeeNature } from "../../../EmployeeInformation/types";
 
-
-type Option = {
-    label: string;
-    value: string | number;
-};
-
 type Props = {
     defaultValues?: EmployeeMasterFilterModel;
 
