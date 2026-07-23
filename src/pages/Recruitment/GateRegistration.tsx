@@ -79,15 +79,15 @@ const mobileValidation = {
 
 export const banglaOnlyValidation = {
   validate: (value?: string) => {
-    if (!value?.trim()) {
-      return true; // Allow empty for optional fields
-    }
+    if (!value?.trim()) return true;
 
-    return /^[\u0980-\u09FF\s.,\-()/:'"০-৯]+$/u.test(value)
+    return /^[ঀ-৿\s.,\-()/:'"]+$/u.test(value) &&
+           !/[০-৯0-9]/.test(value)
       ? true
-      : "শুধুমাত্র বাংলা ভাষায় লিখুন";
+      : "শুধুমাত্র বাংলা অক্ষরে লিখুন";
   },
 };
+
 
 const personalInformationFields: SectionField[] =
   [
@@ -122,6 +122,9 @@ const personalInformationFields: SectionField[] =
       label: "পরিচয়পত্রের ধরন",
       name: "nidType",
       type: "dropdown",
+      rules: {
+        required: "পরিচয়পত্রের ধরন আবশ্যক"
+      },
       options: Object.entries(idTypeMapBangla).map(([label, value]) => ({
         label,
         value
