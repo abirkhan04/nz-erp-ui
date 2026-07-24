@@ -39,6 +39,7 @@ const reports: Report[] = [
     icon: UserRound,
     iconBg: "#ECF9EF",
     iconColor: "#16A34A",
+    uri: "employee-detail-profile"
   },
   {
     id: 3,
