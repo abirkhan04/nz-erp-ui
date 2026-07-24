@@ -13,6 +13,7 @@ import { API_ROUTES } from "../../../api/routes";
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
 import type { TDocumentDefinitions } from "pdfmake/interfaces";
+import BackButton from "../../../components/BackButton";
 
 pdfMake.addVirtualFileSystem(pdfFonts);
 
@@ -195,7 +196,7 @@ export default function EmployeeMasterList() {
 
     return (
         <div className="space-y-6">
-
+            <BackButton url={"/recruitment/recruitment-reports"}/>
             <EmployeeMasterFilter
 
                 loading={isFetching}
