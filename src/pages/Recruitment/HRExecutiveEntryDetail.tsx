@@ -679,29 +679,40 @@ const HRExecutiveEntryDetails = () => {
     message: "Mobile Number must be 11 digits and start with 01",
   },
 };
+
+  const nameValidation = {
+  pattern: {
+    value: /^[A-Za-z\u0980-\u09FF\s.'-]+$/u,
+    message: "Numbers are not allowed in name",
+  },
+};
   const employeeInformationFields = [
     {
       label: "Employee Name",
       name: "employeeName",
       type: "text",
       rules: {
-        required: "Employee Name is required"
+        required: "Employee Name is required",
+        ...nameValidation
       }
     },
     {
       label: "Father Name",
       name: "fatherName",
-      type: "text"
+      type: "text",
+      rules: nameValidation
     },
     {
       label: "Mother Name",
       name: "motherName",
-      type: "text"
+      type: "text",
+      rules: nameValidation
     },
     {
       label: "Nominee Name",
       type: "text",
       name: "nomineeName",
+      rules: nameValidation
     },
     {
       label: "Nominee NID",
