@@ -108,9 +108,6 @@ interface HRExecutiveEntryForm {
 
 const HRExecutiveEntryDetails = () => {
 
-
-
-
   const { data: banks = [] } = useGet({
     key: ["banks"],
     url: `${API_ROUTES.BANKS}?includeInactive=false`
@@ -453,7 +450,7 @@ const HRExecutiveEntryDetails = () => {
 
     const payload = new FormData();
 
-    payload.append("employeeId", data.employeeId ?? "");
+    payload.append("employeeId", employeeOnGate.id ?? "");
     payload.append("employeeName", data.employeeName ?? "");
     payload.append("fatherName", data.fatherName ?? "");
     payload.append("motherName", data.motherName ?? "");
@@ -1383,6 +1380,7 @@ const HRExecutiveEntryDetails = () => {
 
           <button
             type="submit"
+            disabled={!employeeOnGate?.id}
             className="bg-blue-600 text-white px-6 py-3 rounded-lg flex items-center gap-2"
           >
             <Send size={16} />

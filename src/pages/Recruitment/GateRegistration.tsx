@@ -521,7 +521,8 @@ const GateRegistration = ({
   }, [candidate, designations, setValue]);
 
   const handleReset = () => {
-
+    localStorage.removeItem(DRAFT_KEY);
+    setDraftData(null);
 
     reset({
       joiningDate: new Date().toISOString().split("T")[0],
@@ -535,22 +536,51 @@ const GateRegistration = ({
       gender: "",
       religion: "",
       bloodGroup: "",
+      nomineeNameBangla: "",
+      nomineeRelation: "",
       mobileNumber: "",
+
       presentVillageArea: "",
       presentPostOffice: "",
       presentPoliceStation: "",
       presentDistrict: "",
+      presentDivision: "",
+
       permanentVillageArea: "",
       permanentPostOffice: "",
       permanentPoliceStation: "",
       permanentDistrict: "",
+      permanentDivision: "",
+
       company: "",
       designation: "",
       referenceName: "",
       referenceMobile: "",
+
+      sameAsPermanent: false,
     });
   };
 
+  useEffect(() => {
+    if (!draftData) return;
+    if (!units.length) return;
+
+    setValue("company", draftData.company);
+  }, [draftData, units]);
+
+  useEffect(() => {
+    if (!draftData) return;
+    if (!designations.length) return;
+
+    setValue("designation", draftData.designation);
+  }, [draftData, designations]);
+
+  useEffect(() => {
+    if (!draftData) return;
+
+    setValue("referenceName", draftData.referenceName);
+    setValue("referenceMobile", draftData.referenceMobile);
+  }, [draftData]);
 
   useEffect(() => {
     // Edit mode
