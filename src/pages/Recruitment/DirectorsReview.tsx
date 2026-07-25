@@ -311,8 +311,8 @@ const DirectorReview = () => {
                   <th className="px-4 py-3">Section</th>
                   <th className="px-4 py-3">Designation</th>
                   <th className="px-4 py-3">Grade</th>
-                  <th className="px-4 py-3">Gross Salary</th>
                   <th className="px-4 py-3">Proposed Salary</th>
+                  <th className="px-4 py-3">Gross Salary</th>
                   <th className="px-4 py-3">Current Choice</th>
                   <th className="px-4 py-3 text-center">Action</th>
                 </tr>
@@ -338,8 +338,8 @@ const DirectorReview = () => {
                       <td className="px-4 py-3">{item.grade}</td>
 
                       <td className="px-4 py-3 font-medium">
-                        ৳{Number(employeeRows[formIndex]?.grossSalary || 0).toLocaleString()}
-                        <input type="hidden" {...register(`employees.${formIndex}.grossSalary`, { valueAsNumber: true })} />
+                        ৳{Number(employeeRows[formIndex]?.proposedMonthlySalary || 0).toLocaleString()}
+                        <input type="hidden" {...register(`employees.${formIndex}.proposedMonthlySalary`, { valueAsNumber: true })} />
                       </td>
 
                       <td className="px-4 py-3">
@@ -348,7 +348,7 @@ const DirectorReview = () => {
                           min={0}
                           step="1"
                           className="w-36 rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-blue-500"
-                          {...register(`employees.${formIndex}.proposedMonthlySalary`, { valueAsNumber: true })}
+                          {...register(`employees.${formIndex}.grossSalary`, { valueAsNumber: true })}
                         />
                       </td>
 
@@ -579,12 +579,12 @@ const DirectorReview = () => {
                   <h3 className="text-2xl font-bold text-green-600 mt-0.5">{selectedCount}</h3>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">Total Gross Salary</p>
-                  <h3 className="text-xl font-bold text-slate-700 mt-1">৳{totalGrossSalary.toLocaleString()}</h3>
-                </div>
-                <div>
                   <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">Total Proposed Salary</p>
                   <h3 className="text-xl font-bold text-blue-700 mt-1">৳{totalProposedSalary.toLocaleString()}</h3>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">Total Gross Salary</p>
+                  <h3 className="text-xl font-bold text-slate-700 mt-1">৳{totalGrossSalary.toLocaleString()}</h3>
                 </div>
               </div>
 
