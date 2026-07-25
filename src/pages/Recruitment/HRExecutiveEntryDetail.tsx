@@ -195,6 +195,9 @@ const HRExecutiveEntryDetails = () => {
 
   const section = watch("section");
 
+  const employeeNature = watch("employeeNature");
+  const grade = watch("grade");
+
   const { data: cells = [] } = useGet<any[]>({
     key: ["cells", section],
     url: `${API_ROUTES.CELL}?includeInactive=false&sectionId=${section}`,
@@ -202,8 +205,9 @@ const HRExecutiveEntryDetails = () => {
   });
 
   const { data: designations = [] } = useGet<any[]>({
-    key: ["designations"],
-    url: API_ROUTES.DESIGNATION,
+    key: ["designations", grade],
+    url: `${API_ROUTES.DESIGNATION}?gradeId=${grade}`,
+    enabled: !!grade
   });
 
   const { data: grades = [] } = useGet<any[]>({
@@ -375,16 +379,14 @@ const HRExecutiveEntryDetails = () => {
     restoredCellRef.current = true;
   }, [cells]);
 
-  const employeeNature = watch("employeeNature");
+
 
   useEffect(() => {
     if (restoredDesignationRef.current) return;
-    if (!employeeNature) return;
+    if (!grade) return;
     if (designations.length === 0) return;
 
-    const availableDesignations = designations.filter(
-      d => d.employeeNature === Number(employeeNature)
-    );
+    const availableDesignations = designations;
 
     if (availableDesignations.length === 0) return;
 
@@ -416,14 +418,58 @@ const HRExecutiveEntryDetails = () => {
   ]);
 
   useEffect(() => {
-    if (restoredGradeRef.current || grades.length === 0) return;
+    if (!employeeNature) return;
+
+    setValue("grade", null);
+    setValue("designation", null);
+
+    restoredGradeRef.current = false;
+    restoredDesignationRef.current = false;
+  }, [employeeNature]);
+
+  useEffect(() => {
+    if (!grade) return;
+
+    setValue("designation", null);
+
+    restoredDesignationRef.current = false;
+  }, [grade]);
+
+  useEffect(() => {
+    if (restoredGradeRef.current) return;
+    if (!employeeNature) return;
+    if (grades.length === 0) return;
+
+    const availableGrades = grades.filter(
+      g => g.employeeNature === Number(employeeNature)
+    );
+
     const draft = localStorage.getItem(DRAFT_KEY);
+
     if (draft) {
       const parsed = JSON.parse(draft);
-      if (parsed.grade != null) setValue("grade", parsed.grade);
+
+      if (
+        parsed.grade != null &&
+        availableGrades.some(g => g.id === parsed.grade)
+      ) {
+        setValue("grade", parsed.grade);
+      }
+    } else if (
+      employeeOnGate?.gradeId != null &&
+      availableGrades.some(g => g.id === employeeOnGate.gradeId)
+    ) {
+      setValue("grade", employeeOnGate.gradeId);
     }
+
     restoredGradeRef.current = true;
-  }, [grades]);
+  }, [
+    employeeNature,
+    grades,
+    employeeOnGate,
+    DRAFT_KEY,
+    setValue,
+  ]);
 
   useEffect(() => {
     if (restoredShiftRef.current || shifts.length === 0) return;
@@ -847,15 +893,27 @@ const HRExecutiveEntryDetails = () => {
       name: "cell",
       type: "dropdown",
       options: cells.map((cell) => ({
-        label: cell.nameEnglish,
+        label: cell.cellName,
         value: cell.id,
       })),
+    },
+    {
+      label: "Employee Nature",
+      name: "employeeNature",
+      type: "dropdown",
+      options: Object.entries(EmployeeNature).map(([label, value]) => ({
+        label,
+        value
+      })),
+      rules: {
+        required: "Select worker type",
+      },
     },
     {
       label: "Grade",
       name: "grade",
       type: "dropdown",
-      options: grades.map((grade) => ({
+      options: grades.filter(e => e.employeeNature === Number(employeeNature)).map((grade) => ({
         label: grade.gradeName,
         value: grade.id,
       })),
@@ -882,25 +940,13 @@ const HRExecutiveEntryDetails = () => {
       }))
     },
     {
-      label: "Employee Nature",
-      name: "employeeNature",
-      type: "dropdown",
-      options: Object.entries(EmployeeNature).map(([label, value]) => ({
-        label,
-        value
-      })),
-      rules: {
-        required: "Select worker type",
-      },
-    },
-    {
       label: "Designation",
       name: "designation",
       type: "dropdown",
       rules: {
         required: "Designation is required"
       },
-      options: designations.filter(e => e.employeeNature === Number(watch("employeeNature"))).map((designation) => ({
+      options: designations.map((designation) => ({
         label: designation.designationName,
         value: designation.id,
       }))
