@@ -3,9 +3,9 @@ import {
   useRef,
   useState,
 } from "react";
-import { format, parse , isValid} from "date-fns";
+// import { format, parse , isValid} from "date-fns";
 
-import DatePicker from "react-datepicker";
+// import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
 import type {
@@ -242,34 +242,36 @@ const CommonInputField = <T extends FieldValues>({
             </div>
           )}
         />
-      ) : type === "date" && control ? (
-        <Controller
-          control={control}
-          name={name}
-          rules={rules}
-          render={({ field }) => {
-            const selectedDate =
-              field.value && typeof field.value === "string"
-                ? parse(field.value, "MM/dd/yyyy", new Date())
-                : null;
+      )
+      //  : type === "date" && control ? (
+      //   <Controller
+      //     control={control}
+      //     name={name}
+      //     rules={rules}
+      //     render={({ field }) => {
+      //       const selectedDate =
+      //         field.value && typeof field.value === "string"
+      //           ? parse(field.value, "MM/dd/yyyy", new Date())
+      //           : null;
 
-            return (
-              <DatePicker
-                selected={isValid(selectedDate) ? selectedDate : null}
-                onChange={(date: Date | null) =>
-                  field.onChange(
-                    date ? format(date, "MM/dd/yyyy") : ""
-                  )
-                }
-                dateFormat="dd/MM/yyyy"
-                placeholderText="dd/MM/yyyy"
-                className={inputClass}
-                disabled={disabled}
-              />
-            );
-          }}
-        />
-      ) : type === "radio" ? (
+      //       return (
+      //         <DatePicker
+      //           selected={isValid(selectedDate) ? selectedDate : null}
+      //           onChange={(date: Date | null) =>
+      //             field.onChange(
+      //               date ? format(date, "MM/dd/yyyy") : ""
+      //             )
+      //           }
+      //           dateFormat="dd/MM/yyyy"
+      //           placeholderText="dd/MM/yyyy"
+      //           className={inputClass}
+      //           disabled={disabled}
+      //         />
+      //       );
+      //     }}
+      //   />
+      // ) 
+      : type === "radio" ? (
         <div className="flex gap-4">
           {options.map((option) => (
             <label

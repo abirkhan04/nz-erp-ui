@@ -1,6 +1,7 @@
 import { useForm } from "react-hook-form";
 import CommonInputField from "../../components/CommonInputFields";
 import { usePost } from "../../hooks/usePost";
+import { useState } from "react";
 import { API_ROUTES } from "../../api/routes";
 import toast from "react-hot-toast";
 import { useGet } from "../../hooks/useGet";
@@ -82,7 +83,7 @@ export const banglaOnlyValidation = {
     if (!value?.trim()) return true;
 
     return /^[ঀ-৿\s.,\-()/:'"]+$/u.test(value) &&
-           !/[০-৯0-9]/.test(value)
+      !/[০-৯0-9]/.test(value)
       ? true
       : "শুধুমাত্র বাংলা অক্ষরে লিখুন";
   },
@@ -177,8 +178,8 @@ const personalInformationFields: SectionField[] =
       type: "text",
       bangla: true,
       rules: {
-        ...banglaOnlyValidation        
-       }
+        ...banglaOnlyValidation
+      }
     },
     {
       label: "নমিনির সাথে সম্পর্ক",
@@ -203,7 +204,7 @@ const GateRegistration = ({
   candidate,
 }: any) => {
 
-
+  const [draftData, setDraftData] = useState<GateRegistrationForm | null>(null);
   const {
     register,
     handleSubmit,
@@ -393,7 +394,7 @@ const GateRegistration = ({
       label: "রেফারেন্স ব্যক্তির নাম",
       name: "referenceName",
       bangla: true,
-      rules:  {
+      rules: {
         ...banglaOnlyValidation
       }
     },
@@ -435,7 +436,7 @@ const GateRegistration = ({
       label: "পদবী",
       name: "designation",
       type: "dropdown",
-      options: designations.filter(e=> e.employeeNature === 0).map(i => ({
+      options: designations.filter(e => e.employeeNature === 0).map(i => ({
         label: i.designationNameBangla || i.designationName,
         value: i.id
       })),
@@ -457,6 +458,8 @@ const GateRegistration = ({
     usePost<{ message: string; id: string }, any>(
       API_ROUTES.GATE_REGISTRATION
     );
+
+
 
 
 
@@ -611,13 +614,57 @@ const GateRegistration = ({
     const draft = localStorage.getItem(DRAFT_KEY);
 
     if (draft) {
-      reset(JSON.parse(draft));
+      const data = JSON.parse(draft);
+      setDraftData(data);
+      reset(data);
     } else {
       reset({
         joiningDate: new Date().toISOString().split("T")[0],
       });
     }
   }, [candidate, reset]);
+
+  useEffect(() => {
+    if (!draftData) return;
+    if (!presentDistricts.length) return;
+
+    setValue("presentDistrict", draftData.presentDistrict);
+  }, [draftData, presentDistricts]);
+
+  useEffect(() => {
+    if (!draftData) return;
+    if (!permanentDistricts.length) return;
+
+    setValue("permanentDistrict", draftData.permanentDistrict);
+  }, [draftData, permanentDistricts]);
+
+  useEffect(() => {
+    if (!draftData) return;
+    if (!presentThanas.length) return;
+
+    setValue("presentPoliceStation", draftData.presentPoliceStation);
+  }, [draftData, presentThanas]);
+
+  useEffect(() => {
+    if (!draftData) return;
+    if (!permanentThanas.length) return;
+
+    setValue("permanentPoliceStation", draftData.permanentPoliceStation);
+  }, [draftData, permanentThanas])
+
+  useEffect(() => {
+    if (!draftData) return;
+    if (!divisions.length) return;
+
+    setValue("presentDivision", draftData.presentDivision);
+  }, [draftData, divisions]);
+
+  useEffect(() => {
+    if (!draftData) return;
+    if (!divisions.length) return;
+
+    setValue("permanentDivision", draftData.permanentDivision);
+  }, [draftData, divisions]);
 
   useEffect(() => {
     if (!candidate) return;
@@ -1011,15 +1058,15 @@ const GateRegistration = ({
 
             <div className="grid grid-cols-1 gap-4">
               {referenceInformationFields.map((field) => (field.bangla ? (
-                          <BanglaInputField
-                            key={field.name}
-                            label={field.label}
-                            name={field.name as any}
-                            rules={field.rules}
-                            errors={errors}
-                            control={control}
-                          />
-                        ) :
+                <BanglaInputField
+                  key={field.name}
+                  label={field.label}
+                  name={field.name as any}
+                  rules={field.rules}
+                  errors={errors}
+                  control={control}
+                />
+              ) :
                 <CommonInputField
                   key={field.name}
                   label={field.label}
@@ -1066,7 +1113,7 @@ const GateRegistration = ({
               type="submit"
               className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
             >
-             {candidate? "তথ্য হালনাগাদ করুন": "মেডিকেল পরীক্ষায় প্রেরণ"} 
+              {candidate ? "তথ্য হালনাগাদ করুন" : "মেডিকেল পরীক্ষায় প্রেরণ"}
             </button>
 
           </div>
