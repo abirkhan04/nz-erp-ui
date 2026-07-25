@@ -228,6 +228,7 @@ const HRExecutiveEntryDetails = () => {
     url: `${API_ROUTES.EMPLOYEES}/employee-detail/${candidateId}`,
     enabled: !!candidateId
   });
+  console.log("employee on gate-->", employeeOnGate);
 
   const { data: candidateOnGate } = useGet<any>({
     key: ["appointment_letter", candidateId],
@@ -375,15 +376,45 @@ const HRExecutiveEntryDetails = () => {
     restoredCellRef.current = true;
   }, [cells]);
 
+  const employeeNature = watch("employeeNature");
+
   useEffect(() => {
-    if (restoredDesignationRef.current || designations.length === 0) return;
+    if (restoredDesignationRef.current) return;
+    if (!employeeNature) return;
+    if (designations.length === 0) return;
+
+    const availableDesignations = designations.filter(
+      d => d.employeeNature === Number(employeeNature)
+    );
+
+    if (availableDesignations.length === 0) return;
+
     const draft = localStorage.getItem(DRAFT_KEY);
+
     if (draft) {
       const parsed = JSON.parse(draft);
-      if (parsed.designation != null) setValue("designation", parsed.designation);
+
+      if (
+        parsed.designation != null &&
+        availableDesignations.some(d => d.id === parsed.designation)
+      ) {
+        setValue("designation", parsed.designation);
+      }
+    } else if (
+      employeeOnGate?.designationId != null &&
+      availableDesignations.some(d => d.id === employeeOnGate.designationId)
+    ) {
+      setValue("designation", employeeOnGate.designationId);
     }
+
     restoredDesignationRef.current = true;
-  }, [designations]);
+  }, [
+    employeeNature,
+    designations,
+    employeeOnGate,
+    DRAFT_KEY,
+    setValue,
+  ]);
 
   useEffect(() => {
     if (restoredGradeRef.current || grades.length === 0) return;
@@ -849,6 +880,9 @@ const HRExecutiveEntryDetails = () => {
       label: "Designation",
       name: "designation",
       type: "dropdown",
+      rules: {
+        required: "Designation is required"
+      },
       options: designations.filter(e => e.employeeNature === Number(watch("employeeNature"))).map((designation) => ({
         label: designation.designationName,
         value: designation.id,
