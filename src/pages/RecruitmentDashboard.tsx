@@ -388,15 +388,6 @@ const RecruitmentDashboard = () => {
             <span className="text-sm">Active</span>
           </div>
 
-          <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-red-500"></span>
-            <span className="text-sm">Pending</span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-green-500"></span>
-            <span className="text-sm">Completed</span>
-          </div>
 
           <div className="flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-slate-400"></span>
