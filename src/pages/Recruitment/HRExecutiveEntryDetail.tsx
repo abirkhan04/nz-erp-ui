@@ -18,6 +18,7 @@ import {
   Image,
   BadgeCheck,
   PenLine,
+  FileText
 } from "lucide-react";
 
 import {
@@ -103,6 +104,7 @@ interface HRExecutiveEntryForm {
   passportPhoto: File | null;
   chairmanCertificate: File | null;
   signature: File | null;
+  appliedCV: File | null;
 }
 
 
@@ -627,6 +629,10 @@ const HRExecutiveEntryDetails = () => {
       );
     }
 
+    if (data.appliedCV) {
+      payload.append("appliedCV", data.appliedCV);
+    }
+
     try {
       const response = await api.post(
         API_ROUTES.HRExecutiveEntry,
@@ -681,6 +687,13 @@ const HRExecutiveEntryDetails = () => {
       iconColor: "text-orange-500",
     },
     {
+      label: "Curriculam Vitae",
+      name: "appliedCV",
+      icon: FileText,
+      iconBg: "bg-indigo-100",
+      iconColor: "text-indigo-500",
+    },
+    {
       label: "Passport Photo",
       name: "passportPhoto",
       icon: Image,
@@ -731,7 +744,11 @@ const HRExecutiveEntryDetails = () => {
       label: "Father Name",
       name: "fatherName",
       type: "text",
-      rules: nameValidation
+      rules: {
+        required: "Father name is required",
+        ...nameValidation
+      },
+
     },
     {
       label: "Mother Name",
@@ -743,7 +760,10 @@ const HRExecutiveEntryDetails = () => {
       label: "Nominee Name",
       type: "text",
       name: "nomineeName",
-      rules: nameValidation
+      rules: {
+        required: "Nominee name is required",
+        ...nameValidation
+      }
     },
     {
       label: "Nominee NID",
@@ -1223,7 +1243,7 @@ const HRExecutiveEntryDetails = () => {
             Documents Collected
           </div>
 
-          <div className="grid grid-cols-7 gap-4 p-4">
+          <div className="grid grid-cols-8 gap-2 p-2">
             {documentFields.map((doc) => {
               const Icon = doc.icon;
 
