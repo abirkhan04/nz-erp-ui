@@ -513,6 +513,13 @@ const GateRegistration = ({
     if (match) setValue("presentPoliceStation", match.id);
   }, [sameAsPermanent, presentThanas, watch("permanentPoliceStation")]);
 
+  useEffect(() => {
+    if (!candidate) return;
+    if (!designations.length) return;
+
+    setValue("designation", candidate.designationId);
+  }, [candidate, designations, setValue]);
+
   const handleReset = () => {
 
 
