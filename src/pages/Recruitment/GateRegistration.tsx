@@ -435,7 +435,7 @@ const GateRegistration = ({
       label: "পদবী",
       name: "designation",
       type: "dropdown",
-      options: designations.map(i => ({
+      options: designations.filter(e=> e.employeeNature === 0).map(i => ({
         label: i.designationNameBangla || i.designationName,
         value: i.id
       })),
