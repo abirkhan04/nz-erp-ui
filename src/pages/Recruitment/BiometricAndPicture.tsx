@@ -48,7 +48,7 @@ interface Candidate {
     subUnitName: string;
     department: string;
     sectionName: string;
-    cell: string;
+    cellName: string;
     salary: number;
     employeeType:number;
 }
@@ -647,7 +647,7 @@ const BiometricCapture = () => {
                                     <div className="grid grid-cols-[150px_15px_1fr]">
                                         <span className="text-sm text-slate-600">Cell</span>
                                         <span>:</span>
-                                        <span className="font-medium">{selectedCandidate.cell}</span>
+                                        <span className="font-medium">{selectedCandidate.cellName}</span>
                                     </div>
 
                                     <div className="grid grid-cols-[150px_15px_1fr]">
