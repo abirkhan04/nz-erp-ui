@@ -194,9 +194,12 @@ const HRExecutiveEntryDetails = () => {
     enabled: !!watch("department"),
   });
 
+  const section = watch("section");
+
   const { data: cells = [] } = useGet<any[]>({
-    key: ["cells"],
-    url: API_ROUTES.CELL,
+    key: ["cells", section],
+    url: `${API_ROUTES.CELL}?includeInactive=false&sectionId=${section}`,
+    enabled: !!section
   });
 
   const { data: designations = [] } = useGet<any[]>({
@@ -673,19 +676,19 @@ const HRExecutiveEntryDetails = () => {
   ];
 
   const mobileNumberValidation = {
-  required: "Mobile Number is required",
-  pattern: {
-    value: /^01\d{9}$/,
-    message: "Mobile Number must be 11 digits and start with 01",
-  },
-};
+    required: "Mobile Number is required",
+    pattern: {
+      value: /^01\d{9}$/,
+      message: "Mobile Number must be 11 digits and start with 01",
+    },
+  };
 
   const nameValidation = {
-  pattern: {
-    value: /^[A-Za-z\u0980-\u09FF\s.'-]+$/u,
-    message: "Numbers are not allowed in name",
-  },
-};
+    pattern: {
+      value: /^[A-Za-z\u0980-\u09FF\s.'-]+$/u,
+      message: "Numbers are not allowed in name",
+    },
+  };
   const employeeInformationFields = [
     {
       label: "Employee Name",
@@ -796,18 +799,9 @@ const HRExecutiveEntryDetails = () => {
       name: "cell",
       type: "dropdown",
       options: cells.map((cell) => ({
-        label: cell.cellName,
+        label: cell.nameEnglish,
         value: cell.id,
       })),
-    },
-    {
-      label: "Designation",
-      name: "designation",
-      type: "dropdown",
-      options: designations.map((designation) => ({
-        label: designation.designationName,
-        value: designation.id,
-      }))
     },
     {
       label: "Grade",
@@ -852,6 +846,15 @@ const HRExecutiveEntryDetails = () => {
       },
     },
     {
+      label: "Designation",
+      name: "designation",
+      type: "dropdown",
+      options: designations.filter(e => e.employeeNature === Number(watch("employeeNature"))).map((designation) => ({
+        label: designation.designationName,
+        value: designation.id,
+      }))
+    },
+    {
       label: "Salary",
       name: "proposedSalary",
       type: "number",
@@ -862,7 +865,7 @@ const HRExecutiveEntryDetails = () => {
       type: "date",
     },
     {
-      label: "Probation Period",
+      label: "Probation Period(month)",
       name:
         "probationPeriod",
       type: "number",
