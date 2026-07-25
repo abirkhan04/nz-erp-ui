@@ -50,14 +50,14 @@ interface Candidate {
     sectionName: string;
     cellName: string;
     salary: number;
-    employeeType:number;
+    employeeType: number;
 }
 
 const PAGE_SIZE = 20;
 
 const BiometricCapture = () => {
 
-    const { data: candidates=[], refetch } = useGet<Candidate[]>({
+    const { data: candidates = [], refetch } = useGet<Candidate[]>({
         key: ["candidates"],
         url: `${API_ROUTES.EMPLOYEES_BY_STATUS}?status=HRExecutive`,
     });
@@ -264,7 +264,7 @@ const BiometricCapture = () => {
         );
 
     const handleCapture =
-       async  (
+        async (
             candidate: Candidate
         ) => {
             const response = await api.get(`${API_ROUTES.EMPLOYEES}/employee-detail/${candidate.employeeId}`)
@@ -280,6 +280,12 @@ const BiometricCapture = () => {
         };
 
     const navigate = useNavigate();
+
+    const handleFingerPrintCaptured = async () => {
+        const response = await api.get("Fingerprint/verify-employee-code?deviceId=10&unit=ho");
+        if (response.data.employeeCode === selectedCandidate?.employeeCode)
+            setFingerprintCaptured(true);
+    }
 
     return (
         <div className="min-h-screen bg-slate-50 p-6">
@@ -470,7 +476,7 @@ const BiometricCapture = () => {
 
                                         <td className="px-4 py-3">
                                             {
-                                               reverseBloodGroupMap[Number(candidate.bloodGroup)]
+                                                reverseBloodGroupMap[Number(candidate.bloodGroup)]
                                             }
                                         </td>
 
@@ -768,8 +774,8 @@ const BiometricCapture = () => {
                                     </div>
 
                                     <button
-                                        onClick={() =>
-                                            setFingerprintCaptured(true)
+                                        onClick={() => handleFingerPrintCaptured()
+
                                         }
                                         className="mt-5 w-full rounded-lg bg-blue-600 py-3 font-medium text-white hover:bg-blue-700"
                                     >
