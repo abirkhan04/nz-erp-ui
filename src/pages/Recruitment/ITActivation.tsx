@@ -759,8 +759,12 @@ const ITActivationPage: React.FC = () => {
                                 <InfoRow label="Date of Joining" value={selected?.joiningDate} />
                                 <InfoRow
                                     label="Probation Period"
-                                    value={`${selected?.probationPeriod} ${Number(selected?.probationPeriod) === 1 ? "month" : "months"
-                                        }`}
+                                    value={
+                                        Number(selected?.probationPeriod) > 0
+                                            ? `${selected.probationPeriod} ${Number(selected.probationPeriod) === 1 ? "month" : "months"
+                                            }`
+                                            : "-"
+                                    }
                                 />
                                 <InfoRow label="Employment Type" value={Object.keys(EmployeeNature)[selected?.employeeType]} />
                             </div>
@@ -919,7 +923,7 @@ const ITActivationPage: React.FC = () => {
                     </svg>
                 </button>
 
-{/* 
+                {/* 
                 <button style={{
                     display: "flex", alignItems: "center", gap: 7, marginLeft: "auto",
                     background: "#fff", border: "1.5px solid #ef4444",
