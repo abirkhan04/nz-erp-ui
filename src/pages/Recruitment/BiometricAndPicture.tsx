@@ -49,7 +49,7 @@ interface Candidate {
     department: string;
     sectionName: string;
     cellName: string;
-    proposedSalary: number;
+    proposedMonthlySalary: number;
     employeeType: number;
 }
 
@@ -660,7 +660,7 @@ const BiometricCapture = () => {
                                         <span className="text-sm text-slate-600">Proposed Salary</span>
                                         <span>:</span>
                                         <span className="font-medium">
-                                            BDT {selectedCandidate.proposedSalary?.toLocaleString()}
+                                            BDT {selectedCandidate.proposedMonthlySalary?.toLocaleString()}
                                         </span>
                                     </div>
 

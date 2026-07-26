@@ -498,9 +498,12 @@ const GateRegistration = ({
       "presentVillageArea",
       "presentPostOffice",
     ]);
-    setValue("presentDivision", watch("permanentDivision"));
-    setValue("presentVillageArea", watch("permanentVillageArea"));
-    setValue("presentPostOffice", watch("permanentPostOffice"));
+
+    const values = getValues();
+
+    setValue("presentDivision", values.permanentDivision);
+    setValue("presentVillageArea", values.permanentVillageArea);
+    setValue("presentPostOffice", values.permanentPostOffice);
   }, [sameAsPermanent, watch("permanentDivision"), clearErrors],);
 
   // Step 2: once presentDistricts has loaded for that division, copy the district
