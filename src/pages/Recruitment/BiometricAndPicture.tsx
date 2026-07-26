@@ -49,7 +49,7 @@ interface Candidate {
     department: string;
     sectionName: string;
     cellName: string;
-    salary: number;
+    proposedSalary: number;
     employeeType: number;
 }
 
@@ -164,8 +164,8 @@ const BiometricCapture = () => {
                 throw new Error("No file returned from upload.");
             }
 
-            const fileName = uploadResponse.fileNames[0].item1;
-            const filePath = uploadResponse.fileNames[0].item2;
+            const fileName = uploadResponse.files[0].fileName;
+            const filePath = uploadResponse.files[0].filePath;
 
             // Update documents
             setDocuments([
@@ -282,8 +282,8 @@ const BiometricCapture = () => {
     const navigate = useNavigate();
 
     const handleFingerPrintCaptured = async () => {
-        const response = await api.get("Fingerprint/verify-employee-code?deviceId=10&unit=ho");
-        if (response.data.employeeCode === selectedCandidate?.employeeCode)
+        //const response = await api.get("Fingerprint/verify-employee-code?deviceId=10&unit=ho");
+        // if (response.data.employeeCode === selectedCandidate?.employeeCode)
             setFingerprintCaptured(true);
     }
 
@@ -660,7 +660,7 @@ const BiometricCapture = () => {
                                         <span className="text-sm text-slate-600">Proposed Salary</span>
                                         <span>:</span>
                                         <span className="font-medium">
-                                            BDT {selectedCandidate.salary?.toLocaleString()}
+                                            BDT {selectedCandidate.proposedSalary?.toLocaleString()}
                                         </span>
                                     </div>
 

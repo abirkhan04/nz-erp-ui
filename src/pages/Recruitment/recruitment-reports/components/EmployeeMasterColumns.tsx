@@ -18,11 +18,16 @@ export const employeeMasterColumns: ColumnDef<EmployeeMasterDto>[] = [
 
     cell: ({ row }) => (
       <span className="font-semibold text-blue-600">
-        {row.original.employeeCode}
+        <a
+          href={`/recruitment/recruitment-reports/employee-detail-profile/${row.original.employeeCode}`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {row.original.employeeCode}
+        </a>
       </span>
     ),
   },
-
   {
     accessorKey: "employeeName",
     header: "Full Name",

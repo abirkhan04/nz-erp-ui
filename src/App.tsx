@@ -107,6 +107,11 @@ function Layout() {
             />
 
             <Route
+              path="/recruitment/recruitment-reports/employee-detail-profile/:employeeCode?"
+              element={<EmployeeDetailProfile />}
+            />
+
+            <Route
               path="/attendance"
               element={<EmployeeAttendance />}
             />

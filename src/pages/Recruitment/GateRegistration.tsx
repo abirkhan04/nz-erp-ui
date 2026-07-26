@@ -89,6 +89,16 @@ export const banglaOnlyValidation = {
   },
 };
 
+export const banglaWithNumberValidation = {
+  validate: (value?: string) => {
+    if (!value?.trim()) return true;
+
+    return /^[ঀ-৿০-৯0-9\s.,\-()/:'"]+$/u.test(value)
+      ? true
+      : "শুধুমাত্র বাংলা অক্ষর ও সংখ্যা ব্যবহার করুন";
+  },
+};
+
 
 const personalInformationFields: SectionField[] =
   [
@@ -313,7 +323,7 @@ const GateRegistration = ({
       bangla: true,
       rules: {
         required: "পোস্ট অফিস আবশ্যক",
-        ...banglaOnlyValidation
+        ...banglaWithNumberValidation
       },
     },
     {
@@ -322,7 +332,7 @@ const GateRegistration = ({
       bangla: true,
       rules: {
         required: "গ্রাম / এলাকা আবশ্যক",
-        ...banglaOnlyValidation
+        ...banglaWithNumberValidation
       },
     },
 
@@ -373,7 +383,7 @@ const GateRegistration = ({
       bangla: true,
       rules: {
         required: "পোস্ট অফিস আবশ্যক",
-        ...banglaOnlyValidation
+        ...banglaWithNumberValidation
       },
     },
     {
@@ -382,7 +392,7 @@ const GateRegistration = ({
       bangla: true,
       rules: {
         required: "গ্রাম / এলাকা আবশ্যক",
-        ...banglaOnlyValidation
+        ...banglaWithNumberValidation
       },
     },
   ];

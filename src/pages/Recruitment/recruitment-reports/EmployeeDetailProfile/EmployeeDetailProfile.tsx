@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search } from "lucide-react";
 
 import BackButton from "../../../../components/BackButton.tsx";
@@ -18,8 +18,11 @@ import {
 import type { EmployeeDetailedProfile } from "./types/types";
 import { useGet } from "../../../../hooks/useGet.ts";
 import { API_ROUTES } from "../../../../api/routes.ts";
+import { useParams } from "react-router-dom";
 
 export default function EmployeeDetailedProfilePage() {
+
+  const { employeeCode } = useParams<{ employeeCode?: string }>();
   const [employeeId, setEmployeeId] = useState("");
   const [searchValue, setSearchValue] = useState("");
 
@@ -28,6 +31,14 @@ export default function EmployeeDetailedProfilePage() {
     url: `${API_ROUTES.EMPLOYEE_REPORTS}/employee-detailed-profile/${searchValue}`,
     enabled: !!searchValue
   });
+
+
+  useEffect(() => {
+    if (employeeCode) {
+      setEmployeeId(employeeCode);
+      setSearchValue(employeeCode);
+    }
+  }, [employeeCode]);
 
   const employee = data as EmployeeDetailedProfile | undefined;
 
@@ -39,7 +50,7 @@ export default function EmployeeDetailedProfilePage() {
   return (
     <div className="space-y-5">
 
-      <BackButton url={"/recruitment/recruitment-reports"}/>
+      <BackButton url={"/recruitment/recruitment-reports"} />
 
       {/* Header */}
 

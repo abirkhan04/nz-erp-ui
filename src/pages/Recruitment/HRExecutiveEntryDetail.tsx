@@ -918,6 +918,18 @@ const HRExecutiveEntryDetails = () => {
         value: grade.id,
       })),
     },
+        {
+      label: "Designation",
+      name: "designation",
+      type: "dropdown",
+      rules: {
+        required: "Designation is required"
+      },
+      options: designations.map((designation) => ({
+        label: designation.designationName,
+        value: designation.id,
+      }))
+    },
     {
       label: "Shift",
       name: "shift",
@@ -937,18 +949,6 @@ const HRExecutiveEntryDetails = () => {
       options: Object.entries(WeekOffDayMap).map(([value, label]) => ({
         label,
         value
-      }))
-    },
-    {
-      label: "Designation",
-      name: "designation",
-      type: "dropdown",
-      rules: {
-        required: "Designation is required"
-      },
-      options: designations.map((designation) => ({
-        label: designation.designationName,
-        value: designation.id,
       }))
     },
     {

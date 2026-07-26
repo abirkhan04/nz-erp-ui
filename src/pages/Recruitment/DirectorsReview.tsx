@@ -40,7 +40,7 @@ interface Candidate {
   grade: string;
   shift: string;
   weekday: string;
-  proposedMonthlySalary: number;
+  grossSalary: number;
   proposedSalary: number;
   joiningDate: string;
   status: string;
@@ -471,7 +471,7 @@ const DirectorReview = () => {
                     <div>
                       <p className="text-slate-400 text-xs uppercase">Gross Salary</p>
                       <p className="font-semibold text-green-700">
-                        ৳{selectedCandidate.proposedMonthlySalary?.toLocaleString()}
+                        ৳{selectedCandidate.grossSalary?.toLocaleString()}
                       </p>
                     </div>
                   </div>
