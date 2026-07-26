@@ -98,8 +98,15 @@ const DirectorReview = () => {
   const candidatesKey = useMemo(() => candidates.map((c) => c.employeeId).join("|"), [candidates]);
 
   useEffect(() => {
-    replace(buildRowsFromCandidates(candidates));
-  }, [candidatesKey, replace]);
+    const rows = buildRowsFromCandidates(candidates);
+
+    replace(rows);
+
+    rows.forEach((row, index) => {
+      setValue(`employees.${index}.grossSalary`, row.proposedSalary);
+      setValue(`employees.${index}.proposedSalary`, row.proposedSalary);
+    });
+  }, [candidatesKey, replace, setValue]);
 
   // 3. Form Watching & Computations
   const employeeRows = useWatch({ control, name: "employees" }) || [];
@@ -324,7 +331,7 @@ const DirectorReview = () => {
                   if (formIndex === -1 || !employeeRows?.[formIndex]) return null;
 
                   return (
-                    <tr key={item.id} className="border-t border-slate-100 hover:bg-slate-50 transition">
+                    <tr key={item.employeeId} className="border-t border-slate-100 hover:bg-slate-50 transition">
                       <td className="px-4 py-3">
                         <input type="checkbox" {...register(`employees.${formIndex}.selected`)} />
                       </td>
