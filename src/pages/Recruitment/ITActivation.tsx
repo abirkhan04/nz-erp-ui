@@ -62,7 +62,7 @@ interface Candidate {
 const InfoRow: React.FC<{ label: string; value: string | number }> = ({ label, value }) => (
     <div style={{ display: "flex", gap: 6, marginBottom: 5, fontSize: 13 }}>
         <span style={{ color: "#6b7280", minWidth: 100, flexShrink: 0 }}>{label}</span>
-        <span style={{ color: "#374151", fontWeight: 600 }}>: {value}</span>
+        <span style={{ color: "#374151", fontWeight: 600, wordBreak: "break-all" }}>: {value}</span>
     </div>
 );
 
@@ -88,6 +88,7 @@ const AvatarIcon: React.FC = () => (
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 const ITActivationPage: React.FC = () => {
+    const [image, setImage] = useState<string | null>(null);
     const PAGE_SIZE = 20;
     const appointmentRef = useRef<HTMLDivElement>(null);
     const medicalReportRef = useRef<HTMLDivElement>(null);
@@ -111,7 +112,7 @@ const ITActivationPage: React.FC = () => {
     });
 
     const { data: employeeOnAppointment = {} } = useGet<any>({
-        key: ["appointment_letter",selectedId],
+        key: ["appointment_letter", selectedId],
         url: `${API_ROUTES.EMPLOYEE_REPORTS}/candidate-entry/${selectedId}`,
         enabled: !!selectedId
     })
@@ -189,6 +190,36 @@ const ITActivationPage: React.FC = () => {
             setEnrollmentId(candidates[0].enrollmentId);
         }
     }, [candidates, selectedId]);
+
+    useEffect(() => {
+        let imageUrl: string;
+
+        const fetchPhoto = async () => {
+            if (!selectedId) return;
+
+            try {
+                const response = await api.get(
+                    `${API_ROUTES.EMPLOYEES}/image?employeeId=${selectedId}`,
+                    {
+                        responseType: "blob",
+                    }
+                );
+
+                imageUrl = URL.createObjectURL(response.data);
+                setImage(imageUrl);
+            } catch (error) {
+                console.error(error);
+            }
+        };
+
+        fetchPhoto();
+
+        return () => {
+            if (imageUrl) {
+                URL.revokeObjectURL(imageUrl);
+            }
+        };
+    }, [selectedId]);
 
 
     const handleActivateNext = async () => {
@@ -293,7 +324,7 @@ const ITActivationPage: React.FC = () => {
             await refetch();
 
             setSelectedId("");
-          } catch (error: any) {
+        } catch (error: any) {
             toast.error(
                 `IT Activation failed. Error: ${error.response?.data?.message ||
                 error.message
@@ -620,14 +651,46 @@ const ITActivationPage: React.FC = () => {
                     <div style={{ padding: 16 }}>
                         <div style={{ display: "flex", gap: 14, marginBottom: 14, alignItems: "flex-start" }}>
                             <div style={{ flexShrink: 0 }}>
-                                <AvatarIcon />
+                                {image ? (
+                                    <img
+                                        src={image}
+                                        alt="candidate"
+                                        style={{
+                                            width: 80,
+                                            height: 80,
+                                            borderRadius: "50%",
+                                            objectFit: "cover",
+                                            border: "2px solid #e5e7eb",
+                                        }}
+                                    />
+                                ) : (
+                                    <AvatarIcon />
+                                )}
+
                                 {selected?.approvedByDirector && (
-                                    <div style={{
-                                        display: "flex", alignItems: "center", gap: 4,
-                                        background: "#dcfce7", border: "1px solid #86efac",
-                                        borderRadius: 20, padding: "3px 8px", marginTop: 6, fontSize: 11, color: "#15803d", fontWeight: 600,
-                                    }}>
-                                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="3">
+                                    <div
+                                        style={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: 4,
+                                            background: "#dcfce7",
+                                            border: "1px solid #86efac",
+                                            borderRadius: 20,
+                                            padding: "3px 8px",
+                                            marginTop: 6,
+                                            fontSize: 11,
+                                            color: "#15803d",
+                                            fontWeight: 600,
+                                        }}
+                                    >
+                                        <svg
+                                            width="10"
+                                            height="10"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="#16a34a"
+                                            strokeWidth="3"
+                                        >
                                             <path d="M20 6 9 17l-5-5" />
                                         </svg>
                                         Approved by Director
@@ -677,7 +740,11 @@ const ITActivationPage: React.FC = () => {
                             <div>
                                 <InfoRow label="Proposed Salary" value={`${selected?.proposedMonthlySalary?.toLocaleString() || 0} BDT`} />
                                 <InfoRow label="Date of Joining" value={selected?.joiningDate} />
-                                <InfoRow label="Probation Period" value={`${selected?.probationPeriod}month`} />
+                                <InfoRow
+                                    label="Probation Period"
+                                    value={`${selected?.probationPeriod} ${Number(selected?.probationPeriod) === 1 ? "month" : "months"
+                                        }`}
+                                />
                                 <InfoRow label="Employment Type" value={Object.keys(EmployeeNature)[selected?.employeeType]} />
                             </div>
                         </div>
