@@ -1408,7 +1408,7 @@ const HRExecutiveEntryDetails = () => {
                 name="presentDistrict"
                 type="dropdown"
                 disabled={sameAsPermanent}
-                options={presentDistricts.map((i) => ({
+                options={(sameAsPermanent? permanentDistricts: presentDistricts).map((i) => ({
                   label: i.districtName,
                   value: i.id,
                 }))}
@@ -1422,7 +1422,7 @@ const HRExecutiveEntryDetails = () => {
                 name="presentPoliceStation"
                 type="dropdown"
                 disabled={sameAsPermanent}
-                options={presentThanas.map((i) => ({
+                options={(sameAsPermanent? permanentThanas: presentThanas).map((i) => ({
                   label: i.thanaName,
                   value: i.id,
                 }))}
