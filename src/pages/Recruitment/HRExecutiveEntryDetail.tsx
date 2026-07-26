@@ -164,6 +164,8 @@ const HRExecutiveEntryDetails = () => {
       }
     );
 
+  const sameAsPermanent = watch("sameAsPermanent");
+
   const { data: divisions = [] } = useGet<any[]>({
     key: ["divisions"],
     url: API_ROUTES.DIVISIONS,
@@ -200,7 +202,6 @@ const HRExecutiveEntryDetails = () => {
   const permanentVillageAreaRoad = watch("permanentVillageAreaRoad");
   const permanentPostOffice = watch("permanentPostOffice");
 
-  const sameAsPermanent = watch("sameAsPermanent");
 
   useEffect(() => {
     if (!sameAsPermanent) return;
@@ -216,8 +217,6 @@ const HRExecutiveEntryDetails = () => {
     sameAsPermanent,
     permanentVillageAreaRoad,
     permanentPostOffice,
-    setValue,
-    clearErrors,
   ]);
 
   useEffect(() => {
@@ -230,12 +229,7 @@ const HRExecutiveEntryDetails = () => {
       "presentDistrict",
       "presentPoliceStation",
     ]);
-  }, [
-    sameAsPermanent,
-    permanentDivision,
-    setValue,
-    clearErrors,
-  ]);
+  }, [sameAsPermanent, permanentDivision]);
 
   useEffect(() => {
     if (!sameAsPermanent) return;
@@ -252,7 +246,6 @@ const HRExecutiveEntryDetails = () => {
     sameAsPermanent,
     presentDistricts,
     permanentDistrict,
-    setValue,
   ]);
 
   useEffect(() => {
@@ -270,8 +263,8 @@ const HRExecutiveEntryDetails = () => {
     sameAsPermanent,
     presentThanas,
     permanentPoliceStation,
-    setValue,
   ]);
+
 
   const { data: units = [] } = useGet<Unit[]>({
     key: ["units"],
@@ -416,11 +409,13 @@ const HRExecutiveEntryDetails = () => {
 
       permanentDivision: employeeOnGate.permanentDivisionId ?? null,
       permanentDistrict: employeeOnGate.permanentDistrictId ?? null,
-      permanentPoliceStation: employeeOnGate.permanentThanaId ?? null,
+      permanentPoliceStation: employeeOnGate.permanentUpazilaId
+        ?? null,
 
       presentDivision: employeeOnGate.presentDivisionId ?? null,
       presentDistrict: employeeOnGate.presentDistrictId ?? null,
-      presentPoliceStation: employeeOnGate.presentThanaId ?? null,
+      presentPoliceStation: employeeOnGate.presentUpazilaId
+        ?? null,
     };
 
     const draft = localStorage.getItem(DRAFT_KEY);
@@ -428,8 +423,8 @@ const HRExecutiveEntryDetails = () => {
     if (draft) {
       const parsed = JSON.parse(draft);
       reset({
-        ...defaultValues,
         ...parsed,
+        ...defaultValues,
         files: [],
       });
     } else {
@@ -1159,6 +1154,22 @@ const HRExecutiveEntryDetails = () => {
   ];
 
 
+  useEffect(() => {
+    if (!sameAsPermanent) return;
+
+    (async () => {
+      setValue("presentDivision", permanentDivision);
+
+      await new Promise(r => setTimeout(r, 250));
+
+      setValue("presentDistrict", permanentDistrict);
+
+      await new Promise(r => setTimeout(r, 500));
+
+      setValue("presentPoliceStation", permanentPoliceStation);
+    })();
+  }, [sameAsPermanent]);
+
   return (<>
 
     {
@@ -1384,7 +1395,7 @@ const HRExecutiveEntryDetails = () => {
                 type="dropdown"
                 disabled={sameAsPermanent}
                 options={divisions.map((i) => ({
-                  label:  i.divisionName,
+                  label: i.divisionName,
                   value: i.id,
                 }))}
                 register={register}
@@ -1398,7 +1409,7 @@ const HRExecutiveEntryDetails = () => {
                 type="dropdown"
                 disabled={sameAsPermanent}
                 options={presentDistricts.map((i) => ({
-                  label:  i.districtName,
+                  label: i.districtName,
                   value: i.id,
                 }))}
                 register={register}
@@ -1412,7 +1423,7 @@ const HRExecutiveEntryDetails = () => {
                 type="dropdown"
                 disabled={sameAsPermanent}
                 options={presentThanas.map((i) => ({
-                  label:  i.thanaName,
+                  label: i.thanaName,
                   value: i.id,
                 }))}
                 register={register}
