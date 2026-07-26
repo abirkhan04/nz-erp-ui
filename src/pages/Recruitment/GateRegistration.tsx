@@ -488,43 +488,80 @@ const GateRegistration = ({
     toast.success("ফর্মটি সফলভাবে সংরক্ষণ করা হয়েছে");
   };
 
+  const permanentDivision = watch("permanentDivision");
+  const permanentDistrict = watch("permanentDistrict");
+  const permanentPoliceStation = watch("permanentPoliceStation");
+  const permanentVillageArea = watch("permanentVillageArea");
+  const permanentPostOffice = watch("permanentPostOffice");
+
   // Step 1: when sameAsPermanent is checked, only copy the division (root of the chain)
   useEffect(() => {
     if (!sameAsPermanent) return;
+
+    setValue("presentVillageArea", permanentVillageArea ?? "");
+    setValue("presentPostOffice", permanentPostOffice ?? "");
+
+    clearErrors([
+      "presentVillageArea",
+      "presentPostOffice",
+    ]);
+  }, [
+    sameAsPermanent,
+    permanentVillageArea,
+    permanentPostOffice,
+    setValue,
+    clearErrors,
+  ]);
+
+
+  useEffect(() => {
+    if (!sameAsPermanent) return;
+
+    setValue("presentDivision", permanentDivision);
+
     clearErrors([
       "presentDivision",
       "presentDistrict",
       "presentPoliceStation",
-      "presentVillageArea",
-      "presentPostOffice",
     ]);
+  }, [sameAsPermanent, permanentDivision, setValue, clearErrors]);
 
-    const values = getValues();
 
-    setValue("presentDivision", values.permanentDivision);
-    setValue("presentVillageArea", values.permanentVillageArea);
-    setValue("presentPostOffice", values.permanentPostOffice);
-  }, [sameAsPermanent, watch("permanentDivision"), clearErrors],);
-
-  // Step 2: once presentDistricts has loaded for that division, copy the district
   useEffect(() => {
     if (!sameAsPermanent) return;
-    if (!presentDistricts.length) return; // wait for options to actually exist
-    const match = presentDistricts.find(
-      (d) => String(d.id) === String(watch("permanentDistrict"))
-    );
-    if (match) setValue("presentDistrict", match.id);
-  }, [sameAsPermanent, presentDistricts, watch("permanentDistrict")]);
+    if (!presentDistricts.length) return;
 
-  // Step 3: once presentThanas has loaded for that district, copy the thana
+    const match = presentDistricts.find(
+      d => String(d.id) === String(permanentDistrict)
+    );
+
+    if (match) {
+      setValue("presentDistrict", match.id);
+    }
+  }, [
+    sameAsPermanent,
+    presentDistricts,
+    permanentDistrict,
+    setValue,
+  ]);
+
   useEffect(() => {
     if (!sameAsPermanent) return;
     if (!presentThanas.length) return;
+
     const match = presentThanas.find(
-      (t) => String(t.id) === String(watch("permanentPoliceStation"))
+      t => String(t.id) === String(permanentPoliceStation)
     );
-    if (match) setValue("presentPoliceStation", match.id);
-  }, [sameAsPermanent, presentThanas, watch("permanentPoliceStation")]);
+
+    if (match) {
+      setValue("presentPoliceStation", match.id);
+    }
+  }, [
+    sameAsPermanent,
+    presentThanas,
+    permanentPoliceStation,
+    setValue,
+  ]);
 
   useEffect(() => {
     if (!candidate) return;
