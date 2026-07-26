@@ -9,6 +9,7 @@ import {
   UserRound,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import BackButton from "../../components/BackButton";
 
 type Report = {
   id: number;
@@ -89,9 +90,12 @@ const reports: Report[] = [
 ];
 
 export default function RecruitmentReports() {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
   return (
     <div className="p-8 bg-white">
+      <div className="p-2">
+        <BackButton url={'/recruitment'} name={'recruitment'}/>
+      </div>
       <div className="border rounded-2xl border-slate-200 bg-white p-8">
 
         {/* Header */}

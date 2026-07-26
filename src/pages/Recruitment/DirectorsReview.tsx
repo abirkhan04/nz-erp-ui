@@ -14,7 +14,7 @@ interface SalaryRow {
   employeeId: string;
   employeeEnrollmentId: string;
   grossSalary: number;
-  proposedMonthlySalary: number;
+  proposedSalary: number;
   decision: "APPROVE" | "REJECT"; // Row-level decision
   remarks: string;               // Row-level remarks
 }
@@ -90,7 +90,7 @@ const DirectorReview = () => {
       employeeId: item.employeeId,
       employeeEnrollmentId: item.enrollmentId,
       grossSalary: item.proposedSalary,
-      proposedMonthlySalary: item.proposedSalary,
+      proposedSalary: item.proposedSalary,
       decision: "APPROVE",
       remarks: "",
     }));
@@ -165,7 +165,7 @@ const DirectorReview = () => {
   const selectedCount = selectedRows.length;
 
   const totalGrossSalary = useMemo(() => selectedRows.reduce((sum, item) => sum + (Number(item.grossSalary) || 0), 0), [selectedRows]);
-  const totalProposedSalary = useMemo(() => selectedRows.reduce((sum, item) => sum + (Number(item.proposedMonthlySalary) || 0), 0), [selectedRows]);
+  const totalProposedSalary = useMemo(() => selectedRows.reduce((sum, item) => sum + (Number(item.proposedSalary) || 0), 0), [selectedRows]);
 
   const allSelected = employeeRows.length > 0 && employeeRows.every((row) => row.selected);
 
@@ -198,7 +198,7 @@ const DirectorReview = () => {
         employeeId: item.employeeId,
         employeeEnrollmentId: item.employeeEnrollmentId,
         grossSalary: item.grossSalary || null,
-        proposedMonthlySalary: item.proposedMonthlySalary,
+        proposedSalary: item.proposedSalary,
         directorsDecision: item.decision, // Sent correctly from dynamic row index
         remarks: item.remarks,            // Sent correctly from dynamic row index
       }));
@@ -338,8 +338,8 @@ const DirectorReview = () => {
                       <td className="px-4 py-3">{item.grade}</td>
 
                       <td className="px-4 py-3 font-medium">
-                        ৳{Number(employeeRows[formIndex]?.proposedMonthlySalary || 0).toLocaleString()}
-                        <input type="hidden" {...register(`employees.${formIndex}.proposedMonthlySalary`, { valueAsNumber: true })} />
+                        ৳{Number(employeeRows[formIndex]?.proposedSalary || 0).toLocaleString()}
+                        <input type="hidden" {...register(`employees.${formIndex}.proposedSalary`, { valueAsNumber: true })} />
                       </td>
 
                       <td className="px-4 py-3">

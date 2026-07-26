@@ -158,8 +158,8 @@ const BiometricCapture = () => {
             const uploadResponse = await uploadPhoto(image);
 
             if (
-                !uploadResponse.fileNames ||
-                uploadResponse.fileNames.length === 0
+                !uploadResponse.files ||
+                uploadResponse.files.length === 0
             ) {
                 throw new Error("No file returned from upload.");
             }
