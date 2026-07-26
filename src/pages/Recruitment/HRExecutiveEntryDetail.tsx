@@ -1308,7 +1308,7 @@ const HRExecutiveEntryDetails = () => {
                 name="permanentDivision"
                 type="dropdown"
                 options={divisions.map((i) => ({
-                  label: i.divisionNameBangla || i.divisionName,
+                  label: i.divisionName,
                   value: i.id,
                 }))}
                 register={register}
@@ -1321,7 +1321,7 @@ const HRExecutiveEntryDetails = () => {
                 name="permanentDistrict"
                 type="dropdown"
                 options={permanentDistricts.map((i) => ({
-                  label: i.districtNameBangla || i.districtName,
+                  label: i.districtName,
                   value: i.id,
                 }))}
                 register={register}
@@ -1334,7 +1334,7 @@ const HRExecutiveEntryDetails = () => {
                 name="permanentPoliceStation"
                 type="dropdown"
                 options={permanentThanas.map((i) => ({
-                  label: i.thanaNameBangla || i.thanaName,
+                  label: i.thanaName,
                   value: i.id,
                 }))}
                 register={register}
@@ -1384,7 +1384,7 @@ const HRExecutiveEntryDetails = () => {
                 type="dropdown"
                 disabled={sameAsPermanent}
                 options={divisions.map((i) => ({
-                  label: i.divisionNameBangla || i.divisionName,
+                  label:  i.divisionName,
                   value: i.id,
                 }))}
                 register={register}
@@ -1398,7 +1398,7 @@ const HRExecutiveEntryDetails = () => {
                 type="dropdown"
                 disabled={sameAsPermanent}
                 options={presentDistricts.map((i) => ({
-                  label: i.districtNameBangla || i.districtName,
+                  label:  i.districtName,
                   value: i.id,
                 }))}
                 register={register}
@@ -1412,7 +1412,7 @@ const HRExecutiveEntryDetails = () => {
                 type="dropdown"
                 disabled={sameAsPermanent}
                 options={presentThanas.map((i) => ({
-                  label: i.thanaNameBangla || i.thanaName,
+                  label:  i.thanaName,
                   value: i.id,
                 }))}
                 register={register}
