@@ -96,6 +96,13 @@ interface HRExecutiveEntryForm {
 
   presentVillageAreaRoad: string;
   presentPostOffice: string;
+  permanentDivision: string | null;
+  permanentDistrict: string | null;
+  permanentPoliceStation: string | null;
+
+  presentDivision: string | null;
+  presentDistrict: string | null;
+  presentPoliceStation: string | null;
 
   educationCertificate: File | null;
   nationalId: File | null;
@@ -146,28 +153,123 @@ const HRExecutiveEntryDetails = () => {
 
           presentVillageAreaRoad: "",
           presentPostOffice: "",
+          permanentDivision: null,
+          permanentDistrict: null,
+          permanentPoliceStation: null,
+
+          presentDivision: null,
+          presentDistrict: null,
+          presentPoliceStation: null,
         },
       }
     );
+
+  const { data: divisions = [] } = useGet<any[]>({
+    key: ["divisions"],
+    url: API_ROUTES.DIVISIONS,
+  });
+
+  const { data: permanentDistricts = [] } = useGet<any[]>({
+    key: ["permanentDistricts", watch("permanentDivision")],
+    url: `${API_ROUTES.DIVISIONS}/${watch("permanentDivision")}/districts`,
+    enabled: !!watch("permanentDivision"),
+  });
+
+  const { data: permanentThanas = [] } = useGet<any[]>({
+    key: ["permanentThanas", watch("permanentDistrict")],
+    url: `${API_ROUTES.DISTRICTS}/${watch("permanentDistrict")}/thanas`,
+    enabled: !!watch("permanentDistrict"),
+  });
+
+  const { data: presentDistricts = [] } = useGet<any[]>({
+    key: ["presentDistricts", watch("presentDivision")],
+    url: `${API_ROUTES.DIVISIONS}/${watch("presentDivision")}/districts`,
+    enabled: !!watch("presentDivision"),
+  });
+
+  const { data: presentThanas = [] } = useGet<any[]>({
+    key: ["presentThanas", watch("presentDistrict")],
+    url: `${API_ROUTES.DISTRICTS}/${watch("presentDistrict")}/thanas`,
+    enabled: !!watch("presentDistrict"),
+  });
+
+  const permanentDivision = watch("permanentDivision");
+  const permanentDistrict = watch("permanentDistrict");
+  const permanentPoliceStation = watch("permanentPoliceStation");
+
+  const permanentVillageAreaRoad = watch("permanentVillageAreaRoad");
+  const permanentPostOffice = watch("permanentPostOffice");
 
   const sameAsPermanent = watch("sameAsPermanent");
 
   useEffect(() => {
     if (!sameAsPermanent) return;
 
-    setValue(
-      "presentVillageAreaRoad",
-      watch("permanentVillageAreaRoad")
-    );
+    setValue("presentVillageAreaRoad", permanentVillageAreaRoad ?? "");
+    setValue("presentPostOffice", permanentPostOffice ?? "");
 
-    setValue(
+    clearErrors([
+      "presentVillageAreaRoad",
       "presentPostOffice",
-      watch("permanentPostOffice")
-    );
+    ]);
   }, [
     sameAsPermanent,
-    watch("permanentVillageAreaRoad"),
-    watch("permanentPostOffice"),
+    permanentVillageAreaRoad,
+    permanentPostOffice,
+    setValue,
+    clearErrors,
+  ]);
+
+  useEffect(() => {
+    if (!sameAsPermanent) return;
+
+    setValue("presentDivision", permanentDivision);
+
+    clearErrors([
+      "presentDivision",
+      "presentDistrict",
+      "presentPoliceStation",
+    ]);
+  }, [
+    sameAsPermanent,
+    permanentDivision,
+    setValue,
+    clearErrors,
+  ]);
+
+  useEffect(() => {
+    if (!sameAsPermanent) return;
+    if (!presentDistricts.length) return;
+
+    const match = presentDistricts.find(
+      d => String(d.id) === String(permanentDistrict)
+    );
+
+    if (match) {
+      setValue("presentDistrict", match.id);
+    }
+  }, [
+    sameAsPermanent,
+    presentDistricts,
+    permanentDistrict,
+    setValue,
+  ]);
+
+  useEffect(() => {
+    if (!sameAsPermanent) return;
+    if (!presentThanas.length) return;
+
+    const match = presentThanas.find(
+      t => String(t.id) === String(permanentPoliceStation)
+    );
+
+    if (match) {
+      setValue("presentPoliceStation", match.id);
+    }
+  }, [
+    sameAsPermanent,
+    presentThanas,
+    permanentPoliceStation,
     setValue,
   ]);
 
@@ -311,6 +413,14 @@ const HRExecutiveEntryDetails = () => {
       joiningDate: employeeOnGate.joiningDate ?? "",
       probationPeriod:
         employeeOnGate.probationPeriod?.toString() ?? "",
+
+      permanentDivision: employeeOnGate.permanentDivisionId ?? null,
+      permanentDistrict: employeeOnGate.permanentDistrictId ?? null,
+      permanentPoliceStation: employeeOnGate.permanentThanaId ?? null,
+
+      presentDivision: employeeOnGate.presentDivisionId ?? null,
+      presentDistrict: employeeOnGate.presentDistrictId ?? null,
+      presentPoliceStation: employeeOnGate.presentThanaId ?? null,
     };
 
     const draft = localStorage.getItem(DRAFT_KEY);
@@ -481,6 +591,57 @@ const HRExecutiveEntryDetails = () => {
     restoredShiftRef.current = true;
   }, [shifts]);
 
+  useEffect(() => {
+    const draft = localStorage.getItem(DRAFT_KEY);
+    if (!draft) return;
+    if (!divisions.length) return;
+
+    const parsed = JSON.parse(draft);
+
+    setValue("presentDivision", parsed.presentDivision);
+    setValue("permanentDivision", parsed.permanentDivision);
+  }, [divisions]);
+
+  useEffect(() => {
+    const draft = localStorage.getItem(DRAFT_KEY);
+    if (!draft) return;
+    if (!presentDistricts.length) return;
+
+    const parsed = JSON.parse(draft);
+
+    setValue("presentDistrict", parsed.presentDistrict);
+  }, [presentDistricts]);
+
+  useEffect(() => {
+    const draft = localStorage.getItem(DRAFT_KEY);
+    if (!draft) return;
+    if (!permanentDistricts.length) return;
+
+    const parsed = JSON.parse(draft);
+
+    setValue("permanentDistrict", parsed.permanentDistrict);
+  }, [permanentDistricts]);
+
+
+  useEffect(() => {
+    const draft = localStorage.getItem(DRAFT_KEY);
+    if (!draft) return;
+    if (!presentThanas.length) return;
+
+    const parsed = JSON.parse(draft);
+
+    setValue("presentPoliceStation", parsed.presentPoliceStation);
+  }, [presentThanas]);
+
+  useEffect(() => {
+    const draft = localStorage.getItem(DRAFT_KEY);
+    if (!draft) return;
+    if (!permanentThanas.length) return;
+
+    const parsed = JSON.parse(draft);
+
+    setValue("permanentPoliceStation", parsed.permanentPoliceStation);
+  }, [permanentThanas]);
 
   const handleSaveDraft = () => {
     const values = watch();
@@ -918,7 +1079,7 @@ const HRExecutiveEntryDetails = () => {
         value: grade.id,
       })),
     },
-        {
+    {
       label: "Designation",
       name: "designation",
       type: "dropdown",
@@ -1131,46 +1292,155 @@ const HRExecutiveEntryDetails = () => {
         <div className="border-b px-4 py-3 font-semibold text-blue-700">
           Address Information
         </div>
-        <div className="grid grid-cols-2 gap-4 p-4">
-          <CommonInputField
-            label="Permanent Village / Area / Road"
-            name="permanentVillageAreaRoad"
-            register={register}
-            control={control}
-            errors={errors}
-          />
-          <CommonInputField
-            label="Permanent Post Office"
-            name="permanentPostOffice"
-            register={register}
-            control={control}
-            errors={errors}
-          />
-          <div className="col-span-2">
-            <label className="flex items-center gap-2">
+
+        <div className="grid grid-cols-2 gap-8 p-4">
+
+          {/* Permanent Address */}
+          <div>
+            <h3 className="mb-4 text-base font-semibold text-slate-700 border-b pb-2">
+              Permanent Address
+            </h3>
+
+            <div className="grid grid-cols-1 gap-4">
+
+              <CommonInputField
+                label="Division"
+                name="permanentDivision"
+                type="dropdown"
+                options={divisions.map((i) => ({
+                  label: i.divisionNameBangla || i.divisionName,
+                  value: i.id,
+                }))}
+                register={register}
+                control={control}
+                errors={errors}
+              />
+
+              <CommonInputField
+                label="District"
+                name="permanentDistrict"
+                type="dropdown"
+                options={permanentDistricts.map((i) => ({
+                  label: i.districtNameBangla || i.districtName,
+                  value: i.id,
+                }))}
+                register={register}
+                control={control}
+                errors={errors}
+              />
+
+              <CommonInputField
+                label="Thana / Upazila"
+                name="permanentPoliceStation"
+                type="dropdown"
+                options={permanentThanas.map((i) => ({
+                  label: i.thanaNameBangla || i.thanaName,
+                  value: i.id,
+                }))}
+                register={register}
+                control={control}
+                errors={errors}
+              />
+
+              <CommonInputField
+                label="Permanent Post Office"
+                name="permanentPostOffice"
+                register={register}
+                control={control}
+                errors={errors}
+              />
+
+              <CommonInputField
+                label="Permanent Village / Area / Road"
+                name="permanentVillageAreaRoad"
+                register={register}
+                control={control}
+                errors={errors}
+              />
+
+            </div>
+          </div>
+
+          {/* Present Address */}
+          <div>
+
+            <div className="mb-4 flex items-center gap-2">
               <input
                 type="checkbox"
                 {...register("sameAsPermanent")}
               />
-              Same as Permanent Address
-            </label>
+              <label>Same as Permanent Address</label>
+            </div>
+
+            <h3 className="mb-4 text-base font-semibold text-slate-700 border-b pb-2">
+              Present Address
+            </h3>
+
+            <div className="grid grid-cols-1 gap-4">
+
+              <CommonInputField
+                label="Division"
+                name="presentDivision"
+                type="dropdown"
+                disabled={sameAsPermanent}
+                options={divisions.map((i) => ({
+                  label: i.divisionNameBangla || i.divisionName,
+                  value: i.id,
+                }))}
+                register={register}
+                control={control}
+                errors={errors}
+              />
+
+              <CommonInputField
+                label="District"
+                name="presentDistrict"
+                type="dropdown"
+                disabled={sameAsPermanent}
+                options={presentDistricts.map((i) => ({
+                  label: i.districtNameBangla || i.districtName,
+                  value: i.id,
+                }))}
+                register={register}
+                control={control}
+                errors={errors}
+              />
+
+              <CommonInputField
+                label="Thana / Upazila"
+                name="presentPoliceStation"
+                type="dropdown"
+                disabled={sameAsPermanent}
+                options={presentThanas.map((i) => ({
+                  label: i.thanaNameBangla || i.thanaName,
+                  value: i.id,
+                }))}
+                register={register}
+                control={control}
+                errors={errors}
+              />
+
+              <CommonInputField
+                label="Present Post Office"
+                name="presentPostOffice"
+                disabled={sameAsPermanent}
+                register={register}
+                control={control}
+                errors={errors}
+              />
+
+              <CommonInputField
+                label="Present Village / Area / Road"
+                name="presentVillageAreaRoad"
+                disabled={sameAsPermanent}
+                register={register}
+                control={control}
+                errors={errors}
+              />
+
+            </div>
           </div>
-          <CommonInputField
-            label="Present Village / Area / Road"
-            name="presentVillageAreaRoad"
-            register={register}
-            control={control}
-            errors={errors}
-            disabled={sameAsPermanent}
-          />
-          <CommonInputField
-            label="Present Post Office"
-            name="presentPostOffice"
-            register={register}
-            control={control}
-            errors={errors}
-            disabled={sameAsPermanent}
-          />
+
         </div>
         <div className="bg-white rounded-xl mb-6">
 

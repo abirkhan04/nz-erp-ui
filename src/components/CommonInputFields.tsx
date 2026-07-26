@@ -142,25 +142,33 @@ const CommonInputField = <T extends FieldValues>({
       </label>
 
       {type === "dropdown" ? (
-        <select
-          {...register(name, rules)}
-          disabled={disabled}
-          className={inputClass}
-        >
-          {isPlaceholderVisible && <option value="">
-            {placeholder ||
-              `Select ${label}`}
-          </option>}
-
-          {options.map((option) => (
-            <option
-              key={option.value}
-              value={option.value}
+        <Controller
+          control={control}
+          name={name}
+          rules={rules}
+          render={({ field }) => (
+            <select
+              {...field}
+              disabled={disabled}
+              className={inputClass}
             >
-              {option.label}
-            </option>
-          ))}
-        </select>
+              {isPlaceholderVisible && (
+                <option value="">
+                  {placeholder || `Select ${label}`}
+                </option>
+              )}
+
+              {options.map(option => (
+                <option
+                  key={option.value}
+                  value={option.value}
+                >
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          )}
+        />
       ) : type ===
         "searchable-dropdown" &&
         control ? (
