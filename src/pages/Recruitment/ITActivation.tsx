@@ -227,7 +227,7 @@ const ITActivationPage: React.FC = () => {
         if (!appointmentRef.current) return;
         if (!medicalReportRef.current) return;
 
-        const blob = await html2pdf()
+        const pdfBlob = await html2pdf()
             .from(appointmentRef.current)
             .set({
                 margin: 10,
@@ -246,6 +246,7 @@ const ITActivationPage: React.FC = () => {
             })
             .outputPdf("blob");
 
+
         // Temporary download
         // const url = URL.createObjectURL(blob);
 
@@ -255,7 +256,7 @@ const ITActivationPage: React.FC = () => {
         // a.click();
 
 
-        const blob1 = await html2pdf()
+        const pdfBlob1 = await html2pdf()
             .from(medicalReportRef.current)
             .set({
                 margin: 0,
@@ -273,6 +274,22 @@ const ITActivationPage: React.FC = () => {
             })
             .outputPdf("blob");
 
+        const file = new File(
+            [pdfBlob],
+            "appointmentLetter.pdf",
+            {
+                type: "application/pdf",
+            }
+        );
+
+        const file1 = new File(
+            [pdfBlob1],
+            "appointmentLetter.pdf",
+            {
+                type: "application/pdf",
+            }
+        );
+
         // Temporary download
         // const url = URL.createObjectURL(blob1);
         // const a = document.createElement("a");
@@ -284,14 +301,12 @@ const ITActivationPage: React.FC = () => {
 
         formData.append(
             "appointmentLetter",
-            blob,
-            "appointmentLetter"
+            file
         );
 
         formData.append(
             "medicalReport",
-            blob1,
-            "medicalReport"
+            file1
         );
 
         formData.append(
@@ -324,6 +339,8 @@ const ITActivationPage: React.FC = () => {
             await refetch();
 
             setSelectedId("");
+            setSearchTerm("");
+            setImage(null);
         } catch (error: any) {
             toast.error(
                 `IT Activation failed. Error: ${error.response?.data?.message ||
@@ -868,29 +885,7 @@ const ITActivationPage: React.FC = () => {
                 position: "sticky", bottom: 0, zIndex: 10,
                 boxShadow: "0 -4px 12px rgba(0,0,0,0.06)",
             }}>
-                <button style={{
-                    display: "flex", alignItems: "center", gap: 7,
-                    background: "#f8fafc", border: "1.5px solid #e2e8f0",
-                    borderRadius: 8, padding: "9px 20px", cursor: "pointer",
-                    fontSize: 13, color: "#374151", fontWeight: 600,
-                }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <path d="M23 4v6h-6M1 20v-6h6" /><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-                    </svg>
-                    Refresh
-                </button>
 
-                <button style={{
-                    display: "flex", alignItems: "center", gap: 7,
-                    background: "#1d4ed8", border: "none",
-                    borderRadius: 8, padding: "9px 20px", cursor: "pointer",
-                    fontSize: 13, color: "#fff", fontWeight: 600,
-                }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <rect x="2" y="3" width="20" height="14" rx="2" /><path d="M8 21h8M12 17v4" />
-                    </svg>
-                    Preview Company ID Card
-                </button>
 
                 {/* <button
                     onClick={handleActivate}
@@ -924,7 +919,7 @@ const ITActivationPage: React.FC = () => {
                     </svg>
                 </button>
 
-
+{/* 
                 <button style={{
                     display: "flex", alignItems: "center", gap: 7, marginLeft: "auto",
                     background: "#fff", border: "1.5px solid #ef4444",
@@ -935,7 +930,7 @@ const ITActivationPage: React.FC = () => {
                         <path d="M18 6 6 18M6 6l12 12" />
                     </svg>
                     Cancel Activation
-                </button>
+                </button> */}
                 <div
                     style={{
                         position: "fixed",
