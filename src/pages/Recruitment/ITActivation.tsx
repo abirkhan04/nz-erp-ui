@@ -82,6 +82,14 @@ const AvatarIcon: React.FC = () => (
     </svg>
 );
 
+export const toBanglaNumber = (
+    value: number | string | null | undefined
+): string => {
+    if (value === null || value === undefined || value === "") return "";
+
+    return value.toString().replace(/\d/g, (digit) => "০১২৩৪৫৬৭৮৯"[Number(digit)]);
+};
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 const ITActivationPage: React.FC = () => {
@@ -110,7 +118,7 @@ const ITActivationPage: React.FC = () => {
 
     const { data: employeeOnAppointment = {} } = useGet<any>({
         key: ["appointment_letter", selectedId],
-        url: `${API_ROUTES.EMPLOYEE_REPORTS}/candidate-entry/${selectedId}`,
+        url: `${API_ROUTES.EMPLOYEE_REPORTS}/joining-letter/${selectedId}`,
         enabled: !!selectedId
     })
 
@@ -932,7 +940,27 @@ const ITActivationPage: React.FC = () => {
                 >
                     <AppointmentLetter
                         ref={appointmentRef}
-                        employee={employeeOnAppointment}
+                        employee={{
+                            date: employeeOnAppointment.currentDate,
+                            employeeId: employeeOnAppointment.employeeId,
+                            name: employeeOnAppointment.employeeNameBangla,
+                            fatherName: employeeOnAppointment.fatherNameBangla,
+                            motherName: employeeOnAppointment.motherNameBangla,
+                            spouseName: employeeOnAppointment.spouseNameBangla,
+                            presentAddress: employeeOnAppointment.presentAddressBangla,
+                            permanentAddress: employeeOnAppointment.permanentAddressBangla,
+                            joiningDate: employeeOnAppointment.joiningDate,
+                            grade: employeeOnAppointment.gradeBangla,
+                            designation: employeeOnAppointment.designationBangla,
+                            department: employeeOnAppointment.departmentBangla,
+                            section: employeeOnAppointment.sectionBangla,
+                            basicSalary: toBanglaNumber(Number(employeeOnAppointment.basicSalary)),
+                            houseRent: toBanglaNumber(Number(employeeOnAppointment.houseRent)),
+                            medicalAllowance: toBanglaNumber(Number(employeeOnAppointment.medicalAllowance)),
+                            conveyanceAllowance: toBanglaNumber(Number(employeeOnAppointment.conveyanceAllowance)),
+                            foodAllowance: toBanglaNumber(Number(employeeOnAppointment.foodAllowance)),
+                            grossSalary: toBanglaNumber(Number(employeeOnAppointment.grossSalary)),
+                        }}
                     />
 
                     <MedicalReport
