@@ -58,7 +58,7 @@ const RecruitmentDashboard = () => {
     {
       title: "TOTAL RECRUITED",
       value: activationSummery?.total,
-      subtitle: new Date().toLocaleDateString(),
+      subtitle: `Up to ${new Date().toLocaleDateString()}`,
       icon: Users,
       color: "text-blue-600",
       bg: "bg-blue-50",
