@@ -91,11 +91,11 @@ export default function EmployeeCard({ employee }: Props) {
           </span>
         </div>
 
-        <InfoRow
+        {/* <InfoRow
           icon={<CreditCard size={16} />}
-          label="Employee ID"
+          label="Temporary ID"
           value={employee.employeeId}
-        />
+        /> */}
 
         <InfoRow
           icon={<BadgeCheck size={16} />}
@@ -119,12 +119,6 @@ export default function EmployeeCard({ employee }: Props) {
           icon={<Phone size={16} />}
           label="Mobile"
           value={employee.mobile}
-        />
-
-        <InfoRow
-          icon={<User size={16} />}
-          label="Reporting To"
-          value={employee.reportingTo}
         />
 
       </div>

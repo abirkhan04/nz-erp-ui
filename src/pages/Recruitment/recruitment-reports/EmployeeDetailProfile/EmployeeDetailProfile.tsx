@@ -218,7 +218,7 @@ export default function EmployeeDetailedProfilePage() {
                     ["Pay Basis", "Monthly"],
                     ["Basic Salary", formatCurrency(employee.basicSalary)],
                     ["House Rent", formatCurrency(employee.houseRent)],
-                    ["Other Allowances", employee.otherAllowances],
+                    ["Conveyance, Medical & Food", 0],
                     ["Gross Salary", formatCurrency(employee.grossSalary)],
                   ]}
                 />
