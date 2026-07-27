@@ -942,7 +942,7 @@ const ITActivationPage: React.FC = () => {
                         ref={appointmentRef}
                         employee={{
                             date: employeeOnAppointment.currentDate,
-                            employeeId: employeeOnAppointment.employeeId,
+                            employeeId: employeeOnAppointment.employeeCode,
                             name: employeeOnAppointment.employeeNameBangla,
                             fatherName: employeeOnAppointment.fatherNameBangla,
                             motherName: employeeOnAppointment.motherNameBangla,

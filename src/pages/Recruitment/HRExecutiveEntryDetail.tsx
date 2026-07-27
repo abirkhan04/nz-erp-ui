@@ -782,6 +782,24 @@ const HRExecutiveEntryDetails = () => {
       data.presentPostOffice ?? ""
     );
 
+    if (data.permanentDivision != null)
+      payload.append("permanentDivisionId", String(data.permanentDivision));
+
+    if (data.permanentDistrict != null)
+      payload.append("permanentDistrictId", String(data.permanentDistrict));
+
+    if (data.permanentPoliceStation != null)
+      payload.append("permanentThanaId", String(data.permanentPoliceStation));
+
+    if (data.presentDivision != null)
+      payload.append("presentDivisionId", String(data.presentDivision));
+
+    if (data.presentDistrict != null)
+      payload.append("presentDistrictId", String(data.presentDistrict));
+
+    if (data.presentPoliceStation != null)
+      payload.append("presentThanaId", String(data.presentPoliceStation));
+
     if (data.educationCertificate) {
       payload.append(
         "educationCertificate",
@@ -1180,7 +1198,7 @@ const HRExecutiveEntryDetails = () => {
     const draftData = draft ? JSON.parse(draft) : {};
 
     // Reset form with draft values
-    
+
     reset(draftData);
     localStorage.removeItem(DRAFT_KEY);
     // Now override the fields you want

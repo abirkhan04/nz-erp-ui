@@ -49,6 +49,7 @@ interface Candidate {
   bloodGroup: string;
   employeeType: number;
   photo: string;
+  proposedMonthlySalary: string;
 }
 
 const PAGE_SIZE = 20;
@@ -476,9 +477,9 @@ const DirectorReview = () => {
                     </div>
 
                     <div>
-                      <p className="text-slate-400 text-xs uppercase">Gross Salary</p>
+                      <p className="text-slate-400 text-xs uppercase">Proposed Salary</p>
                       <p className="font-semibold text-green-700">
-                        ৳{selectedCandidate.grossSalary?.toLocaleString()}
+                        ৳{selectedCandidate.proposedMonthlySalary?.toLocaleString()}
                       </p>
                     </div>
                   </div>

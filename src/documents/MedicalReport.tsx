@@ -1,4 +1,5 @@
 import  { forwardRef } from "react";
+import { genderMapFromNumber, reverseBloodGroupMap } from "../pages/EmployeeInformation/types";
 
 interface MedicalReportProps {
     employee: {
@@ -37,6 +38,7 @@ interface MedicalReportProps {
         remarks: string;
 
         photoUrl?: string;
+        division: string;
     };
 }
 
@@ -301,12 +303,12 @@ export const MedicalReport = forwardRef<
 
                     <LabelValue
                         label="লিঙ্গ"
-                        value={employee.gender}
+                        value={genderMapFromNumber[Number(employee.gender)]}
                     />
 
                     <LabelValue
                         label="রক্তের গ্রুপ"
-                        value={employee.bloodGroup}
+                        value={reverseBloodGroupMap[Number(employee.bloodGroup)]}
                     />
                 </div>
 
@@ -358,15 +360,15 @@ export const MedicalReport = forwardRef<
                                 />
                                 <LabelValue
                                     label="থানা"
-                                    value={employee.policeStation}
-                                />
-                                <LabelValue
-                                    label="উপজেলা"
                                     value={employee.upazila}
                                 />
                                 <LabelValue
                                     label="জেলা"
                                     value={employee.district}
+                                />
+                                <LabelValue
+                                    label="বিভাগ"
+                                    value={employee.division}
                                 />
                             </>
                         ),
