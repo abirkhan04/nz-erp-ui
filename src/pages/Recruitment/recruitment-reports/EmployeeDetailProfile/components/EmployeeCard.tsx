@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import {
   BadgeCheck,
   Building2,
@@ -9,12 +10,47 @@ import {
 
 import type { EmployeeDetailedProfile } from "../types/types";
 import { formatDate } from "../helpers/employeeDetailHelper";
+import { API_ROUTES } from "../../../../../api/routes";
+import { api } from "../../../../../api/client";
 
 interface Props {
   employee: EmployeeDetailedProfile;
 }
 
 export default function EmployeeCard({ employee }: Props) {
+
+     const [image, setImage] = useState<string|null>(null);
+  
+      useEffect(() => {
+          let imageUrl: string;
+  
+          const fetchPhoto = async () => {
+              if (!employee.employeeId) return;
+  
+              try {
+                  const response = await api.get(
+                      `${API_ROUTES.EMPLOYEES}/image?employeeId=${employee.employeeId}`,
+                      {
+                          responseType: "blob",
+                      }
+                  );
+  
+                  imageUrl = URL.createObjectURL(response.data);
+                  setImage(imageUrl);
+              } catch (error) {
+                  console.error(error);
+              }
+          };
+  
+          fetchPhoto();
+  
+          return () => {
+              if (imageUrl) {
+                  URL.revokeObjectURL(imageUrl);
+              }
+          };
+      }, [employee.employeeCode]);
+
   return (
     <div className="overflow-hidden rounded-xl border bg-white shadow-sm">
 
@@ -22,7 +58,7 @@ export default function EmployeeCard({ employee }: Props) {
 
         <img
           src={
-            employee.photoUrl ||
+            image ||
             "https://placehold.co/160x160?text=Photo"
           }
           alt={employee.fullName}
@@ -64,7 +100,7 @@ export default function EmployeeCard({ employee }: Props) {
         <InfoRow
           icon={<BadgeCheck size={16} />}
           label="Permanent ID"
-          value={employee.permanentId}
+          value={employee.employeeCode}
         />
 
         <InfoRow

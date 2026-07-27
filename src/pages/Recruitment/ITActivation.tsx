@@ -8,16 +8,12 @@ import { api } from "../../api/client";
 import { AppointmentLetter } from "../../documents/AppointmentLetter";
 import html2pdf from "html2pdf.js";
 import { MedicalReport } from "../../documents/MedicalReport";
+import type { Document } from "../../types/interfaces";
 
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-interface Document {
-    documentType: number;
-    description: string;
-    filePath: string;
-    //status: "Ready" | "Pending" | "Missing";
-}
+
 
 interface Candidate {
     employeeId: string;
@@ -26,6 +22,7 @@ interface Candidate {
     dateOfBirth: string;
     gender: string;
     enrollmentId: string;
+    employeeCode: string;
     bloodGroup: string;
     religion: string;
     nomineeName: string;
@@ -424,7 +421,7 @@ const ITActivationPage: React.FC = () => {
                     </svg>
                     <input
                         type="text"
-                        placeholder="Search by Temporary ID or Name..."
+                        placeholder="Search by Name..."
                         value={searchTerm}
                         onFocus={() => setDropdownOpen(true)}
                         onBlur={() => setTimeout(() => setDropdownOpen(false), 200)}
@@ -523,7 +520,6 @@ const ITActivationPage: React.FC = () => {
                                 }}
                             >
                                 <th style={{ padding: "12px" }}>#</th>
-                                <th style={{ padding: "12px" }}>Temporary ID</th>
                                 <th style={{ padding: "12px" }}>Full Name</th>
                                 <th style={{ padding: "12px" }}>Date of Birth</th>
                                 <th style={{ padding: "12px" }}>Gender</th>
@@ -547,16 +543,6 @@ const ITActivationPage: React.FC = () => {
                                 >
                                     <td style={{ padding: "12px" }}>
                                         {(page - 1) * PAGE_SIZE + index + 1}
-                                    </td>
-
-                                    <td
-                                        style={{
-                                            padding: "12px",
-                                            color: "#2563eb",
-                                            fontWeight: 600,
-                                        }}
-                                    >
-                                        {candidate.enrollmentId}
                                     </td>
 
                                     <td style={{ padding: "12px" }}>

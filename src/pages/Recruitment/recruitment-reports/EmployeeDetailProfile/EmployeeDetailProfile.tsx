@@ -5,9 +5,8 @@ import BackButton from "../../../../components/BackButton.tsx";
 
 import EmployeeCard from "./components/EmployeeCard.tsx";
 import InfoCard from "./components/InfoCard.tsx";
-import DocumentsCard from "./components/DocumentsCard.tsx";
-import AppointmentCard from "./components/AppointmentCard.tsx";
 import PromotionHistory from "./components/PromotionHistory.tsx";
+import type { Document } from "../../../../types/interfaces.ts";
 
 import {
   formatAddress,
@@ -19,6 +18,8 @@ import type { EmployeeDetailedProfile } from "./types/types";
 import { useGet } from "../../../../hooks/useGet.ts";
 import { API_ROUTES } from "../../../../api/routes.ts";
 import { useParams } from "react-router-dom";
+import { api } from "../../../../api/client.ts";
+import { genderMapFromNumber, reverseBloodGroupMap, reverseDocumentTypeMap, reverseReligionMap } from "../../../EmployeeInformation/types.ts";
 
 export default function EmployeeDetailedProfilePage() {
 
@@ -33,6 +34,40 @@ export default function EmployeeDetailedProfilePage() {
   });
 
 
+
+  const loadDocument = async (doc: Document) => {
+    try {
+      const response = await api.get(
+        `${API_ROUTES.EMPLOYEES}/image-by-path?path=${encodeURIComponent(doc.filePath)}`,
+        {
+          responseType: "blob",
+        }
+      );
+
+      const blob = response.data;
+
+      console.log(blob.type); // Check this
+
+      if (blob.type === "application/octet-stream") {
+        const pdfBlob = new Blob([response.data], {
+          type: "application/pdf",
+        });
+
+        const url = URL.createObjectURL(pdfBlob);
+        window.open(url, "_blank");
+      } else {
+        const url = window.URL.createObjectURL(blob);
+        window.open(url, "_blank");
+      }
+
+    } catch (error) {
+      console.error("Failed to load document", error);
+    }
+  };
+
+
+
+
   useEffect(() => {
     if (employeeCode) {
       setEmployeeId(employeeCode);
@@ -41,6 +76,14 @@ export default function EmployeeDetailedProfilePage() {
   }, [employeeCode]);
 
   const employee = data as EmployeeDetailedProfile | undefined;
+
+  const { data: documentResponse = {} } = useGet<any>({
+    key: ["documents", employee?.employeeId],
+    url: `${API_ROUTES.EMPLOYEES}/uploaded-documents/${employee?.employeeId}`,
+    enabled: !!employee?.employeeId
+  })
+
+  const documents = documentResponse?.files || [];
 
   const handleSearch = () => {
     if (!employeeId.trim()) return;
@@ -145,9 +188,9 @@ export default function EmployeeDetailedProfilePage() {
                     ["Full Name", employee.fullName],
                     ["Father Name", employee.fatherName],
                     ["Date of Birth", formatDate(employee.dateOfBirth)],
-                    ["Gender", employee.gender],
-                    ["Blood Group", employee.bloodGroup],
-                    ["Religion", employee.religion],
+                    ["Gender", genderMapFromNumber[Number(employee.gender)]],
+                    ["Blood Group", reverseBloodGroupMap[Number(employee.bloodGroup)]],
+                    ["Religion", reverseReligionMap[Number(employee.religion)]],
                     ["Nationality", employee.nationality],
                     ["CNIC / NID", employee.idNumber],
                     ["Mobile", employee.mobile],
@@ -239,20 +282,48 @@ export default function EmployeeDetailedProfilePage() {
                   ],
                   [
                     "Blood Group",
-                    employee.medicalInfo?.bloodGroupMedical,
+                    reverseBloodGroupMap[Number(employee.bloodGroup)],
                   ],
                 ]}
               />
 
               <div className="grid gap-4 xl:grid-cols-3">
-
-                <DocumentsCard
-                  documents={employee.documents}
-                />
-
-                <AppointmentCard
-                  letter={employee.appointmentLetterDetails}
-                />
+                <div
+                  style={{
+                    background: "#ffffff",
+                    border: "1px solid #d9e2ef",
+                    borderRadius: "16px",
+                    overflow: "hidden",
+                    boxShadow:
+                      "0 1px 2px rgba(15,23,42,.04), 0 6px 16px rgba(15,23,42,.08)",
+                  }}
+                >
+                  <div style={{ padding: 16, overflowX: "auto" }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+                      <thead>
+                        <tr style={{ background: "#f8fafc", borderBottom: "2px solid #e2e8f0" }}>
+                          {["#", "Document Type"].map(h => (
+                            <th key={h} style={{
+                              padding: "8px 12px", textAlign: "left",
+                              color: "#374151", fontWeight: 700, fontSize: 12,
+                            }}>{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {documents?.map((doc: Document, i: number) => (
+                          <tr key={i} style={{
+                            borderBottom: "1px solid #f3f4f6",
+                            background: i % 2 === 0 ? "#fff" : "#fafafa",
+                          }}>
+                            <td style={{ padding: "9px 12px", color: "#6b7280", fontWeight: 600 }}>{i + 1}</td>
+                            <td style={{ padding: "9px 12px", color: "#0f172a", fontWeight: 600, cursor: "pointer" }} onClick={() => loadDocument(doc)}>{reverseDocumentTypeMap[doc.documentType]}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
 
                 <PromotionHistory
                   history={employee.promotionTransferHistory}

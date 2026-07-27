@@ -1108,7 +1108,7 @@ const HRExecutiveEntryDetails = () => {
       }))
     },
     {
-      label: "Salary",
+      label: "Proposed Gross Salary",
       name: "proposedSalary",
       type: "number",
     },
@@ -1337,7 +1337,7 @@ const HRExecutiveEntryDetails = () => {
 
           {/* Permanent Address */}
           <div>
-            <h3 className="mb-4 text-base font-semibold text-slate-700 border-b pb-2">
+            <h3 className="mt-10 mb-4 text-base font-semibold text-slate-700 border-b pb-2">
               Permanent Address
             </h3>
 

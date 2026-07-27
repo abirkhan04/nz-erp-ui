@@ -228,6 +228,13 @@ export type PhysicalExaminationSetting = {
   isActive: boolean;
 };
 
+export interface Document {
+    documentType: number;
+    description: string;
+    filePath: string;
+    //status: "Ready" | "Pending" | "Missing";
+}
+
 export interface Unit {
   id: string;
   unitCode: string;

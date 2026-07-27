@@ -105,9 +105,9 @@ export const reverseReligionMap: Record<number, string> = {
 
 export const religionMapBangla: Record<string, number> = {
   ইসলাম: 0,
-  হিন্দুধর্ম: 1,
-  বৌদ্ধধর্ম: 2,
-  খ্রিস্টধর্ম: 3,
+  হিন্দু: 1,
+  বৌদ্ধ: 2,
+  খ্রিস্টান: 3,
   অন্যান্য: 4,
 };
 

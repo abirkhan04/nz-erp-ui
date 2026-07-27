@@ -37,7 +37,7 @@ export interface PromotionTransferHistory {
 
 export interface EmployeeDetailedProfile {
   employeeId: string;
-  permanentId: string;
+  employeeCode: string;
   dateOfJoining: string;
   employmentType: string;
   status: string;
