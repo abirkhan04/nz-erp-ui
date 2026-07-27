@@ -165,6 +165,9 @@ const personalInformationFields: SectionField[] =
       label: "লিঙ্গ",
       name: "gender",
       type: "dropdown",
+      rules: {
+        required: "লিঙ্গ আবশ্যক"
+      },
       options: Object.entries(genderMapBengali).map(([value, label]) => ({
         label,
         value: Number(value),
@@ -174,12 +177,18 @@ const personalInformationFields: SectionField[] =
       label: "ধর্ম",
       name: "religion",
       type: "dropdown",
+      rules: {
+        required: "ধর্ম আবশ্যক"
+      },
       options: Object.entries(religionMapBangla).map(([label, value]) => ({ label, value })),
     },
     {
       label: "রক্তের গ্রুপ",
       name: "bloodGroup",
       type: "dropdown",
+      rules: {
+        required: "রক্তের গ্রুপ আবশ্যক"
+      },
       options: Object.entries(bloodGroupMapBangla).map(([label, value]) => ({ label, value }))
     },
     {
@@ -211,7 +220,7 @@ const personalInformationFields: SectionField[] =
 
 
 const GateRegistration = ({
-  candidate,
+  candidate, onUpdated
 }: any) => {
 
   const [draftData, setDraftData] = useState<GateRegistrationForm | null>(null);
@@ -275,6 +284,10 @@ const GateRegistration = ({
     url: API_ROUTES.DESIGNATION,
   });
 
+  
+
+  const sameAsPermanent = watch("sameAsPermanent");
+
   const addressInformationFields: SectionField[] = [
     // Present Address
     {
@@ -293,7 +306,7 @@ const GateRegistration = ({
       label: "জেলা",
       name: "presentDistrict",
       type: "dropdown",
-      options: presentDistricts.map(i => ({
+      options: (sameAsPermanent ? permanentDistricts: presentDistricts).map(i => ({
         label: i.districtNameBangla?.trim()
           ? i.districtNameBangla
           : i.districtName,
@@ -307,7 +320,7 @@ const GateRegistration = ({
       label: "থানা / উপজেলা",
       name: "presentPoliceStation",
       type: "dropdown",
-      options: presentThanas.map(i => ({
+      options: (sameAsPermanent? permanentThanas: presentThanas).map(i => ({
         label: i.thanaNameBangla?.trim()
           ? i.thanaNameBangla
           : i.thanaName,
@@ -470,10 +483,6 @@ const GateRegistration = ({
     );
 
 
-
-
-
-  const sameAsPermanent = watch("sameAsPermanent");
 
   const DRAFT_KEY = "gateRegistrationDraft";
 
@@ -823,16 +832,25 @@ const GateRegistration = ({
 
       dateOfBirth: data.dateOfBirth,
 
-      // TODO: Convert from dropdown value
       gender:
-        Number(data.gender),
+        data.gender !== "" && data.gender !== undefined && data.gender !== null
+          ? Number(data.gender)
+          : null,
 
-      religion: Number(data.religion),
+      religion:
+        data.religion !== "" && data.religion !== undefined && data.religion !== null
+          ? Number(data.religion)
+          : null,
 
-      bloodGroup: Number(data.bloodGroup),
+      bloodGroup:
+        data.bloodGroup !== "" && data.bloodGroup !== undefined && data.bloodGroup !== null
+          ? Number(data.bloodGroup)
+          : null,
 
       idType:
-        Number(data.nidType),
+        data.nidType !== "" && data.nidType !== undefined && data.nidType !== null
+          ? Number(data.nidType)
+          : null,
 
       idNumber: data.nidNumber,
 
@@ -899,6 +917,9 @@ const GateRegistration = ({
         toast.success(
           "গেট রেজিস্ট্রেশন সফলভাবে আপডেট হয়েছে"
         );
+
+
+      onUpdated?.();
       } catch (error: any) {
         toast.error(
           `আপডেট ব্যর্থ হয়েছে। ত্রুটি: ${error.message}`
@@ -928,6 +949,22 @@ const GateRegistration = ({
       },
     });
   };
+
+    useEffect(() => {
+    if (!sameAsPermanent) return;
+
+    (async () => {
+      setValue("presentDivision", permanentDivision);
+
+      await new Promise(r => setTimeout(r, 250));
+
+      setValue("presentDistrict", permanentDistrict);
+
+      await new Promise(r => setTimeout(r, 500));
+
+      setValue("presentPoliceStation", permanentPoliceStation);
+    })();
+  }, [sameAsPermanent]);
 
   const navigate = useNavigate();
 

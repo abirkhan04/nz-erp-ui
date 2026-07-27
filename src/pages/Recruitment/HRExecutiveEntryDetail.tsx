@@ -1170,6 +1170,35 @@ const HRExecutiveEntryDetails = () => {
     })();
   }, [sameAsPermanent]);
 
+  const refreshGateData = async () => {
+    const { data } = await api.get(
+      `${API_ROUTES.EMPLOYEES}/employee-detail/${candidateId}`
+    );
+
+    // Load draft
+    const draft = localStorage.getItem(DRAFT_KEY);
+    const draftData = draft ? JSON.parse(draft) : {};
+
+    // Reset form with draft values
+    
+    reset(draftData);
+    localStorage.removeItem(DRAFT_KEY);
+    // Now override the fields you want
+    setValue("company", data.unitId ?? null);
+    setValue("designation", data.designationId ?? null);
+    setValue("mobileNumber", data.mobile ?? null);
+
+    setValue("permanentDivision", data.permanentDivisionId ?? null);
+    setValue("permanentDistrict", data.permanentDistrictId ?? null);
+    setValue("permanentPoliceStation", data.permanentUpazilaId ?? null);
+
+    setValue("presentDivision", data.presentDivisionId ?? null);
+    setValue("presentDistrict", data.presentDistrictId ?? null);
+    setValue("presentPoliceStation", data.presentUpazilaId ?? null);
+
+    // Remove draft if you no longer need it
+  };
+
   return (<>
 
     {
@@ -1180,7 +1209,7 @@ const HRExecutiveEntryDetails = () => {
           </summary>
 
           <div className="p-4">
-            <GateRegistration candidate={candidateOnGate} />
+            <GateRegistration candidate={candidateOnGate} onUpdated={refreshGateData} />
           </div>
         </details>
       )
@@ -1408,7 +1437,7 @@ const HRExecutiveEntryDetails = () => {
                 name="presentDistrict"
                 type="dropdown"
                 disabled={sameAsPermanent}
-                options={(sameAsPermanent? permanentDistricts: presentDistricts).map((i) => ({
+                options={(sameAsPermanent ? permanentDistricts : presentDistricts).map((i) => ({
                   label: i.districtName,
                   value: i.id,
                 }))}
@@ -1422,7 +1451,7 @@ const HRExecutiveEntryDetails = () => {
                 name="presentPoliceStation"
                 type="dropdown"
                 disabled={sameAsPermanent}
-                options={(sameAsPermanent? permanentThanas: presentThanas).map((i) => ({
+                options={(sameAsPermanent ? permanentThanas : presentThanas).map((i) => ({
                   label: i.thanaName,
                   value: i.id,
                 }))}
