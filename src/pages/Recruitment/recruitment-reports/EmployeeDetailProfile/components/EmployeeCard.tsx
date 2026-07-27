@@ -3,9 +3,7 @@ import {
   BadgeCheck,
   Building2,
   Calendar,
-  CreditCard,
   Phone,
-  User,
 } from "lucide-react";
 
 import type { EmployeeDetailedProfile } from "../types/types";
