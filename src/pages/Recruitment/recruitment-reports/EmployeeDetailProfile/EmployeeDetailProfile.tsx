@@ -191,7 +191,6 @@ export default function EmployeeDetailedProfilePage() {
                     ["Gender", genderMapFromNumber[Number(employee.gender)]],
                     ["Blood Group", reverseBloodGroupMap[Number(employee.bloodGroup)]],
                     ["Religion", reverseReligionMap[Number(employee.religion)]],
-                    ["Nationality", employee.nationality],
                     ["CNIC / NID", employee.idNumber],
                     ["Mobile", employee.mobile],
                   ]}
@@ -207,8 +206,7 @@ export default function EmployeeDetailedProfilePage() {
                     ["Designation", employee.designation],
                     ["Grade", employee.grade],
                     ["Shift", employee.shift],
-                    ["Weekly Off", employee.weeklyOff],
-                    ["Reporting To", employee.reportingTo],
+                    ["Weekly Off", employee.weeklyOff]
                   ]}
                 />
 
@@ -218,7 +216,9 @@ export default function EmployeeDetailedProfilePage() {
                     ["Pay Basis", "Monthly"],
                     ["Basic Salary", formatCurrency(employee.basicSalary)],
                     ["House Rent", formatCurrency(employee.houseRent)],
-                    ["Conveyance, Medical & Food", 0],
+                    ["Conveyance", employee.conveyanceAllowance],
+                    ["Medical", employee.medicalAllowance],
+                    ["Food", employee.foodAllowance],
                     ["Gross Salary", formatCurrency(employee.grossSalary)],
                   ]}
                 />
@@ -255,11 +255,7 @@ export default function EmployeeDetailedProfilePage() {
                     [
                       "Mobile",
                       employee.nomineeInfo?.mobile,
-                    ],
-                    [
-                      "Address",
-                      employee.nomineeInfo?.address,
-                    ],
+                    ]
                   ]}
                 />
 

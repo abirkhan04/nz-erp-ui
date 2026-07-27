@@ -15,8 +15,12 @@ export const formatCurrency = (
 ): string => {
   if (value === null || value === undefined) return "-";
 
-  return new Intl.NumberFormat("en-BD").format(value);
+  return new Intl.NumberFormat("en-BD", {
+    maximumFractionDigits: 0,
+    minimumFractionDigits: 0,
+  }).format(Math.round(value));
 };
+
 
 export const formatDate = (
   value: string | null | undefined

@@ -63,6 +63,9 @@ export interface EmployeeDetailedProfile {
   shift: string;
   weeklyOff: string;
   reportingTo: string;
+  conveyanceAllowance: string;
+  foodAllowance: string;
+  medicalAllowance: string;
 
   basicSalary: number;
   houseRent: number;
