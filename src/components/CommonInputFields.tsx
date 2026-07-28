@@ -271,6 +271,9 @@ const CommonInputField = <T extends FieldValues>({
                   placeholderText="dd/MM/yyyy"
                   className={inputClass}
                   disabled={disabled}
+                  showYearDropdown
+                  scrollableYearDropdown
+                  yearDropdownItemNumber={100}
                 />
               );
             }}
