@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { CheckCircle, RefreshCw, Search, Send, XCircle } from "lucide-react";
 import { useForm, useFieldArray, useWatch } from "react-hook-form";
 import { useGet } from "../../hooks/useGet";
@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../api/client";
 import { EmployeeNature, reverseBloodGroupMap } from "../EmployeeInformation/types";
+import { formatDate } from "../../utils";
 
 interface SalaryRow {
   selected: boolean;
@@ -56,6 +57,7 @@ const PAGE_SIZE = 20;
 const EMPTY_CANDIDATES: Candidate[] = [];
 
 const DirectorReview = () => {
+  const detailsRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
   const [image, setImage] = useState<string | null>(null);
   const [page, setPage] = useState(1);
@@ -133,6 +135,15 @@ const DirectorReview = () => {
       response.data
     );
   }
+
+  useEffect(() => {
+    if (selectedCandidate) {
+      detailsRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  }, [selectedCandidate]);
 
   useEffect(() => { setPage(1); }, [search]);
   useEffect(() => {
@@ -408,7 +419,7 @@ const DirectorReview = () => {
           {/* Detailed Row Review Panel (Synced safely to current choice) */}
           {/* ========================================================== */}
           {selectedCandidate && selectedCandidateFormIndex !== -1 && (
-            <div className="mt-8 space-y-6">
+            <div className="mt-8 space-y-6" ref={detailsRef}>
               <div className="grid grid-cols-12 gap-6">
 
                 {/* Info Block */}
@@ -434,7 +445,7 @@ const DirectorReview = () => {
 
                     <div>
                       <p className="text-slate-400 text-xs uppercase">Date of Birth</p>
-                      <p className="font-semibold">{selectedCandidate.dateOfBirth}</p>
+                      <p className="font-semibold">{formatDate(selectedCandidate.dateOfBirth)}</p>
                     </div>
 
                     <div>

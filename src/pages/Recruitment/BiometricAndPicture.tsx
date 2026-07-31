@@ -280,14 +280,16 @@ const BiometricCapture = () => {
             setFingerprintCaptured(
                 false
             );
-
-            setTimeout(() => {
-                candidateDetailsRef.current?.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start",
-                });
-            }, 0);
         };
+
+    useEffect(() => {
+        if (selectedCandidate) {
+            candidateDetailsRef.current?.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+            });
+        }
+    }, [selectedCandidate]);
 
     const navigate = useNavigate();
 
