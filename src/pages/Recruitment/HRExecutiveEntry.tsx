@@ -8,9 +8,7 @@ import { useNavigate } from "react-router-dom";
 
 import {
     ClipboardCheck,
-    CircleX,
     Search,
-    ChevronDown,
 } from "lucide-react";
 import { API_ROUTES } from "../../api/routes";
 import { useGet } from "../../hooks/useGet";
