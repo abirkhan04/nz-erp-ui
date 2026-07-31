@@ -19,6 +19,7 @@ import toast from "react-hot-toast";
 import { api } from "../../api/client";
 import { useNavigate } from "react-router-dom";
 import { EmployeeNature, genderMapFromNumber, reverseBloodGroupMap } from "../EmployeeInformation/types";
+import { formatDate } from "../../utils";
 
 export interface Document {
     employeeId: string | undefined;
@@ -56,6 +57,8 @@ interface Candidate {
 const PAGE_SIZE = 20;
 
 const BiometricCapture = () => {
+
+    const candidateDetailsRef = useRef<HTMLDivElement>(null);
 
     const { data: candidates = [], refetch } = useGet<Candidate[]>({
         key: ["candidates"],
@@ -277,6 +280,13 @@ const BiometricCapture = () => {
             setFingerprintCaptured(
                 false
             );
+
+            setTimeout(() => {
+                candidateDetailsRef.current?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "start",
+                });
+            }, 0);
         };
 
     const navigate = useNavigate();
@@ -284,7 +294,7 @@ const BiometricCapture = () => {
     const handleFingerPrintCaptured = async () => {
         //const response = await api.get("Fingerprint/verify-employee-code?deviceId=10&unit=ho");
         // if (response.data.employeeCode === selectedCandidate?.employeeCode)
-            setFingerprintCaptured(true);
+        setFingerprintCaptured(true);
     }
 
     return (
@@ -438,7 +448,7 @@ const BiometricCapture = () => {
                                 ) => (
                                     <tr
                                         key={
-                                            candidate.id
+                                            candidate.employeeId
                                         }
                                         className="border-t border-slate-100 hover:bg-slate-50"
                                     >
@@ -464,7 +474,7 @@ const BiometricCapture = () => {
 
                                         <td className="px-4 py-3">
                                             {
-                                                candidate.dateOfBirth
+                                                formatDate(candidate.dateOfBirth)
                                             }
                                         </td>
 
@@ -482,7 +492,7 @@ const BiometricCapture = () => {
 
                                         <td className="px-4 py-3">
                                             {
-                                                candidate.dateOfJoining
+                                                formatDate(candidate.dateOfJoining)
                                             }
                                         </td>
 
@@ -560,7 +570,8 @@ const BiometricCapture = () => {
 
                 {selectedCandidate && (
                     <>
-                        <div className="mt-8 rounded-xl border border-slate-200 bg-white">
+                        <div ref={candidateDetailsRef}
+                            className="mt-8 rounded-xl border border-slate-200 bg-white">
 
                             <div className="border-b border-slate-200 px-6 py-4">
                                 <h3 className="text-lg font-semibold text-blue-700">
@@ -700,16 +711,18 @@ const BiometricCapture = () => {
 
                             </div>
 
-                            <div className="mt-4 flex gap-3">
+                            <div className="mt-4 gap-3">
 
                                 <button
                                     onClick={startCamera}
+                                    className="mt-5 w-[200px] rounded-lg bg-blue-600 py-3 font-medium text-white hover:bg-blue-700"
                                 >
                                     Start Camera
                                 </button>
 
                                 <button
                                     onClick={capturePhoto}
+                                    className="mt-5 w-[200px] ml-2 rounded-lg bg-blue-600 py-3 font-medium text-white hover:bg-blue-700"
                                 >
                                     Capture
                                 </button>
