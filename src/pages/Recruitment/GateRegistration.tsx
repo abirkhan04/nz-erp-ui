@@ -100,122 +100,7 @@ export const banglaWithNumberValidation = {
 };
 
 
-const personalInformationFields: SectionField[] =
-  [
-    {
-      label: "পূর্ণ নাম(বাংলা)",
-      name: "fullName",
-      bangla: true,
-      rules: {
-        required: "পূর্ণ নাম আবশ্যক",
-        ...banglaOnlyValidation
-      },
-    },
-    {
-      label: "পিতার নাম(বাংলা)",
-      name: "fatherName",
-      bangla: true,
-      rules: {
-        required: "পিতার নাম আবশ্যক",
-        ...banglaOnlyValidation
-      },
-    },
-    {
-      label: "মাতার নাম(বাংলা)",
-      name: "motherName",
-      bangla: true,
-      rules: {
-        required: "মাতার নাম আবশ্যক",
-        ...banglaOnlyValidation
-      },
-    },
-    {
-      label: "পরিচয়পত্রের ধরন",
-      name: "nidType",
-      type: "dropdown",
-      rules: {
-        required: "পরিচয়পত্রের ধরন আবশ্যক"
-      },
-      options: Object.entries(idTypeMapBangla).map(([label, value]) => ({
-        label,
-        value
-      })),
-    },
-    {
-      label: "পরিচয়পত্র নম্বর",
-      name: "nidNumber",
-      rules: {
-        required: "নম্বর আবশ্যক",
-      },
-    },
-    {
-      label: "জন্ম তারিখ",
-      name: "dateOfBirth",
-      type: "date",
-      rules: {
-        required: "জন্ম তারিখ আবশ্যক",
-      }
-    },
-    {
-      label: "মোবাইল নম্বর",
-      name: "mobileNumber",
-      rules: mobileValidation,
-    },
-    {
-      label: "লিঙ্গ",
-      name: "gender",
-      type: "dropdown",
-      rules: {
-        required: "লিঙ্গ আবশ্যক"
-      },
-      options: Object.entries(genderMapBengali).map(([value, label]) => ({
-        label,
-        value: Number(value),
-      }))
-    },
-    {
-      label: "ধর্ম",
-      name: "religion",
-      type: "dropdown",
-      rules: {
-        required: "ধর্ম আবশ্যক"
-      },
-      options: Object.entries(religionMapBangla).map(([label, value]) => ({ label, value })),
-    },
-    {
-      label: "রক্তের গ্রুপ",
-      name: "bloodGroup",
-      type: "dropdown",
-      rules: {
-        required: "রক্তের গ্রুপ আবশ্যক"
-      },
-      options: Object.entries(bloodGroupMapBangla).map(([label, value]) => ({ label, value }))
-    },
-    {
-      label: "নমিনির নাম",
-      name: "nomineeNameBangla",
-      type: "text",
-      bangla: true,
-      rules: {
-        ...banglaOnlyValidation
-      }
-    },
-    {
-      label: "নমিনির সাথে সম্পর্ক",
-      name: "nomineeRelation",
-      type: "dropdown",
-      options: [
-        { label: "পিতা", value: "পিতা" },
-        { label: "মাতা", value: "মাতা" },
-        { label: "স্বামী", value: "স্বামী" },
-        { label: "স্ত্রী", value: "স্ত্রী" },
-        { label: "পুত্র", value: "পুত্র" },
-        { label: "কন্যা", value: "কন্যা" },
-        { label: "ভাই", value: "ভাই" },
-        { label: "বোন", value: "বোন" }
-      ]
-    },
-  ];
+
 
 
 
@@ -244,6 +129,149 @@ const GateRegistration = ({
     },
   });
 
+  // const nidType = Number(watch("nidType"));
+
+  // useEffect(() => {
+  //   if (nidType === 0 || nidType ===1 || nidType === 2) {
+  //     trigger("nidNumber");
+  //   }
+  // }, [nidType, trigger]);
+
+
+  const personalInformationFields: SectionField[] =
+    [
+      {
+        label: "পূর্ণ নাম(বাংলা)",
+        name: "fullName",
+        bangla: true,
+        rules: {
+          required: "পূর্ণ নাম আবশ্যক",
+          ...banglaOnlyValidation
+        },
+      },
+      {
+        label: "পিতার নাম(বাংলা)",
+        name: "fatherName",
+        bangla: true,
+        rules: {
+          required: "পিতার নাম আবশ্যক",
+          ...banglaOnlyValidation
+        },
+      },
+      {
+        label: "মাতার নাম(বাংলা)",
+        name: "motherName",
+        bangla: true,
+        rules: {
+          required: "মাতার নাম আবশ্যক",
+          ...banglaOnlyValidation
+        },
+      },
+      {
+        label: "পরিচয়পত্রের ধরন",
+        name: "nidType",
+        type: "dropdown",
+        rules: {
+          required: "পরিচয়পত্রের ধরন আবশ্যক"
+        },
+        options: Object.entries(idTypeMapBangla).map(([label, value]) => ({
+          label,
+          value
+        })),
+      },
+      {
+        label: "পরিচয়পত্র নম্বর",
+        name: "nidNumber",
+        rules: {
+          required: "নম্বর আবশ্যক",
+          validate: (value: string) => {
+            const nidType = Number(getValues("nidType"));
+
+            // NID / Birth Certificate → numeric only
+            if (nidType === 0 || nidType === 1) {
+              return /^\d+$/.test(value)
+                ? true
+                : "শুধুমাত্র সংখ্যা প্রদান করুন";
+            }
+
+            // Passport → alphanumeric
+            if (nidType === 2) {
+              return /^[A-Za-z0-9]+$/.test(value)
+                ? true
+                : "শুধুমাত্র ইংরেজি অক্ষর ও সংখ্যা ব্যবহার করুন";
+            }
+            return true;
+          }
+        },
+      },
+      {
+        label: "জন্ম তারিখ",
+        name: "dateOfBirth",
+        type: "date",
+        rules: {
+          required: "জন্ম তারিখ আবশ্যক",
+        }
+      },
+      {
+        label: "মোবাইল নম্বর",
+        name: "mobileNumber",
+        rules: mobileValidation,
+      },
+      {
+        label: "লিঙ্গ",
+        name: "gender",
+        type: "dropdown",
+        rules: {
+          required: "লিঙ্গ আবশ্যক"
+        },
+        options: Object.entries(genderMapBengali).map(([value, label]) => ({
+          label,
+          value: Number(value),
+        }))
+      },
+      {
+        label: "ধর্ম",
+        name: "religion",
+        type: "dropdown",
+        rules: {
+          required: "ধর্ম আবশ্যক"
+        },
+        options: Object.entries(religionMapBangla).map(([label, value]) => ({ label, value })),
+      },
+      {
+        label: "রক্তের গ্রুপ",
+        name: "bloodGroup",
+        type: "dropdown",
+        rules: {
+          required: "রক্তের গ্রুপ আবশ্যক"
+        },
+        options: Object.entries(bloodGroupMapBangla).map(([label, value]) => ({ label, value }))
+      },
+      {
+        label: "নমিনির নাম",
+        name: "nomineeNameBangla",
+        type: "text",
+        bangla: true,
+        rules: {
+          ...banglaOnlyValidation
+        }
+      },
+      {
+        label: "নমিনির সাথে সম্পর্ক",
+        name: "nomineeRelation",
+        type: "dropdown",
+        options: [
+          { label: "পিতা", value: "পিতা" },
+          { label: "মাতা", value: "মাতা" },
+          { label: "স্বামী", value: "স্বামী" },
+          { label: "স্ত্রী", value: "স্ত্রী" },
+          { label: "পুত্র", value: "পুত্র" },
+          { label: "কন্যা", value: "কন্যা" },
+          { label: "ভাই", value: "ভাই" },
+          { label: "বোন", value: "বোন" }
+        ]
+      },
+    ];
 
   const { data: divisions = [] } = useGet<any[]>({
     key: ["divisions"],
@@ -284,7 +312,7 @@ const GateRegistration = ({
     url: API_ROUTES.DESIGNATION,
   });
 
-  
+
 
   const sameAsPermanent = watch("sameAsPermanent");
 
@@ -306,7 +334,7 @@ const GateRegistration = ({
       label: "জেলা",
       name: "presentDistrict",
       type: "dropdown",
-      options: (sameAsPermanent ? permanentDistricts: presentDistricts).map(i => ({
+      options: (sameAsPermanent ? permanentDistricts : presentDistricts).map(i => ({
         label: i.districtNameBangla?.trim()
           ? i.districtNameBangla
           : i.districtName,
@@ -320,7 +348,7 @@ const GateRegistration = ({
       label: "থানা / উপজেলা",
       name: "presentPoliceStation",
       type: "dropdown",
-      options: (sameAsPermanent? permanentThanas: presentThanas).map(i => ({
+      options: (sameAsPermanent ? permanentThanas : presentThanas).map(i => ({
         label: i.thanaNameBangla?.trim()
           ? i.thanaNameBangla
           : i.thanaName,
@@ -919,7 +947,7 @@ const GateRegistration = ({
         );
 
 
-      onUpdated?.();
+        onUpdated?.();
       } catch (error: any) {
         toast.error(
           `আপডেট ব্যর্থ হয়েছে। ত্রুটি: ${error.message}`
@@ -950,7 +978,7 @@ const GateRegistration = ({
     });
   };
 
-    useEffect(() => {
+  useEffect(() => {
     if (!sameAsPermanent) return;
 
     (async () => {
@@ -986,7 +1014,7 @@ const GateRegistration = ({
 
         <div>
           <h1 className="text-2xl font-bold text-blue-900">
-            গেট রেজিস্ট্রেশন
+            গেইট রেজিস্ট্রেশন
           </h1>
 
           <p className="text-sm text-gray-500">

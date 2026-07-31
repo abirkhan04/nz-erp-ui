@@ -10,6 +10,7 @@ import {
   UploadCloud,
 } from "lucide-react";
 
+
 import {
   GraduationCap,
   IdCard,
@@ -1155,8 +1156,21 @@ const HRExecutiveEntryDetails = () => {
       name: "employeeCode",
       type: "text",
       rules: {
-        required: "Employee Code is required"
-      }
+        required: "Employee Code is required",
+        validate: async (
+          value: string | boolean | File | null | undefined
+        ) => {
+          if (typeof value !== "string" || !value) {
+            return true;
+          }
+
+          const { data } = await api.get(
+            `${API_ROUTES.EMPLOYEE_VERIFICATION}?employeeCode=${value}`
+          );
+
+          return data.isUnique || data.message;
+        }
+      },
     },
     {
       label: "Mobile Number",
@@ -1170,6 +1184,36 @@ const HRExecutiveEntryDetails = () => {
       type: "text",
     }
   ];
+
+  // const employeeCode = watch("employeeCode");
+
+  // useEffect(() => {
+  //   if (!employeeCode?.trim()) {
+  //     clearErrors("employeeCode");
+  //     return;
+  //   }
+
+  //   const timer = setTimeout(async () => {
+  //     try {
+  //       const { data } = await api.get(
+  //         `${API_ROUTES.EMPLOYEE_VERIFICATION}?employeeCode=${employeeCode}`
+  //       );
+
+  //       if (data.isUnique) {
+  //         clearErrors("employeeCode");
+  //       } else {
+  //         setError("employeeCode", {
+  //           type: "manual",
+  //           message: data.message,
+  //         });
+  //       }
+  //     } catch {
+  //       // Optionally show a toast or ignore
+  //     }
+  //   }, 800);
+
+  //   return () => clearTimeout(timer);
+  // }, [employeeCode, clearErrors, setError]);
 
 
   useEffect(() => {

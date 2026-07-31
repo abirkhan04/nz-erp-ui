@@ -42,6 +42,7 @@ export const API_ROUTES = {
   BANKS: "Banks",
 
   // Reports
-  EMPLOYEE_REPORTS: "EmployeeReports"
+  EMPLOYEE_REPORTS: "EmployeeReports",
+  EMPLOYEE_VERIFICATION: "EmployeeVerification/verify-code-uniqueness",
 
 };
