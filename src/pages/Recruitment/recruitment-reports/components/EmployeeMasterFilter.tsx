@@ -3,10 +3,17 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 
 import CommonInputField from "../../../../components/CommonInputFields";
-import type { EmployeeMasterFilterModel, Unit } from "../../../../types/interfaces";
+import type {
+    EmployeeMasterFilterModel,
+    Unit,
+} from "../../../../types/interfaces";
 import { API_ROUTES } from "../../../../api/routes";
 import { useGet } from "../../../../hooks/useGet";
-import { EmployeeNature } from "../../../EmployeeInformation/types";
+import {
+    EmployeeNature,
+    genderMapFromNumber,
+    religionMap,
+} from "../../../EmployeeInformation/types";
 
 type Props = {
     defaultValues?: EmployeeMasterFilterModel;
@@ -67,17 +74,177 @@ export default function EmployeeMasterFilter({
         url: API_ROUTES.CELL,
     });
 
+    const { data: grades = [] } = useGet<any[]>({
+        key: ["grades"],
+        url: API_ROUTES.GRADE,
+    });
 
+    const { data: shifts = [] } = useGet<any[]>({
+        key: ["shifts"],
+        url: API_ROUTES.SHIFT,
+    });
 
+    const { data: divisions = [] } = useGet<any[]>({
+        key: ["divisions"],
+        url: API_ROUTES.DIVISIONS,
+    });
+
+    type FilterField = {
+        label: string;
+        name: keyof EmployeeMasterFilterModel;
+        placeholder?: string;
+        type: "text" | "dropdown" | "date";
+        options?: {
+            label: string;
+            value: string | number;
+        }[];
+    };
+
+    const filterFields: FilterField[] = [
+        {
+            label: "Employee ID",
+            name: "employeeCode",
+            placeholder: "Employee ID",
+            type: "text",
+        },
+        {
+            label: "Mobile Number",
+            placeholder: "Mobile Number",
+            name: "employeeMobile",
+            type: "text",
+        },
+        {
+            label: "NID Number",
+            name: "employeeNID",
+            placeholder: "NID Number",
+            type: "text",
+        },
+        {
+            label: "Unit",
+            name: "unitId",
+            type: "dropdown",
+            options: units.map(unit => ({
+                label: unit.unitName,
+                value: unit.id,
+            })),
+        },
+        {
+            label: "Sub Unit",
+            name: "subUnitId",
+            type: "dropdown",
+            options: subUnits.map(subUnit => ({
+                label: subUnit.subunitName,
+                value: subUnit.id,
+            })),
+        },
+        {
+            label: "Department",
+            name: "departmentId",
+            type: "dropdown",
+            options: departments.map(department => ({
+                label: department.departmentName,
+                value: department.departmentId,
+            })),
+        },
+        {
+            label: "Section",
+            name: "sectionId",
+            type: "dropdown",
+            options: sections.map(section => ({
+                label: section.sectionName,
+                value: section.id,
+            })),
+        },
+        {
+            label: "Cell",
+            name: "cellId",
+            type: "dropdown",
+            options: cells.map(cell => ({
+                label: cell.cellName,
+                value: cell.id,
+            })),
+        },
+        {
+            label: "Grade",
+            name: "grade",
+            type: "dropdown",
+            options: grades.map(grade => ({
+                label: grade.gradeName,
+                value: grade.id,
+            })),
+        },
+        {
+            label: "Shift",
+            name: "shiftId",
+            type: "dropdown",
+            options: shifts.map(shift => ({
+                label: shift.shiftName,
+                value: shift.id,
+            })),
+        },
+        {
+            label: "Division",
+            name: "divisions",
+            type: "dropdown",
+            options: divisions.map(division => ({
+                label: division.divisionName,
+                value: division.id,
+            })),
+        },
+        {
+            label: "Religion",
+            name: "religion",
+            type: "dropdown",
+            options: Object.entries(religionMap).map(([label, value]) => ({
+                label,
+                value,
+            })),
+        },
+        {
+            label: "Gender",
+            name: "gender",
+            type: "dropdown",
+            options: Object.entries(genderMapFromNumber).map(([value, label]) => ({
+                label,
+                value,
+            })),
+        },
+        {
+            label: "Employee Type",
+            name: "employeeNatureId",
+            type: "dropdown",
+            options: Object.entries(EmployeeNature).map(([label, value]) => ({
+                label,
+                value,
+            })),
+        },
+        {
+            label: "Employee Type",
+            name: "employeeNatureId",
+            type: "dropdown",
+            options: Object.entries(EmployeeNature).map(([label, value]) => ({
+                label,
+                value,
+            })),
+        },
+        {
+            label: "Joining From",
+            name: "joiningFromDate",
+            type: "date",
+        },
+        {
+            label: "Joining To",
+            name: "joiningToDate",
+            type: "date",
+        },
+    ];
     useEffect(() => {
         resetField("subUnitId");
-    }, [unitId]);
-
+    }, [unitId, resetField]);
 
     useEffect(() => {
         resetField("sectionId");
-    }, [departmentId]);
-
+    }, [departmentId, resetField]);
 
     useEffect(() => {
         if (defaultValues) {
@@ -87,12 +254,24 @@ export default function EmployeeMasterFilter({
 
     const handleReset = () => {
         reset({
+            employeeCode: "",
+            employeeMobile: "",
+            employeeNID: "",
+
             unitId: undefined,
             subUnitId: undefined,
             departmentId: undefined,
             sectionId: undefined,
             cellId: undefined,
+
+            grade: undefined,
+            divisions: undefined,
+            shiftId: undefined,
+
+            religion: undefined,
+            gender: undefined,
             employeeNatureId: undefined,
+
             joiningFromDate: "",
             joiningToDate: "",
         });
@@ -106,117 +285,22 @@ export default function EmployeeMasterFilter({
             className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm"
         >
             <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-4">
-
-                <CommonInputField
-                    label="Unit"
-                    name="unitId"
-                    type="dropdown"
-                    register={register}
-                    control={control}
-                    errors={errors}
-                    options={units.map((unit) => ({
-                        label: unit.unitName,
-                        value: unit.id,
-                    }))}
-                />
-
-                <CommonInputField
-                    label="Sub Unit"
-                    name="subUnitId"
-                    type="dropdown"
-                    register={register}
-                    control={control}
-                    errors={errors}
-                    options={subUnits.map((subUnit) => ({
-                        label: subUnit.subunitName,
-                        value: subUnit.id,
-                    }))}
-                />
-
-                <CommonInputField
-                    label="Department"
-                    name="departmentId"
-                    type="dropdown"
-                    register={register}
-                    control={control}
-                    errors={errors}
-                    options={departments.map((department) => ({
-                        label: department.departmentName,
-                        value: department.departmentId,
-                    }))}
-                />
-
-                <CommonInputField
-                    label="Section"
-                    name="sectionId"
-                    type="dropdown"
-                    register={register}
-                    control={control}
-                    errors={errors}
-                    options={sections.map((section) => ({
-                        label: section.sectionName,
-                        value: section.id,
-                    }))}
-                />
-
-                <CommonInputField
-                    label="Cell"
-                    name="cellId"
-                    type="dropdown"
-                    register={register}
-                    control={control}
-                    errors={errors}
-                    options={cells.map((cell) => ({
-                        label: cell.cellName,
-                        value: cell.id,
-                    }))}
-                />
-
-                <CommonInputField
-                    label="Employee Type"
-                    name="employeeNatureId"
-                    type="dropdown"
-                    register={register}
-                    control={control}
-                    errors={errors}
-                    options={Object.entries(EmployeeNature).map(([label, value]) => ({
-                        label,
-                        value
-                    }))}
-                />
-
-                {/* Joining From */}
-
-                <div>
-                    <label className="block mb-1 text-sm font-medium text-gray-700">
-                        Joining From
-                    </label>
-
-                    <input
-                        type="date"
-                        {...register("joiningFromDate")}
-                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                {filterFields.map((field) => (
+                    <CommonInputField
+                        key={field.name}
+                        label={field.label}
+                        placeholder={field.placeholder}
+                        name={field.name}
+                        type={field.type}
+                        register={register}
+                        control={control}
+                        errors={errors}
+                        options={field.options}
                     />
-                </div>
-
-                {/* Joining To */}
-
-                <div>
-                    <label className="block mb-1 text-sm font-medium text-gray-700">
-                        Joining To
-                    </label>
-
-                    <input
-                        type="date"
-                        {...register("joiningToDate")}
-                        className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                </div>
-
+                ))}
             </div>
 
             <div className="mt-8 flex justify-end gap-3">
-
                 <button
                     type="button"
                     onClick={handleReset}
@@ -234,7 +318,6 @@ export default function EmployeeMasterFilter({
                     <Search size={16} />
                     Search
                 </button>
-
             </div>
         </form>
     );

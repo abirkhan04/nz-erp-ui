@@ -267,14 +267,26 @@ export interface EmployeeMasterDto {
 }
 
 export interface EmployeeMasterFilterModel {
+  employeeCode?: string;
+  employeeMobile?: string;
+  employeeNID?: string;
+
   unitId?: number;
   subUnitId?: number;
   departmentId?: number;
   sectionId?: number;
   cellId?: number;
+
   employeeNatureId?: number;
-  includeInactive?: boolean;
+  religion?: number;
+  gender?: number;
+
+  grade?: number;
+  shiftId?: number;
+  divisions?: number;
 
   joiningFromDate?: string;
   joiningToDate?: string;
+
+  includeInactive?: boolean;
 }
