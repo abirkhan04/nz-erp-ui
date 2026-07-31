@@ -31,12 +31,8 @@ export const formatDate = (
 
   if (isNaN(date.getTime())) return "-";
 
-  return date.toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-};
+  return date.toLocaleDateString("en-GB");
+}
 
 export const formatAddress = (address?: Address): string => {
   if (!address) return "-";

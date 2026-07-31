@@ -37,15 +37,13 @@ export default function ReportTable<T>({
 
                 <table className="min-w-full">
 
-                    <thead className="bg-slate-50">
-
+                    <thead className="bg-slate-100 border-b-2 border-slate-300">
                         {table.getHeaderGroups().map((headerGroup) => (
                             <tr key={headerGroup.id}>
-
                                 {headerGroup.headers.map((header) => (
                                     <th
                                         key={header.id}
-                                        className="border-b px-4 py-3 text-left text-sm font-semibold text-slate-700 whitespace-nowrap"
+                                        className="px-4 py-3 text-left text-sm font-bold text-slate-800 uppercase tracking-wide whitespace-nowrap"
                                     >
                                         {header.isPlaceholder
                                             ? null
@@ -55,10 +53,8 @@ export default function ReportTable<T>({
                                             )}
                                     </th>
                                 ))}
-
                             </tr>
                         ))}
-
                     </thead>
 
                     {loading ? (
