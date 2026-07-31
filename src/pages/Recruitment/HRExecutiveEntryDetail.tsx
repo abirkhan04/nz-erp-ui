@@ -1092,6 +1092,9 @@ const HRExecutiveEntryDetails = () => {
         label: grade.gradeName,
         value: grade.id,
       })),
+      rules: {
+        required: "Select Grade",
+      }
     },
     {
       label: "Designation",
@@ -1124,12 +1127,18 @@ const HRExecutiveEntryDetails = () => {
       options: Object.entries(WeekOffDayMap).map(([value, label]) => ({
         label,
         value
-      }))
+      })),
+      rules: {
+        required: "Select Weekly Holiday",
+      }
     },
     {
       label: "Proposed Gross Salary",
       name: "proposedSalary",
       type: "number",
+      rules: {
+        required: "Salary is required",
+      }
     },
     {
       label: "Joining Date",
@@ -1149,7 +1158,10 @@ const HRExecutiveEntryDetails = () => {
       options: Object.entries(EmployeeCategory).map(([label, value]) => ({
         label,
         value
-      }))
+      })),
+      rules: {
+        required: "Select Employee Category"
+      }
     },
     {
       label: "Employee Code",

@@ -98,14 +98,6 @@ const HRExecutiveEntry = () => {
                 "text-blue-600 bg-blue-50 border-blue-100",
             iconBg: "bg-blue-100",
         },
-        {
-            title: "REJECTED BY MEDICAL",
-            value: stats.rejectedByMedical,
-            icon: CircleX,
-            color:
-                "text-red-600 bg-red-50 border-red-100",
-            iconBg: "bg-red-100",
-        },
     ];
 
     return (
@@ -341,10 +333,10 @@ const HRExecutiveEntry = () => {
                                                             inline-flex
                                                             items-center
                                                             gap-2
+                                                            cursor-pointer
                                                         "
                                             >
                                                 Enter Details
-                                                <ChevronDown size={14} />
                                             </button>
                                         </td>
                                     </tr>
