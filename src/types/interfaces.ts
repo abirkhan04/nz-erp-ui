@@ -282,7 +282,7 @@ export interface EmployeeMasterFilterModel {
   gender?: number;
 
   grade?: number;
-  shiftId?: number;
+  shift?: number;
   divisions?: number;
 
   joiningFromDate?: string;

@@ -175,7 +175,7 @@ export default function EmployeeMasterFilter({
         },
         {
             label: "Shift",
-            name: "shiftId",
+            name: "shift",
             type: "dropdown",
             options: shifts.map(shift => ({
                 label: shift.shiftName,
@@ -266,7 +266,7 @@ export default function EmployeeMasterFilter({
 
             grade: undefined,
             divisions: undefined,
-            shiftId: undefined,
+            shift: undefined,
 
             religion: undefined,
             gender: undefined,
