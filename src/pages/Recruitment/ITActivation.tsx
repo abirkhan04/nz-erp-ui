@@ -9,6 +9,7 @@ import { AppointmentLetter } from "../../documents/AppointmentLetter";
 import html2pdf from "html2pdf.js";
 import { MedicalReport } from "../../documents/MedicalReport";
 import type { Document } from "../../types/interfaces";
+import { formatDate } from "./recruitment-reports/EmployeeDetailProfile/helpers/employeeDetailHelper";
 
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -719,7 +720,7 @@ const ITActivationPage: React.FC = () => {
                                 <InfoRow label="Mother's Name" value={selected?.motherName} />
                                 <InfoRow label="Mobile" value={selected?.mobile} />
                                 <InfoRow label="ID Number" value={selected?.idNumber} />
-                                <InfoRow label="Date of Birth" value={selected?.dateOfBirth} />
+                                <InfoRow label="Date of Birth" value={formatDate(selected?.dateOfBirth)} />
                                 <InfoRow label="Gender" value={genderMapFromNumber[selected?.gender]} />
                                 <InfoRow label="Blood Group" value={reverseBloodGroupMap[selected?.bloodGroup]} />
                                 <InfoRow label="Religion" value={reverseReligionMap[selected?.religion]} />
