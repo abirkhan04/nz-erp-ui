@@ -26,7 +26,7 @@ export const dashboardMenus = [
     title: "ATTENDANCE",
     description:
       "Attendance monitoring, leave, overtime, shifts and payroll processing.",
-    path: "/attendance",
+    // path: "/attendance",
     icon: Clock3,
     iconColor: "text-green-500",
     titleColor: "text-green-600",
