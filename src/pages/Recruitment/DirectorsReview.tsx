@@ -125,7 +125,7 @@ const DirectorReview = () => {
     return candidates.filter(
       (item) =>
         item.employeeName?.toLowerCase().includes(search.toLowerCase()) ||
-        item.enrollmentId.toLowerCase().includes(search.toLowerCase())
+        item.employeeCode?.toLowerCase().includes(search.toLowerCase())
     );
   }, [candidates, search]);
 
@@ -301,7 +301,7 @@ const DirectorReview = () => {
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search by Temporary ID or Name..."
+                placeholder="Search by Employee ID or Name..."
                 className="w-full rounded-lg border border-slate-300 py-2 pl-10 pr-4 outline-none focus:border-blue-500"
               />
             </div>
@@ -324,7 +324,7 @@ const DirectorReview = () => {
                     <input type="checkbox" checked={allSelected} onChange={(e) => handleSelectAll(e.target.checked)} />
                   </th>
                   <th className="px-4 py-3">Sr</th>
-                  <th className="px-4 py-3">Temporary ID</th>
+                  <th className="px-4 py-3">Employee ID</th>
                   <th className="px-4 py-3">Full Name</th>
                   <th className="px-4 py-3">Department</th>
                   <th className="px-4 py-3">Section</th>
@@ -349,7 +349,7 @@ const DirectorReview = () => {
                       </td>
 
                       <td className="px-4 py-3">{(page - 1) * PAGE_SIZE + index + 1}</td>
-                      <td className="px-4 py-3 font-medium text-blue-700">{item.enrollmentId}</td>
+                      <td className="px-4 py-3 font-medium text-blue-700">{item.employeeCode}</td>
                       <td className="px-4 py-3">{item.employeeName}</td>
                       <td className="px-4 py-3">{item.department}</td>
                       <td className="px-4 py-3">{item.section}</td>
