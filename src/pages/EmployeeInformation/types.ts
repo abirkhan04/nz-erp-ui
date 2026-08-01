@@ -141,3 +141,24 @@ export const idTypeMapBangla: Record<string, number> = {
   "পাসপোর্ট": 2,
 };
 
+export const relationshipTypeEn: Record<number, string> = {
+  0: "Father",
+  1: "Mother",
+  2: "Spouse",
+  3: "Brother",
+  4: "Sister",
+  5: "Son",
+  6: "Daughter",
+  7: "Other",
+};
+
+export const relationshipTypeBn : Record<number, string> = {
+  0: "পিতা",
+  1: "মাতা",
+  2: "স্বামী/স্ত্রী",
+  3: "ভাই",
+  4: "বোন",
+  5: "পুত্র",
+  6: "কন্যা",
+  7: "অন্যান্য",
+};

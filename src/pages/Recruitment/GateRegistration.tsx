@@ -8,7 +8,7 @@ import { useGet } from "../../hooks/useGet";
 import { useEffect } from "react";
 import type { Unit } from "../../types/interfaces";
 import { useNavigate } from "react-router-dom";
-import { bloodGroupMapBangla, genderMapBengali, idTypeMapBangla, religionMapBangla } from "../EmployeeInformation/types";
+import { bloodGroupMapBangla, genderMapBengali, idTypeMapBangla, relationshipTypeBn, religionMapBangla } from "../EmployeeInformation/types";
 import BanglaInputField from "../../components/BanglaInputField";
 import { api } from "../../api/client";
 
@@ -255,21 +255,6 @@ const GateRegistration = ({
         rules: {
           ...banglaOnlyValidation
         }
-      },
-      {
-        label: "নমিনির সাথে সম্পর্ক",
-        name: "nomineeRelation",
-        type: "dropdown",
-        options: [
-          { label: "পিতা", value: "পিতা" },
-          { label: "মাতা", value: "মাতা" },
-          { label: "স্বামী", value: "স্বামী" },
-          { label: "স্ত্রী", value: "স্ত্রী" },
-          { label: "পুত্র", value: "পুত্র" },
-          { label: "কন্যা", value: "কন্যা" },
-          { label: "ভাই", value: "ভাই" },
-          { label: "বোন", value: "বোন" }
-        ]
       },
     ];
 

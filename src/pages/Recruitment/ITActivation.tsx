@@ -3,7 +3,7 @@ import { useGet } from "../../hooks/useGet";
 import { API_ROUTES } from "../../api/routes";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import { EmployeeNature, genderMapFromNumber, reverseBloodGroupMap, reverseDocumentTypeMap, reverseReligionMap } from "../EmployeeInformation/types";
+import { EmployeeNature, genderMapFromNumber, relationshipTypeEn, reverseBloodGroupMap, reverseDocumentTypeMap, reverseReligionMap } from "../EmployeeInformation/types";
 import { api } from "../../api/client";
 import { AppointmentLetter } from "../../documents/AppointmentLetter";
 import html2pdf from "html2pdf.js";
@@ -144,7 +144,7 @@ const ITActivationPage: React.FC = () => {
         return candidates.filter(
             c =>
                 c.employeeName?.toLowerCase().includes(keyword) ||
-                c.employeeId?.toLowerCase().includes(keyword)
+                c.employeeCode?.toLowerCase().includes(keyword)
         );
     }, [candidates, searchTerm]);
 
@@ -429,7 +429,7 @@ const ITActivationPage: React.FC = () => {
                     </svg>
                     <input
                         type="text"
-                        placeholder="Search by Name..."
+                        placeholder="Search by ID or Name..."
                         value={searchTerm}
                         onFocus={() => setDropdownOpen(true)}
                         onBlur={() => setTimeout(() => setDropdownOpen(false), 200)}
@@ -528,6 +528,7 @@ const ITActivationPage: React.FC = () => {
                                 }}
                             >
                                 <th style={{ padding: "12px" }}>#</th>
+                                <th style={{ padding: "12px" }}>Employee ID</th>
                                 <th style={{ padding: "12px" }}>Full Name</th>
                                 <th style={{ padding: "12px" }}>Date of Birth</th>
                                 <th style={{ padding: "12px" }}>Gender</th>
@@ -551,6 +552,9 @@ const ITActivationPage: React.FC = () => {
                                 >
                                     <td style={{ padding: "12px" }}>
                                         {(page - 1) * PAGE_SIZE + index + 1}
+                                    </td>
+                                    <td style={{ padding: "12px" }}>
+                                        {candidate.employeeCode}
                                     </td>
 
                                     <td style={{ padding: "12px" }}>
@@ -709,16 +713,19 @@ const ITActivationPage: React.FC = () => {
                                 )}
                             </div>
                             <div style={{ flex: 1, minWidth: 0 }}>
-                                <InfoRow label="Employee Code" value={selected?.employeeCode} />
+                                <InfoRow label="Employee ID" value={selected?.employeeCode} />
                                 <InfoRow label="Full Name" value={selected?.employeeName} />
                                 <InfoRow label="Father's Name" value={selected?.fatherName} />
+                                <InfoRow label="Mother's Name" value={selected?.motherName} />
+                                <InfoRow label="Mobile" value={selected?.mobile} />
+                                <InfoRow label="ID Number" value={selected?.idNumber} />
                                 <InfoRow label="Date of Birth" value={selected?.dateOfBirth} />
                                 <InfoRow label="Gender" value={genderMapFromNumber[selected?.gender]} />
                                 <InfoRow label="Blood Group" value={reverseBloodGroupMap[selected?.bloodGroup]} />
                                 <InfoRow label="Religion" value={reverseReligionMap[selected?.religion]} />
                                 <InfoRow label="Nominee Name" value={selected?.nomineeName} />
-                                <InfoRow label="Nominee Relation" value={selected?.nomineeRelation} />
-                                <InfoRow label="Mobile" value={selected?.mobile} />
+                                <InfoRow label="Nominee NID" value={selected?.nomineeNID} />
+                                <InfoRow label="Nominee Relation" value={relationshipTypeEn[selected?.nomineeRelation]} />
                             </div>
                         </div>
                     </div>

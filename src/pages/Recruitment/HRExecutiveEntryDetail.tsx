@@ -37,7 +37,7 @@ import type { Unit } from "../../types/interfaces";
 import { useGet } from "../../hooks/useGet";
 import toast from "react-hot-toast";
 import { api } from "../../api/client";
-import { EmployeeCategory, EmployeeNature, WeekOffDayMap } from "../EmployeeInformation/types";
+import { EmployeeCategory, EmployeeNature, relationshipTypeEn, WeekOffDayMap } from "../EmployeeInformation/types";
 import GateRegistration from "./GateRegistration";
 
 interface HRExecutiveEntryForm {
@@ -995,16 +995,7 @@ const HRExecutiveEntryDetails = () => {
       label: "Nominee Relation",
       type: "dropdown",
       name: "nomineeRelation",
-      options: [
-        { label: "Father", value: "father" },
-        { label: "Mother", value: "mother" },
-        { label: "Husband", value: "husband" },
-        { label: "Wife", value: "wife" },
-        { label: "Son", value: "son" },
-        { label: "Daughter", value: "daughter" },
-        { label: "Brother", value: "brother" },
-        { label: "Sister", value: "sister" }
-      ]
+      options: Object.entries(relationshipTypeEn).map(([value, label])=> ({label, value: Number(value)}))
     },
     {
       label: "Nominee Mobile Number",
