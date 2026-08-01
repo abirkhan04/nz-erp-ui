@@ -22,7 +22,6 @@ import {
   FileText
 } from "lucide-react";
 
-import crypto from "crypto";
 
 import {
   useForm,
@@ -398,7 +397,7 @@ const HRExecutiveEntryDetails = () => {
 
   useEffect(() => {
     if (!candidateId && !searchParams.get("draftId")) {
-      const id = crypto.randomUUID();
+      const id = window.crypto.randomUUID();
 
       navigate(
         `${location.pathname}?draftId=${id}`,
