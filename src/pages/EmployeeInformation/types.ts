@@ -67,7 +67,6 @@ export const WeekOffDayMap = {
 };
 
 export const EmployeeNature = {
-    Worker: 0,
     Staff: 1,
     Management: 2,
 };

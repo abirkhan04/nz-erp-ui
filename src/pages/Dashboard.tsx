@@ -211,7 +211,7 @@ const Dashboard: React.FC = () => {
           {dashboardMenus.map((menu, index) => (
             <div
               key={index}
-              onClick={() => navigate(menu.path)}
+              onClick={() => menu?.path && navigate(menu.path)}
               className="group flex h-[380px] cursor-pointer flex-col rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-lg backdrop-blur-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl"
             >
               <div className={`mx-auto mb-6 flex h-28 w-28 items-center justify-center rounded-full ${menu.bgTint}`}>

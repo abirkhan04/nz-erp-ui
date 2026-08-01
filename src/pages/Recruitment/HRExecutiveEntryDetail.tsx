@@ -63,6 +63,7 @@ interface HRExecutiveEntryForm {
   employeeName: string;
   fatherName: string;
   motherName: string;
+  dateOfBirth: string;
   nomineeName: string;
   nomineeNameBangla: string;
   nomineeNID: string;
@@ -418,7 +419,7 @@ const HRExecutiveEntryDetails = () => {
       shift: employeeOnGate.shiftId ?? null,
 
       weekday: employeeOnGate.weekOffDay?.toString() ?? null,
-      employeeNature: '0',
+      employeeNature: "0",
 
       proposedSalary:
         employeeOnGate.proposedMonthlySalary?.toString() ?? "",
@@ -678,6 +679,7 @@ const HRExecutiveEntryDetails = () => {
     payload.append("employeeName", data.employeeName ?? "");
     payload.append("fatherName", data.fatherName ?? "");
     payload.append("motherName", data.motherName ?? "");
+    payload.append("dateOfBirth", data.dateOfBirth ?? "");
     payload.append("employeeCode", data.employeeCode ?? "");
     payload.append("mobileNumber", data.mobileNumber ?? "");
     payload.append("nomineeName", data.nomineeName ?? "");
@@ -705,12 +707,16 @@ const HRExecutiveEntryDetails = () => {
 
     payload.append("shiftId", String(data.shift));
 
-    payload.append(
-      "employeeNature",
-      data.employeeNature == null || data.employeeNature === ""
-        ? ""
-        : String(Number(data.employeeNature))
-    );
+payload.append(
+  "employeeNature",
+  String(
+    data.employeeNature === undefined ||
+    data.employeeNature === null ||
+    data.employeeNature === ""
+      ? 0
+      : data.employeeNature
+  )
+);
 
     payload.append(
       "holiday",
@@ -993,6 +999,15 @@ const HRExecutiveEntryDetails = () => {
     rules?: RegisterOptions<HRExecutiveEntryForm, Path<HRExecutiveEntryForm>>;
   };
 
+  const dateOfBirthField: FormField = {
+  label: "Date of Birth",
+  name: "dateOfBirth",
+  type: "date",
+  rules: {
+    required: "জন্ম তারিখ আবশ্যক",
+  },
+};
+
 
   const employeeInformationFields: FormField[] = [
     {
@@ -1020,6 +1035,7 @@ const HRExecutiveEntryDetails = () => {
       type: "text",
       rules: nameValidation
     },
+    ...(!candidateId ? [dateOfBirthField] : []),
     {
       label: "Nominee Name",
       type: "text",
@@ -1129,7 +1145,7 @@ const HRExecutiveEntryDetails = () => {
         value: cell.id,
       })),
     },
-    {
+    ...(!candidateId?[{
       label: "Employee Nature",
       name: "employeeNature",
       type: "dropdown",
@@ -1140,7 +1156,7 @@ const HRExecutiveEntryDetails = () => {
       rules: {
         required: "Select worker type",
       },
-    },
+    }]: []),
     {
       label: "Grade",
       name: "grade",
@@ -1900,7 +1916,7 @@ const HRExecutiveEntryDetails = () => {
 
           <button
             type="submit"
-            disabled={!employeeOnGate?.id}
+            // disabled={!employeeOnGate?.id}
             className="bg-blue-600 text-white px-6 py-3 rounded-lg flex items-center gap-2"
           >
             <Send size={16} />
