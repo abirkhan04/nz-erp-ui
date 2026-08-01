@@ -528,14 +528,14 @@ const ITActivationPage: React.FC = () => {
                                     borderBottom: "2px solid #e2e8f0",
                                 }}
                             >
-                                <th style={{ padding: "12px" }}>#</th>
-                                <th style={{ padding: "12px" }}>Employee ID</th>
-                                <th style={{ padding: "12px" }}>Full Name</th>
-                                <th style={{ padding: "12px" }}>Date of Birth</th>
-                                <th style={{ padding: "12px" }}>Gender</th>
-                                <th style={{ padding: "12px" }}>Blood Group</th>
-                                <th style={{ padding: "12px" }}>Joining Date</th>
-                                <th style={{ padding: "12px" }}>Action</th>
+                                <th style={{ padding: "12px" , textAlign: "left"}}>#</th>
+                                <th style={{ padding: "12px" , textAlign: "left"}}>Employee ID</th>
+                                <th style={{ padding: "12px", textAlign: "left" }}>Full Name</th>
+                                <th style={{ padding: "12px", textAlign: "left" }}>Date of Birth</th>
+                                <th style={{ padding: "12px", textAlign: "left" }}>Gender</th>
+                                <th style={{ padding: "12px", textAlign: "left" }}>Blood Group</th>
+                                <th style={{ padding: "12px", textAlign: "left" }}>Joining Date</th>
+                                <th style={{ padding: "12px", textAlign: "left" }}>Action</th>
                             </tr>
                         </thead>
 
