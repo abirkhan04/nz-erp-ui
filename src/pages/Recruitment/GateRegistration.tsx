@@ -8,7 +8,7 @@ import { useGet } from "../../hooks/useGet";
 import { useEffect } from "react";
 import type { Unit } from "../../types/interfaces";
 import { useNavigate } from "react-router-dom";
-import { bloodGroupMapBangla, genderMapBengali, idTypeMapBangla, relationshipTypeBn, religionMapBangla } from "../EmployeeInformation/types";
+import { bloodGroupMapBangla, genderMapBengali, idTypeMapBangla, religionMapBangla } from "../EmployeeInformation/types";
 import BanglaInputField from "../../components/BanglaInputField";
 import { api } from "../../api/client";
 
