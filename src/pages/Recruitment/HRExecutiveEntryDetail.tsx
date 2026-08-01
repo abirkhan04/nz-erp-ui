@@ -34,6 +34,8 @@ import {
   useParams,
 } from "react-router-dom";
 
+import { v4 as uuid } from "uuid";
+
 import CommonInputField from "../../components/CommonInputFields";
 import { API_ROUTES } from "../../api/routes";
 import type { Unit } from "../../types/interfaces";
@@ -397,7 +399,7 @@ const HRExecutiveEntryDetails = () => {
 
   useEffect(() => {
     if (!candidateId && !searchParams.get("draftId")) {
-      const id = window.crypto.randomUUID();
+      const id = uuid();
 
       navigate(
         `${location.pathname}?draftId=${id}`,
