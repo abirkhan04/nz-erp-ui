@@ -502,8 +502,7 @@ const ITActivationPage: React.FC = () => {
                         <circle cx="12" cy="12" r="10" /><path d="M12 16v-4M12 8h.01" stroke="#fff" strokeWidth="2" strokeLinecap="round" />
                     </svg>
                     <div style={{ fontSize: 12.5, color: "#1d4ed8", lineHeight: 1.6 }}>
-                        After activation, Temporary ID will be deactivated and Permanent Employee ID will be generated automatically.<br />
-                        All documents and records will be stored in the employee's personal folder.
+                        After activation, all documents and records will be stored in the employee's personal folder.<br />
                     </div>
                 </div>
             </div>
@@ -528,8 +527,8 @@ const ITActivationPage: React.FC = () => {
                                     borderBottom: "2px solid #e2e8f0",
                                 }}
                             >
-                                <th style={{ padding: "12px" , textAlign: "left"}}>#</th>
-                                <th style={{ padding: "12px" , textAlign: "left"}}>Employee ID</th>
+                                <th style={{ padding: "12px", textAlign: "left" }}>#</th>
+                                <th style={{ padding: "12px", textAlign: "left" }}>Employee ID</th>
                                 <th style={{ padding: "12px", textAlign: "left" }}>Full Name</th>
                                 <th style={{ padding: "12px", textAlign: "left" }}>Date of Birth</th>
                                 <th style={{ padding: "12px", textAlign: "left" }}>Gender</th>
