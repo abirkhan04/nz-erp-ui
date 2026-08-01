@@ -563,7 +563,7 @@ const ITActivationPage: React.FC = () => {
                                     </td>
 
                                     <td style={{ padding: "12px" }}>
-                                        {candidate.dateOfBirth}
+                                        {formatDate(candidate.dateOfBirth)}
                                     </td>
 
                                     <td style={{ padding: "12px" }}>
@@ -579,7 +579,7 @@ const ITActivationPage: React.FC = () => {
                                     </td>
 
                                     <td style={{ padding: "12px" }}>
-                                        {candidate.dateOfJoining}
+                                        {formatDate(candidate.dateOfJoining)}
                                     </td>
 
                                     <td style={{ padding: "12px", textAlign: "center" }}>
@@ -758,7 +758,7 @@ const ITActivationPage: React.FC = () => {
                             </div>
                             <div>
                                 <InfoRow label="Gross Salary" value={`${selected?.grossSalary?.toLocaleString() || 0} BDT`} />
-                                <InfoRow label="Date of Joining" value={selected?.joiningDate} />
+                                <InfoRow label="Date of Joining" value={formatDate(selected?.joiningDate)} />
                                 <InfoRow
                                     label="Probation Period"
                                     value={
