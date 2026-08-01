@@ -58,7 +58,12 @@ const RecruitmentDashboard = () => {
     {
       title: "TOTAL RECRUITED",
       value: activationSummery?.total,
-      subtitle: `Up to ${new Date().toLocaleDateString()}`,
+      subtitle: `Up to ${ new Date().toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        })
+      }`,
       icon: Users,
       color: "text-blue-600",
       bg: "bg-blue-50",
@@ -89,7 +94,7 @@ const RecruitmentDashboard = () => {
     },
   ];
 
-  const companies : CompanyRecruitment[] = activationSummery?.companySummaries?.map((item:any)=> ({...item, company: item.companyName})) || [];
+  const companies: CompanyRecruitment[] = activationSummery?.companySummaries?.map((item: any) => ({ ...item, company: item.companyName })) || [];
 
   const processFlow: ProcessStep[] = [
     {
@@ -339,8 +344,8 @@ const RecruitmentDashboard = () => {
                   transition-all
                   duration-300
                   ${hasModule(item.moduleName)
-                                    ? "cursor-pointer"
-                                    : "cursor-not-allowed opacity-60"
+                      ? "cursor-pointer"
+                      : "cursor-not-allowed opacity-60"
                     }
                     `}
                   onClick={() => {
