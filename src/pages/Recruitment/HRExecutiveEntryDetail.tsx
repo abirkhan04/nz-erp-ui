@@ -64,7 +64,7 @@ interface HRExecutiveEntryForm {
   fatherName: string;
   motherName: string;
   nomineeName: string;
-  nomineeNameBangla:string;
+  nomineeNameBangla: string;
   nomineeNID: string;
   nomineeRelation: string;
   nomineeMobileNumber: string;
@@ -975,9 +975,9 @@ const HRExecutiveEntryDetails = () => {
   };
 
   type FormField = {
-  label: string;
-  name: Path<HRExecutiveEntryForm>;
-  type:
+    label: string;
+    name: Path<HRExecutiveEntryForm>;
+    type:
     | "text"
     | "number"
     | "date"
@@ -985,16 +985,16 @@ const HRExecutiveEntryDetails = () => {
     | "dropdown"
     | "searchable-dropdown"
     | "radio";
-  bangla?: boolean;
-  options?: {
-    label: string;
-    value: any;
-  }[];
-  rules?: RegisterOptions<HRExecutiveEntryForm, Path<HRExecutiveEntryForm>>;
-};
+    bangla?: boolean;
+    options?: {
+      label: string;
+      value: any;
+    }[];
+    rules?: RegisterOptions<HRExecutiveEntryForm, Path<HRExecutiveEntryForm>>;
+  };
 
 
-  const employeeInformationFields :FormField[] = [
+  const employeeInformationFields: FormField[] = [
     {
       label: "Employee Name",
       name: "employeeName",
@@ -1047,7 +1047,7 @@ const HRExecutiveEntryDetails = () => {
       label: "Nominee Relation",
       type: "dropdown",
       name: "nomineeRelation",
-      options: Object.entries(relationshipTypeEn).map(([value, label])=> ({label, value: Number(value)}))
+      options: Object.entries(relationshipTypeEn).map(([value, label]) => ({ label, value: Number(value) }))
     },
     {
       label: "Nominee Mobile Number",
@@ -1063,7 +1063,7 @@ const HRExecutiveEntryDetails = () => {
         ...nameValidation
       }
     },
-     {
+    {
       label: "Reference Mobile Number",
       name: "referenceMobile",
       rules: mobileNumberValidation,
@@ -1377,7 +1377,11 @@ const HRExecutiveEntryDetails = () => {
             Entry Date :
             {" "}
             {
-              new Date().toLocaleDateString()
+              new Date().toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              })
             }
           </div>
 
@@ -1392,15 +1396,15 @@ const HRExecutiveEntryDetails = () => {
 
             {employeeInformationFields.map(
               (field) => (field.bangla ? (
-                          <BanglaInputField
-                            key={field.name}
-                            label={field.label}
-                            name={field.name as any}
-                            rules={field.rules}
-                            errors={errors}
-                            control={control}
-                          />
-                        ):
+                <BanglaInputField
+                  key={field.name}
+                  label={field.label}
+                  name={field.name as any}
+                  rules={field.rules}
+                  errors={errors}
+                  control={control}
+                />
+              ) :
                 <CommonInputField
                   key={field.name}
                   placeholder={`Enter ${field.label}`}
