@@ -56,14 +56,6 @@ export const banglaOnlyValidation: RegisterOptions<HRExecutiveEntryForm> = {
   },
 };
 
-const mobileValidation = {
-  required: "মোবাইল নম্বর আবশ্যক",
-  pattern: {
-    value: /^01[3-9]\d{8}$/,
-    message: "সঠিক ১১ সংখ্যার মোবাইল নম্বর প্রদান করুন",
-  },
-};
-
 interface HRExecutiveEntryForm {
   name?: string;
   employeeId: string;

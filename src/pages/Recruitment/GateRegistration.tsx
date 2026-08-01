@@ -415,23 +415,6 @@ const GateRegistration = ({
   ];
 
 
-
-  const referenceInformationFields: SectionField[] = [
-    {
-      label: "রেফারেন্স ব্যক্তির নাম",
-      name: "referenceName",
-      bangla: true,
-      rules: {
-        ...banglaOnlyValidation
-      }
-    },
-    {
-      label: "রেফারেন্স মোবাইল",
-      name: "referenceMobile",
-      rules: mobileValidation
-    },
-  ];
-
   const formSections = [
     {
       title: "১. ব্যক্তিগত তথ্য",
