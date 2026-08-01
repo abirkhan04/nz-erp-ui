@@ -77,6 +77,11 @@ function Layout() {
             />
 
             <Route
+              path="/recruitment/hr-executive-entry/staff-management"
+              element={<HRExecutiveEntryDetails />}
+            />
+
+            <Route
               path="/recruitment/biometric-picture-capture"
               element={<BiometricCapture />}
             />

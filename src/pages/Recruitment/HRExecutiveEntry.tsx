@@ -466,12 +466,7 @@ const HRExecutiveEntry = () => {
                 </div>
 
                 <p className="text-sm text-blue-700">
-                    You have 25 candidate(s)
-                    from Medical Officer.
-                    Please enter HR details
-                    for all Fit candidates and
-                    send them to IT for
-                    Biometric & Picture Capture.
+                  <a href="/recruitment/hr-executive-entry/staff-management">For staff and management entry click here</a>
                 </p>
             </div>
 

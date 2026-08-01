@@ -1365,13 +1365,13 @@ const HRExecutiveEntryDetails = () => {
             <ArrowLeft size={16} />
           </button>
 
-          <div className="font-semibold">
+          {candidateId && <div className="font-semibold">
             Candidate :
             {" "}
             {
               candidateId
             }
-          </div>
+          </div>}
 
           <div>
             Entry Date :
