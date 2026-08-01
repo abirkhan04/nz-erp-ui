@@ -1,4 +1,4 @@
-import { useForm } from "react-hook-form";
+import { useForm, type RegisterOptions } from "react-hook-form";
 import CommonInputField from "../../components/CommonInputFields";
 import { usePost } from "../../hooks/usePost";
 import { useState } from "react";
@@ -78,7 +78,7 @@ const mobileValidation = {
   },
 };
 
-export const banglaOnlyValidation = {
+export const banglaOnlyValidation: RegisterOptions<any>  = {
   validate: (value?: string) => {
     if (!value?.trim()) return true;
 
@@ -246,16 +246,7 @@ const GateRegistration = ({
           required: "রক্তের গ্রুপ আবশ্যক"
         },
         options: Object.entries(bloodGroupMapBangla).map(([label, value]) => ({ label, value }))
-      },
-      {
-        label: "নমিনির নাম",
-        name: "nomineeNameBangla",
-        type: "text",
-        bangla: true,
-        rules: {
-          ...banglaOnlyValidation
-        }
-      },
+      }
     ];
 
   const { data: divisions = [] } = useGet<any[]>({
@@ -873,16 +864,6 @@ const GateRegistration = ({
       fatherNameBangla: data.fatherName,
 
       motherNameBangla: data.motherName,
-      nomineeNameBangla: data.nomineeNameBangla,
-      nomineeRelationBangla: data.nomineeRelation,
-
-      employeeReference:
-        data.referenceName,
-
-
-      referenceMobileNumber:
-        data.referenceMobile,
-
 
       // Permanent Address
       permanentDivisionId: data.permanentDivision,
@@ -1174,40 +1155,6 @@ const GateRegistration = ({
                   label={field.label}
                   name={field.name as any}
                   // isPlaceholderVisible = {field.isPlaceholderVisible}
-                  type={field.type}
-                  options={field.options}
-                  rules={field.rules}
-                  register={register}
-                  errors={errors}
-                  control={control}
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* Reference Information */}
-          <div className="bg-white rounded-xl shadow-sm p-5">
-            <div className="border-b pb-3 mb-5">
-              <h2 className="text-lg font-semibold text-blue-700">
-                ৪. রেফারেন্স তথ্য
-              </h2>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4">
-              {referenceInformationFields.map((field) => (field.bangla ? (
-                <BanglaInputField
-                  key={field.name}
-                  label={field.label}
-                  name={field.name as any}
-                  rules={field.rules}
-                  errors={errors}
-                  control={control}
-                />
-              ) :
-                <CommonInputField
-                  key={field.name}
-                  label={field.label}
-                  name={field.name as any}
                   type={field.type}
                   options={field.options}
                   rules={field.rules}

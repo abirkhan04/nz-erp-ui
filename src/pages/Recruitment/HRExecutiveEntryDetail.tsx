@@ -24,6 +24,8 @@ import {
 
 import {
   useForm,
+  type Path,
+  type RegisterOptions,
 } from "react-hook-form";
 
 import {
@@ -39,6 +41,28 @@ import toast from "react-hot-toast";
 import { api } from "../../api/client";
 import { EmployeeCategory, EmployeeNature, relationshipTypeEn, WeekOffDayMap } from "../EmployeeInformation/types";
 import GateRegistration from "./GateRegistration";
+import BanglaInputField from "../../components/BanglaInputField";
+
+export const banglaOnlyValidation: RegisterOptions<HRExecutiveEntryForm> = {
+  validate: (value) => {
+    const text = String(value ?? "").trim();
+
+    if (!text) return true;
+
+    return /^[ঀ-৿\s.,\-()/:'"]+$/u.test(text) &&
+      !/[০-৯0-9]/.test(text)
+      ? true
+      : "শুধুমাত্র বাংলা অক্ষরে লিখুন";
+  },
+};
+
+const mobileValidation = {
+  required: "মোবাইল নম্বর আবশ্যক",
+  pattern: {
+    value: /^01[3-9]\d{8}$/,
+    message: "সঠিক ১১ সংখ্যার মোবাইল নম্বর প্রদান করুন",
+  },
+};
 
 interface HRExecutiveEntryForm {
   name?: string;
@@ -48,9 +72,12 @@ interface HRExecutiveEntryForm {
   fatherName: string;
   motherName: string;
   nomineeName: string;
+  nomineeNameBangla:string;
   nomineeNID: string;
   nomineeRelation: string;
   nomineeMobileNumber: string;
+  referenceName: string;
+  referenceMobile: string;
 
   company: string | null;
   subUnit: string | null;
@@ -665,6 +692,9 @@ const HRExecutiveEntryDetails = () => {
     payload.append("nomineeID", data.nomineeNID ?? "");
     payload.append("nomineeRelation", data.nomineeRelation ?? "");
     payload.append("nomineeMobileNumber", data.nomineeMobileNumber ?? "");
+    payload.append("nomineeNameBangla", data.nomineeNameBangla ?? "");
+    payload.append("employeeReference", data.referenceName ?? "");
+    payload.append("referenceMobileNumber", data.referenceMobile ?? "");
     payload.append("employeeEnrollmentId", data.employeeEnrollmentId ?? "");
 
     payload.append("unitId", String(data.company));
@@ -951,7 +981,28 @@ const HRExecutiveEntryDetails = () => {
       message: "Numbers are not allowed in name",
     },
   };
-  const employeeInformationFields = [
+
+  type FormField = {
+  label: string;
+  name: Path<HRExecutiveEntryForm>;
+  type:
+    | "text"
+    | "number"
+    | "date"
+    | "email"
+    | "dropdown"
+    | "searchable-dropdown"
+    | "radio";
+  bangla?: boolean;
+  options?: {
+    label: string;
+    value: any;
+  }[];
+  rules?: RegisterOptions<HRExecutiveEntryForm, Path<HRExecutiveEntryForm>>;
+};
+
+
+  const employeeInformationFields :FormField[] = [
     {
       label: "Employee Name",
       name: "employeeName",
@@ -987,6 +1038,15 @@ const HRExecutiveEntryDetails = () => {
       }
     },
     {
+      label: "Nominee Name(Bangla)",
+      type: "text",
+      name: "nomineeNameBangla",
+      bangla: true,
+      rules: {
+        ...banglaOnlyValidation
+      }
+    },
+    {
       label: "Nominee NID",
       type: "text",
       name: "nomineeNID"
@@ -1002,6 +1062,20 @@ const HRExecutiveEntryDetails = () => {
       name: "nomineeMobileNumber",
       type: "text",
       rules: mobileNumberValidation
+    },
+    {
+      label: "Refeerence Name",
+      type: "text",
+      name: "referenceName",
+      rules: {
+        ...nameValidation
+      }
+    },
+     {
+      label: "Reference Mobile Number",
+      name: "referenceMobile",
+      rules: mobileNumberValidation,
+      type: "text"
     }
   ];
 
@@ -1325,7 +1399,16 @@ const HRExecutiveEntryDetails = () => {
           <div className="grid grid-cols-5 gap-4 p-4">
 
             {employeeInformationFields.map(
-              (field) => (
+              (field) => (field.bangla ? (
+                          <BanglaInputField
+                            key={field.name}
+                            label={field.label}
+                            name={field.name as any}
+                            rules={field.rules}
+                            errors={errors}
+                            control={control}
+                          />
+                        ):
                 <CommonInputField
                   key={field.name}
                   placeholder={`Enter ${field.label}`}
