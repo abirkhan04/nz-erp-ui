@@ -42,6 +42,7 @@ import { api } from "../../api/client";
 import { EmployeeCategory, EmployeeNature, relationshipTypeEn, WeekOffDayMap } from "../EmployeeInformation/types";
 import GateRegistration from "./GateRegistration";
 import BanglaInputField from "../../components/BanglaInputField";
+import { useSearchParams } from "react-router-dom";
 
 export const banglaOnlyValidation: RegisterOptions<HRExecutiveEntryForm> = {
   validate: (value) => {
@@ -138,6 +139,8 @@ interface HRExecutiveEntryForm {
 
 const HRExecutiveEntryDetails = () => {
 
+
+  const [searchParams] = useSearchParams();
   const { data: banks = [] } = useGet({
     key: ["banks"],
     url: `${API_ROUTES.BANKS}?includeInactive=false`
@@ -379,12 +382,39 @@ const HRExecutiveEntryDetails = () => {
     restoredWorkerTypeRef.current = false;
   }, [candidateId, enrollmentId]);
 
-  const DRAFT_KEY = `HR_EXECUTIVE_DRAFT_${candidateId}_${enrollmentId}`;
+  const draftId = searchParams.get("draftId")
+
+  const DRAFT_KEY =
+    candidateId && enrollmentId
+      ? `HR_EXECUTIVE_DRAFT_${candidateId}_${enrollmentId}`
+      : `HR_EXECUTIVE_DRAFT_NEW_${draftId}`;
 
   const paymentMode =
     watch("paymentMode");
 
   const values = watch();
+
+  useEffect(() => {
+    if (!candidateId && !searchParams.get("draftId")) {
+      const id = crypto.randomUUID();
+
+      navigate(
+        `${location.pathname}?draftId=${id}`,
+        { replace: true }
+      );
+    }
+  }, [candidateId, navigate, searchParams]);
+
+  useEffect(() => {
+    if (candidateId) return;
+    if (!draftId) return;
+
+    const draft = localStorage.getItem(DRAFT_KEY);
+
+    if (draft) {
+      reset(JSON.parse(draft));
+    }
+  }, [candidateId, draftId, DRAFT_KEY]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -444,8 +474,8 @@ const HRExecutiveEntryDetails = () => {
     if (draft) {
       const parsed = JSON.parse(draft);
       reset({
-        ...parsed,
         ...defaultValues,
+        ...parsed,
         files: [],
       });
     } else {
@@ -707,16 +737,16 @@ const HRExecutiveEntryDetails = () => {
 
     payload.append("shiftId", String(data.shift));
 
-payload.append(
-  "employeeNature",
-  String(
-    data.employeeNature === undefined ||
-    data.employeeNature === null ||
-    data.employeeNature === ""
-      ? 0
-      : data.employeeNature
-  )
-);
+    payload.append(
+      "employeeNature",
+      String(
+        data.employeeNature === undefined ||
+          data.employeeNature === null ||
+          data.employeeNature === ""
+          ? 0
+          : data.employeeNature
+      )
+    );
 
     payload.append(
       "holiday",
@@ -1000,13 +1030,13 @@ payload.append(
   };
 
   const dateOfBirthField: FormField = {
-  label: "Date of Birth",
-  name: "dateOfBirth",
-  type: "date",
-  rules: {
-    required: "জন্ম তারিখ আবশ্যক",
-  },
-};
+    label: "Date of Birth",
+    name: "dateOfBirth",
+    type: "date",
+    rules: {
+      required: "জন্ম তারিখ আবশ্যক",
+    },
+  };
 
 
   const employeeInformationFields: FormField[] = [
@@ -1145,7 +1175,7 @@ payload.append(
         value: cell.id,
       })),
     },
-    ...(!candidateId?[{
+    ...(!candidateId ? [{
       label: "Employee Nature",
       name: "employeeNature",
       type: "dropdown",
@@ -1156,7 +1186,7 @@ payload.append(
       rules: {
         required: "Select worker type",
       },
-    }]: []),
+    }] : []),
     {
       label: "Grade",
       name: "grade",
@@ -1217,6 +1247,9 @@ payload.append(
       label: "Joining Date",
       name: "joiningDate",
       type: "date",
+      rules: {
+        required: "Joining Date is required",
+      }
     },
     {
       label: "Probation Period(month)",
@@ -1299,6 +1332,7 @@ payload.append(
 
   //   return () => clearTimeout(timer);
   // }, [employeeCode, clearErrors, setError]);
+
 
 
   useEffect(() => {
