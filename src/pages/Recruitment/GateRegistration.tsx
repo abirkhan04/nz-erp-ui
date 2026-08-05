@@ -75,7 +75,7 @@ const mobileValidation = {
   required: "মোবাইল নম্বর আবশ্যক",
   pattern: {
     value: /^01[3-9]\d{8}$/,
-    message: "সঠিক ১১ সংখ্যার মোবাইল নম্বর প্রদান করুন",
+    message: "Mobile Number must be 11 digits and start with 01",
   },
 };
 

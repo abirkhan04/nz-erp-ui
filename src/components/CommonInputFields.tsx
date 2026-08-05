@@ -302,7 +302,7 @@ const CommonInputField = <T extends FieldValues>({
           ) : (
             <input
               type={type}
-              placeholder={placeholder}
+              placeholder={label || placeholder}
               disabled={disabled}
               {...register(name, rules)}
               className={inputClass}
