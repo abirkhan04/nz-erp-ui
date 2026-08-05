@@ -273,10 +273,6 @@ export default function EmployeeDetailedProfilePage() {
                     formatDate(employee.medicalInfo?.dateOfMedical),
                   ],
                   [
-                    "Medical Center",
-                    employee.medicalInfo?.medicalCenter,
-                  ],
-                  [
                     "Blood Group",
                     reverseBloodGroupMap[Number(employee.bloodGroup)],
                   ],
