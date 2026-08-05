@@ -44,6 +44,7 @@ export interface GateRegistrationForm {
   permanentDivision: string;
 
   company: string;
+  grade: string;
   designation: string;
   joiningDate: string;
 
@@ -78,7 +79,7 @@ const mobileValidation = {
   },
 };
 
-export const banglaOnlyValidation: RegisterOptions<any>  = {
+export const banglaOnlyValidation: RegisterOptions<any> = {
   validate: (value?: string) => {
     if (!value?.trim()) return true;
 
@@ -182,6 +183,7 @@ const GateRegistration = ({
       {
         label: "পরিচয়পত্র নম্বর",
         name: "nidNumber",
+        type: "text",
         rules: {
           required: "নম্বর আবশ্যক",
           validate: (value: string) => {
@@ -283,12 +285,18 @@ const GateRegistration = ({
     url: API_ROUTES.UNITS,
   });
 
+  const grade = watch("grade");
+
   const { data: designations = [] } = useGet<any[]>({
-    key: ["designations"],
-    url: API_ROUTES.DESIGNATION,
+    key: ["designations", grade],
+    url: `${API_ROUTES.DESIGNATION}?gradeId=${grade}`,
+    enabled: !!grade
   });
 
-
+  const { data: grades = [] } = useGet<any[]>({
+    key: ["grades"],
+    url: API_ROUTES.GRADE,
+  });
 
   const sameAsPermanent = watch("sameAsPermanent");
 
@@ -441,6 +449,18 @@ const GateRegistration = ({
       rules: {
         required: "কোম্পানি নির্বাচন করুন",
       },
+    },
+    {
+      label: "গ্রেড",
+      name: "grade",
+      type: "dropdown",
+      options: grades.filter(e => e.employeeNature === 0).map((grade) => ({
+        label: grade.gradeName,
+        value: grade.id,
+      })),
+      rules: {
+        required: "Select Grade",
+      }
     },
     {
       label: "পদবী",

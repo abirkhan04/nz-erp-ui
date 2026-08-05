@@ -18,7 +18,7 @@ import { usePost } from "../../hooks/usePost";
 import toast from "react-hot-toast";
 import { api } from "../../api/client";
 import { useNavigate } from "react-router-dom";
-import { EmployeeNature, genderMapFromNumber, reverseBloodGroupMap } from "../EmployeeInformation/types";
+import { EmployeeNatureLabel, genderMapFromNumber, reverseBloodGroupMap } from "../EmployeeInformation/types";
 import { formatDate } from "../../utils";
 
 export interface Document {
@@ -240,7 +240,7 @@ const BiometricCapture = () => {
 
         return candidates.filter(
             (candidate) =>
-                candidate.enrollmentId
+                candidate.employeeCode
                     ?.toLowerCase()
                     .includes(search.toLowerCase()) ||
                 candidate.employeeName
@@ -376,7 +376,7 @@ const BiometricCapture = () => {
                                 setSearch(e.target.value);
                                 setPage(1);
                             }}
-                            placeholder="Search by Temporary ID or Name..."
+                            placeholder="Search by Employee ID or Name..."
                             className="w-full rounded-lg border border-gray-300 py-2 pl-10 pr-4 outline-none focus:border-blue-500"
                         />
 
@@ -409,7 +409,7 @@ const BiometricCapture = () => {
                                 </th>
 
                                 <th className="px-4 py-3">
-                                    Enrollment ID
+                                    Employee ID
                                 </th>
 
                                 <th className="px-4 py-3">
@@ -464,7 +464,7 @@ const BiometricCapture = () => {
 
                                         <td className="px-4 py-3 font-medium text-blue-700">
                                             {
-                                                candidate.enrollmentId
+                                                candidate.employeeCode
                                             }
                                         </td>
 
@@ -587,7 +587,7 @@ const BiometricCapture = () => {
                                 <div className="space-y-3">
 
                                     <div className="grid grid-cols-[110px_15px_1fr]">
-                                        <span className="text-sm text-slate-600">Employee Code</span>
+                                        <span className="text-sm text-slate-600">Employee Id</span>
                                         <span>:</span>
                                         <span className="font-medium">{selectedCandidate.employeeCode}</span>
                                     </div>
@@ -631,7 +631,7 @@ const BiometricCapture = () => {
                                     <div className="grid grid-cols-[110px_15px_1fr]">
                                         <span className="text-sm text-slate-600">Type of Worker</span>
                                         <span>:</span>
-                                        <span className="font-medium">{Object.keys(EmployeeNature)[selectedCandidate.employeeType]}</span>
+                                        <span className="font-medium">{EmployeeNatureLabel[selectedCandidate.employeeType]}</span>
                                     </div>
 
                                 </div>

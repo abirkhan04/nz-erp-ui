@@ -3,7 +3,7 @@ import { useGet } from "../../hooks/useGet";
 import { API_ROUTES } from "../../api/routes";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import { EmployeeNature, genderMapFromNumber, relationshipTypeEn, reverseBloodGroupMap, reverseDocumentTypeMap, reverseReligionMap } from "../EmployeeInformation/types";
+import { EmployeeNatureLabel, genderMapFromNumber, relationshipTypeEn, reverseBloodGroupMap, reverseDocumentTypeMap, reverseReligionMap } from "../EmployeeInformation/types";
 import { api } from "../../api/client";
 import { AppointmentLetter } from "../../documents/AppointmentLetter";
 import html2pdf from "html2pdf.js";
@@ -767,7 +767,7 @@ const ITActivationPage: React.FC = () => {
                                             : "-"
                                     }
                                 />
-                                <InfoRow label="Employment Type" value={Object.keys(EmployeeNature)[selected?.employeeType]} />
+                                <InfoRow label="Employment Type" value={EmployeeNatureLabel[selected?.employeeType]} />
                             </div>
                         </div>
                         <div style={{

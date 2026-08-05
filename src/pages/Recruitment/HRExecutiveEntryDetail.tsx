@@ -42,7 +42,7 @@ import type { Unit } from "../../types/interfaces";
 import { useGet } from "../../hooks/useGet";
 import toast from "react-hot-toast";
 import { api } from "../../api/client";
-import { EmployeeCategory, EmployeeNature, relationshipTypeEn, WeekOffDayMap } from "../EmployeeInformation/types";
+import { bloodGroupMap, EmployeeCategory, EmployeeNature, genderMapEnglish, idTypeMapEnglish, relationshipTypeEn, religionMap, WeekOffDayMap } from "../EmployeeInformation/types";
 import GateRegistration from "./GateRegistration";
 import BanglaInputField from "../../components/BanglaInputField";
 import { useSearchParams } from "react-router-dom";
@@ -75,6 +75,11 @@ interface HRExecutiveEntryForm {
   nomineeMobileNumber: string;
   referenceName: string;
   referenceMobile: string;
+  nidType: string;
+  nidNumber: string;
+  gender: string;
+  religion: string;
+  bloodGroup: string;
 
   company: string | null;
   subUnit: string | null;
@@ -154,6 +159,7 @@ const HRExecutiveEntryDetails = () => {
     control,
     watch,
     setValue,
+    getValues,
     reset,
     handleSubmit,
     setError,
@@ -728,6 +734,11 @@ const HRExecutiveEntryDetails = () => {
     payload.append("subunitId", String(data.subUnit));
     payload.append("departmentId", String(data.department));
     payload.append("sectionId", String(data.section));
+    payload.append("idType", data.nidType);
+    payload.append("idNumber", data.nidNumber);
+    payload.append("gender", data.gender);
+    payload.append("religion", data.religion);
+    payload.append("bloodGroup", data.bloodGroup);
 
     payload.append("cellId", data.cell ? String(data.cell) : "");
     payload.append("designationId", data.designation ? String(data.designation) : "");
@@ -1029,7 +1040,7 @@ const HRExecutiveEntryDetails = () => {
       label: string;
       value: any;
     }[];
-    rules?: RegisterOptions<HRExecutiveEntryForm, Path<HRExecutiveEntryForm>>;
+    rules?: any;
   };
 
   const dateOfBirthField: FormField = {
@@ -1037,8 +1048,86 @@ const HRExecutiveEntryDetails = () => {
     name: "dateOfBirth",
     type: "date",
     rules: {
-      required: "জন্ম তারিখ আবশ্যক",
+      required: "Date of Birth is required",
     },
+  };
+
+  const nidTypeField: FormField = {
+    label: "Id Type",
+    name: "nidType",
+    type: "dropdown",
+    rules: {
+      required: "Id Type required",
+    },
+    options: Object.entries(idTypeMapEnglish).map(([label, value]) => ({
+      label,
+      value,
+    })),
+  };
+
+  const nidNumberField: FormField = {
+    label: "Id Number",
+    name: "nidNumber",
+    type: "text",
+    rules: {
+      required: "নম্বর আবশ্যক",
+      validate: (value: string) => {
+        const nidType = Number(getValues("nidType"));
+
+        if (nidType === 0 || nidType === 1) {
+          return /^\d+$/.test(value)
+            ? true
+            : "Only number is allowed";
+        }
+
+        if (nidType === 2) {
+          return /^[A-Za-z0-9]+$/.test(value)
+            ? true
+            : "English letters and numbers are allowed";
+        }
+
+        return true;
+      },
+    },
+  };
+
+  const genderField: FormField = {
+    label: "Gender",
+    name: "gender",
+    type: "dropdown",
+    rules: {
+      required: "Gender is required",
+    },
+    options: Object.entries(genderMapEnglish).map(([value, label]) => ({
+      label,
+      value: Number(value),
+    })),
+  };
+
+  const religionField: FormField = {
+    label: "Religion",
+    name: "religion",
+    type: "dropdown",
+    rules: {
+      required: "Religion is required",
+    },
+    options: Object.entries(religionMap).map(([label, value]) => ({
+      label,
+      value,
+    })),
+  };
+
+  const bloodGroupField: FormField = {
+    label: "Blood Group",
+    name: "bloodGroup",
+    type: "dropdown",
+    rules: {
+      required: "Blood Group is required",
+    },
+    options: Object.entries(bloodGroupMap).map(([label, value]) => ({
+      label,
+      value,
+    })),
   };
 
 
@@ -1049,8 +1138,8 @@ const HRExecutiveEntryDetails = () => {
       type: "text",
       rules: {
         required: "Employee Name is required",
-        ...nameValidation
-      }
+        ...nameValidation,
+      },
     },
     {
       label: "Father Name",
@@ -1058,66 +1147,78 @@ const HRExecutiveEntryDetails = () => {
       type: "text",
       rules: {
         required: "Father name is required",
-        ...nameValidation
+        ...nameValidation,
       },
-
     },
     {
       label: "Mother Name",
       name: "motherName",
       type: "text",
-      rules: nameValidation
+      rules: nameValidation,
     },
-    ...(!candidateId ? [dateOfBirthField] : []),
+    ...(!candidateId
+      ? [
+        nidTypeField,
+        nidNumberField,
+        dateOfBirthField,
+        genderField,
+        religionField,
+        bloodGroupField,
+      ]
+      : []),
+
     {
       label: "Nominee Name",
       type: "text",
       name: "nomineeName",
       rules: {
         required: "Nominee name is required",
-        ...nameValidation
-      }
+        ...nameValidation,
+      },
     },
     {
-      label: "Nominee Name(Bangla)",
+      label: "Nominee Name (Bangla)",
       type: "text",
       name: "nomineeNameBangla",
       bangla: true,
       rules: {
-        ...banglaOnlyValidation
-      }
+        ...banglaOnlyValidation,
+      },
     },
     {
       label: "Nominee NID",
       type: "text",
-      name: "nomineeNID"
+      name: "nomineeNID",
     },
     {
       label: "Nominee Relation",
       type: "dropdown",
       name: "nomineeRelation",
-      options: Object.entries(relationshipTypeEn).map(([value, label]) => ({ label, value: Number(value) }))
+      options: Object.entries(relationshipTypeEn).map(([value, label]) => ({
+        label,
+        value: Number(value),
+      })),
     },
     {
       label: "Nominee Mobile Number",
       name: "nomineeMobileNumber",
       type: "text",
-      rules: mobileNumberValidation
+      rules: mobileNumberValidation,
     },
     {
       label: "Refeerence Name",
       type: "text",
       name: "referenceName",
       rules: {
-        ...nameValidation
-      }
+        ...nameValidation,
+      },
     },
     {
       label: "Reference Mobile Number",
       name: "referenceMobile",
       rules: mobileNumberValidation,
-      type: "text"
-    }
+      type: "text",
+    },
   ];
 
   const serviceInformationFields = [
@@ -1255,7 +1356,7 @@ const HRExecutiveEntryDetails = () => {
       }
     },
     {
-      label: "Probation Period(month)",
+      label: "Probation Period (month)",
       name:
         "probationPeriod",
       type: "number",

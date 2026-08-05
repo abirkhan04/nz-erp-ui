@@ -56,6 +56,12 @@ export const genderMapBengali: Record<number, string> = {
   2: "তৃতীয় লিঙ্গ",
 };
 
+export const genderMapEnglish: Record<number, string> = {
+  0: "Male",
+  1: "Female",
+  2: "Third Gender",
+};
+
 export const WeekOffDayMap = {
   0: "Friday",
   1: "Saturday",
@@ -69,6 +75,11 @@ export const WeekOffDayMap = {
 export const EmployeeNature = {
     Staff: 1,
     Management: 2,
+};
+
+export const EmployeeNatureLabel: Record<number, string> = {
+  1: "Staff",
+  2: "Management",
 };
 
 export const EmployeeCategory = {
@@ -138,6 +149,12 @@ export const idTypeMapBangla: Record<string, number> = {
   "জাতীয় পরিচয়পত্র": 0,
   "জন্ম নিবন্ধন": 1,
   "পাসপোর্ট": 2,
+};
+
+export const idTypeMapEnglish: Record<string, number> = {
+  "National ID": 0,
+  "Birth Registration": 1,
+  "Passport": 2,
 };
 
 export const relationshipTypeEn: Record<number, string> = {
