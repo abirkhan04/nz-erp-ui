@@ -1403,15 +1403,10 @@ const HRExecutiveEntryDetails = () => {
     localStorage.removeItem(DRAFT_KEY);
     // Now override the fields you want
     setValue("company", data.unitId ?? null);
-<<<<<<< HEAD
-    setValue("grade", data.gradeId ?? null);
-    setValue("designation", data.designationId ?? null);
-=======
     pendingGradeRef.current = data.gradeId ?? null;
     pendingDesignationRef.current = data.designationId ?? null;
 
     setValue("grade", data.gradeId ?? null);
->>>>>>> master
     setValue("mobileNumber", data.mobile ?? null);
 
     setValue("permanentDivision", data.permanentDivisionId ?? null);
