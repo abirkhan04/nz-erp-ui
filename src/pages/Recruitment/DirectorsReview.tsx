@@ -218,7 +218,7 @@ const DirectorReview = () => {
         employeeEnrollmentId: item.employeeEnrollmentId,
         grossSalary: item.grossSalary || null,
         proposedSalary: item.proposedSalary,
-        directorsDecision: item.decision, // Sent correctly from dynamic row index
+        employeeStatus: item.decision, // Sent correctly from dynamic row index
         remarks: item.remarks,            // Sent correctly from dynamic row index
       }));
 
