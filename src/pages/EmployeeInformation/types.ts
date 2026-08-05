@@ -78,6 +78,7 @@ export const EmployeeNature = {
 };
 
 export const EmployeeNatureLabel: Record<number, string> = {
+  0: "Worker",
   1: "Staff",
   2: "Management",
 };

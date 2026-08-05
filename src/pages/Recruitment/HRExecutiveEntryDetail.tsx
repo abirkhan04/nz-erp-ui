@@ -373,8 +373,6 @@ const HRExecutiveEntryDetails = () => {
   const restoredCompanyRef = useRef(false);
   const restoredDepartmentRef = useRef(false);
   const restoredCellRef = useRef(false);
-  const restoredDesignationRef = useRef(false);
-  const restoredGradeRef = useRef(false);
   const restoredShiftRef = useRef(false);
   const restoredWorkerTypeRef = useRef(false);
 
@@ -385,8 +383,6 @@ const HRExecutiveEntryDetails = () => {
     restoredCompanyRef.current = false;
     restoredDepartmentRef.current = false;
     restoredCellRef.current = false;
-    restoredDesignationRef.current = false;
-    restoredGradeRef.current = false;
     restoredShiftRef.current = false;
     restoredWorkerTypeRef.current = false;
   }, [candidateId, enrollmentId]);
@@ -547,38 +543,29 @@ const HRExecutiveEntryDetails = () => {
 
 
   useEffect(() => {
-    if (restoredDesignationRef.current) return;
     if (!grade) return;
-    if (designations.length === 0) return;
-
-    const availableDesignations = designations;
-
-    if (availableDesignations.length === 0) return;
+    if (!designations.length) return;
 
     const draft = localStorage.getItem(DRAFT_KEY);
+    const parsed = draft ? JSON.parse(draft) : null;
 
-    if (draft) {
-      const parsed = JSON.parse(draft);
+    const designationId =
+      parsed?.designation ?? employeeOnGate?.designationId;
 
-      if (
-        parsed.designation != null &&
-        availableDesignations.some(d => d.id === parsed.designation)
-      ) {
-        setValue("designation", parsed.designation);
-      }
-    } else if (
-      employeeOnGate?.designationId != null &&
-      availableDesignations.some(d => d.id === employeeOnGate.designationId)
+    if (
+      designationId &&
+      designations.some(d => d.id === designationId)
     ) {
-      setValue("designation", employeeOnGate.designationId);
+      if (getValues("designation") !== designationId) {
+        setValue("designation", designationId);
+      }
     }
-
-    restoredDesignationRef.current = true;
   }, [
-    employeeNature,
+    grade,
     designations,
     employeeOnGate,
     DRAFT_KEY,
+    getValues,
     setValue,
   ]);
 
@@ -587,52 +574,50 @@ const HRExecutiveEntryDetails = () => {
 
     setValue("grade", null);
     setValue("designation", null);
-
-    restoredGradeRef.current = false;
-    restoredDesignationRef.current = false;
-  }, [employeeNature]);
+  }, [employeeNature, setValue]);
 
   useEffect(() => {
-    if (!grade) return;
-
-    setValue("designation", null);
-
-    restoredDesignationRef.current = false;
-  }, [grade]);
-
-  useEffect(() => {
-    if (restoredGradeRef.current) return;
     if (!employeeNature) return;
-    if (grades.length === 0) return;
-
-    const availableGrades = grades.filter(
-      g => g.employeeNature === Number(employeeNature)
-    );
+    if (!grades.length) return;
 
     const draft = localStorage.getItem(DRAFT_KEY);
+    const parsed = draft ? JSON.parse(draft) : null;
 
-    if (draft) {
-      const parsed = JSON.parse(draft);
+    const gradeId = parsed?.grade ?? employeeOnGate?.gradeId;
 
-      if (
-        parsed.grade != null &&
-        availableGrades.some(g => g.id === parsed.grade)
-      ) {
-        setValue("grade", parsed.grade);
-      }
-    } else if (
-      employeeOnGate?.gradeId != null &&
-      availableGrades.some(g => g.id === employeeOnGate.gradeId)
-    ) {
-      setValue("grade", employeeOnGate.gradeId);
+    if (!gradeId) return;
+
+    const validGrade = grades.find(
+      g =>
+        g.id === gradeId &&
+        g.employeeNature === Number(employeeNature)
+    );
+
+    if (!validGrade) return;
+
+    if (getValues("grade") !== gradeId) {
+      setValue("grade", gradeId);
     }
 
-    restoredGradeRef.current = true;
+    const designationId =
+      parsed?.designation ?? employeeOnGate?.designationId;
+
+    if (
+      designationId &&
+      designations.length &&
+      designations.some(d => d.id === designationId)
+    ) {
+      if (getValues("designation") !== designationId) {
+        setValue("designation", designationId);
+      }
+    }
   }, [
     employeeNature,
     grades,
+    designations,
     employeeOnGate,
     DRAFT_KEY,
+    getValues,
     setValue,
   ]);
 
@@ -718,7 +703,7 @@ const HRExecutiveEntryDetails = () => {
     payload.append("employeeName", data.employeeName ?? "");
     payload.append("fatherName", data.fatherName ?? "");
     payload.append("motherName", data.motherName ?? "");
-    payload.append("dateOfBirth", data.dateOfBirth ?? "");
+    payload.append("dateOfBirth", employeeNature === "0"? employeeOnGate?.dateOfBirth :data.dateOfBirth);
     payload.append("employeeCode", data.employeeCode ?? "");
     payload.append("mobileNumber", data.mobileNumber ?? "");
     payload.append("nomineeName", data.nomineeName ?? "");
@@ -734,11 +719,11 @@ const HRExecutiveEntryDetails = () => {
     payload.append("subunitId", String(data.subUnit));
     payload.append("departmentId", String(data.department));
     payload.append("sectionId", String(data.section));
-    payload.append("idType", data.nidType);
-    payload.append("idNumber", data.nidNumber);
-    payload.append("gender", data.gender);
-    payload.append("religion", data.religion);
-    payload.append("bloodGroup", data.bloodGroup);
+    payload.append("idType", employeeNature === "0"? employeeOnGate?.idType : data.nidType);
+    payload.append("idNumber", employeeNature === "0"? employeeOnGate?.idNumber : data.nidNumber);
+    payload.append("gender", employeeNature === "0"? employeeOnGate?.gender :data.gender);
+    payload.append("religion", employeeNature === "0"? employeeOnGate?.religion :data.religion);
+    payload.append("bloodGroup", employeeNature === "0"? employeeOnGate?.bloodGroup :data.bloodGroup);
 
     payload.append("cellId", data.cell ? String(data.cell) : "");
     payload.append("designationId", data.designation ? String(data.designation) : "");
@@ -754,11 +739,7 @@ const HRExecutiveEntryDetails = () => {
     payload.append(
       "employeeNature",
       String(
-        data.employeeNature === undefined ||
-          data.employeeNature === null ||
-          data.employeeNature === ""
-          ? 0
-          : data.employeeNature
+         data.employeeNature
       )
     );
 
