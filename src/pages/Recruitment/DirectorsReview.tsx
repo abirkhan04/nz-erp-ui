@@ -570,7 +570,7 @@ const DirectorReview = () => {
                     <label className="flex items-center gap-2 cursor-pointer group selection:bg-transparent">
                       <input
                         type="radio"
-                        value="REJECT"
+                        value="DirectorRejected"
                         className="w-4 h-4 text-red-600 focus:ring-red-500"
                         {...register(`employees.${selectedCandidateFormIndex}.decision`)}
                       />
