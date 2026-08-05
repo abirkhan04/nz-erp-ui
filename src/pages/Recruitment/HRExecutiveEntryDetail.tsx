@@ -359,7 +359,6 @@ const HRExecutiveEntryDetails = () => {
     url: `${API_ROUTES.EMPLOYEES}/employee-detail/${candidateId}`,
     enabled: !!candidateId
   });
-  console.log("employee on gate-->", employeeOnGate);
 
   const { data: candidateOnGate } = useGet<any>({
     key: ["appointment_letter", candidateId],
@@ -1451,6 +1450,7 @@ const HRExecutiveEntryDetails = () => {
     localStorage.removeItem(DRAFT_KEY);
     // Now override the fields you want
     setValue("company", data.unitId ?? null);
+    setValue("grade", data.gradeId ?? null);
     setValue("designation", data.designationId ?? null);
     setValue("mobileNumber", data.mobile ?? null);
 
@@ -1462,7 +1462,6 @@ const HRExecutiveEntryDetails = () => {
     setValue("presentDistrict", data.presentDistrictId ?? null);
     setValue("presentPoliceStation", data.presentUpazilaId ?? null);
 
-    // Remove draft if you no longer need it
   };
 
   return (<>
