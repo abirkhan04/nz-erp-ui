@@ -7,7 +7,7 @@ export interface EmployeeMasterListRequest
   departmentId?: number;
   sectionId?: number;
   cellId?: number;
-  employeeNatureId?: number;
+  employeeNature?: number;
   includeInactive?: boolean;
 
   joiningFromDate?: string;

@@ -277,7 +277,7 @@ export interface EmployeeMasterFilterModel {
   sectionId?: number;
   cellId?: number;
 
-  employeeNatureId?: number;
+  employeeNature?: number;
   religion?: number;
   gender?: number;
 

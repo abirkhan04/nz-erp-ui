@@ -211,18 +211,9 @@ export default function EmployeeMasterFilter({
         },
         {
             label: "Employee Type",
-            name: "employeeNatureId",
+            name: "employeeNature",
             type: "dropdown",
-            options: Object.entries(EmployeeNature).map(([label, value]) => ({
-                label,
-                value,
-            })),
-        },
-        {
-            label: "Employee Type",
-            name: "employeeNatureId",
-            type: "dropdown",
-            options: Object.entries(EmployeeNature).map(([label, value]) => ({
+            options: Object.entries({Worker: 0, ...EmployeeNature}).map(([label, value]) => ({
                 label,
                 value,
             })),
@@ -270,7 +261,7 @@ export default function EmployeeMasterFilter({
 
             religion: undefined,
             gender: undefined,
-            employeeNatureId: undefined,
+            employeeNature: undefined,
 
             joiningFromDate: "",
             joiningToDate: "",
