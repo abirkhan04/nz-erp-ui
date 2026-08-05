@@ -744,9 +744,10 @@ const ITActivationPage: React.FC = () => {
                         <span style={{ color: "#93c5fd", fontSize: 11, marginLeft: 8 }}>(Read Only)</span>
                     </div>
                     <div style={{ padding: 16 }}>
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 12px" }}>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "0 12px" }}>
                             <div>
                                 <InfoRow label="Company" value={selected?.unitName} />
+                                <InfoRow label="Sub Unit" value={selected?.subUnitName} />
                                 <InfoRow label="Department" value={selected?.department} />
                                 <InfoRow label="Section" value={selected?.sectionName} />
                                 <InfoRow label="Cell" value={selected?.cell} />
@@ -754,8 +755,6 @@ const ITActivationPage: React.FC = () => {
                                 <InfoRow label="Grade" value={selected?.gradeName} />
                                 <InfoRow label="Shift" value={selected?.shiftName} />
                                 <InfoRow label="Week Off day" value={selected?.weekOffDay} />
-                            </div>
-                            <div>
                                 <InfoRow label="Gross Salary" value={`${selected?.grossSalary?.toLocaleString() || 0} BDT`} />
                                 <InfoRow label="Date of Joining" value={formatDate(selected?.joiningDate)} />
                                 <InfoRow
