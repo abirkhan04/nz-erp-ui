@@ -540,85 +540,12 @@ const HRExecutiveEntryDetails = () => {
   }, [cells]);
 
 
+  // useEffect(() => {
+  //   if (!employeeNature) return;
 
-  useEffect(() => {
-    if (!grade) return;
-    if (!designations.length) return;
-
-    const draft = localStorage.getItem(DRAFT_KEY);
-    const parsed = draft ? JSON.parse(draft) : null;
-
-    const designationId =
-      parsed?.designation ?? employeeOnGate?.designationId;
-
-    if (
-      designationId &&
-      designations.some(d => d.id === designationId)
-    ) {
-      if (getValues("designation") !== designationId) {
-        setValue("designation", designationId);
-      }
-    }
-  }, [
-    grade,
-    designations,
-    employeeOnGate,
-    DRAFT_KEY,
-    getValues,
-    setValue,
-  ]);
-
-  useEffect(() => {
-    if (!employeeNature) return;
-
-    setValue("grade", null);
-    setValue("designation", null);
-  }, [employeeNature, setValue]);
-
-  useEffect(() => {
-    if (!employeeNature) return;
-    if (!grades.length) return;
-
-    const draft = localStorage.getItem(DRAFT_KEY);
-    const parsed = draft ? JSON.parse(draft) : null;
-
-    const gradeId = parsed?.grade ?? employeeOnGate?.gradeId;
-
-    if (!gradeId) return;
-
-    const validGrade = grades.find(
-      g =>
-        g.id === gradeId &&
-        g.employeeNature === Number(employeeNature)
-    );
-
-    if (!validGrade) return;
-
-    if (getValues("grade") !== gradeId) {
-      setValue("grade", gradeId);
-    }
-
-    const designationId =
-      parsed?.designation ?? employeeOnGate?.designationId;
-
-    if (
-      designationId &&
-      designations.length &&
-      designations.some(d => d.id === designationId)
-    ) {
-      if (getValues("designation") !== designationId) {
-        setValue("designation", designationId);
-      }
-    }
-  }, [
-    employeeNature,
-    grades,
-    designations,
-    employeeOnGate,
-    DRAFT_KEY,
-    getValues,
-    setValue,
-  ]);
+  //   setValue("grade", null);
+  //   setValue("designation", null);
+  // }, [employeeNature, setValue]);
 
   useEffect(() => {
     if (restoredShiftRef.current || shifts.length === 0) return;
@@ -702,7 +629,7 @@ const HRExecutiveEntryDetails = () => {
     payload.append("employeeName", data.employeeName ?? "");
     payload.append("fatherName", data.fatherName ?? "");
     payload.append("motherName", data.motherName ?? "");
-    payload.append("dateOfBirth", employeeNature === "0"? employeeOnGate?.dateOfBirth :data.dateOfBirth);
+    payload.append("dateOfBirth", employeeNature === "0" ? employeeOnGate?.dateOfBirth : data.dateOfBirth);
     payload.append("employeeCode", data.employeeCode ?? "");
     payload.append("mobileNumber", data.mobileNumber ?? "");
     payload.append("nomineeName", data.nomineeName ?? "");
@@ -718,11 +645,11 @@ const HRExecutiveEntryDetails = () => {
     payload.append("subunitId", String(data.subUnit));
     payload.append("departmentId", String(data.department));
     payload.append("sectionId", String(data.section));
-    payload.append("idType", employeeNature === "0"? employeeOnGate?.idType : data.nidType);
-    payload.append("idNumber", employeeNature === "0"? employeeOnGate?.idNumber : data.nidNumber);
-    payload.append("gender", employeeNature === "0"? employeeOnGate?.gender :data.gender);
-    payload.append("religion", employeeNature === "0"? employeeOnGate?.religion :data.religion);
-    payload.append("bloodGroup", employeeNature === "0"? employeeOnGate?.bloodGroup :data.bloodGroup);
+    payload.append("idType", employeeNature === "0" ? employeeOnGate?.idType : data.nidType);
+    payload.append("idNumber", employeeNature === "0" ? employeeOnGate?.idNumber : data.nidNumber);
+    payload.append("gender", employeeNature === "0" ? employeeOnGate?.gender : data.gender);
+    payload.append("religion", employeeNature === "0" ? employeeOnGate?.religion : data.religion);
+    payload.append("bloodGroup", employeeNature === "0" ? employeeOnGate?.bloodGroup : data.bloodGroup);
 
     payload.append("cellId", data.cell ? String(data.cell) : "");
     payload.append("designationId", data.designation ? String(data.designation) : "");
@@ -738,7 +665,7 @@ const HRExecutiveEntryDetails = () => {
     payload.append(
       "employeeNature",
       String(
-         data.employeeNature
+        data.employeeNature
       )
     );
 
@@ -1435,6 +1362,29 @@ const HRExecutiveEntryDetails = () => {
     })();
   }, [sameAsPermanent]);
 
+  useEffect(() => {
+    const draft = localStorage.getItem(DRAFT_KEY);
+    if (!draft) return;
+    if (!grades.length) return;
+
+    const parsed = JSON.parse(draft);
+
+    setValue("grade", parsed.grade);
+  }, [grades, DRAFT_KEY, setValue]);
+
+  useEffect(() => {
+    const draft = localStorage.getItem(DRAFT_KEY);
+    if (!draft) return;
+    if (!designations.length) return;
+
+    const parsed = JSON.parse(draft);
+
+    setValue("designation", parsed.designation);
+  }, [designations, DRAFT_KEY, setValue]);
+
+  const pendingGradeRef = useRef<string | null>(null);
+  const pendingDesignationRef = useRef<string | null>(null);
+
   const refreshGateData = async () => {
     const { data } = await api.get(
       `${API_ROUTES.EMPLOYEES}/employee-detail/${candidateId}`
@@ -1444,14 +1394,19 @@ const HRExecutiveEntryDetails = () => {
     const draft = localStorage.getItem(DRAFT_KEY);
     const draftData = draft ? JSON.parse(draft) : {};
 
+    draftData.grade = data.gradeId;
+    draftData.designation = data.designationId;
+
     // Reset form with draft values
 
     reset(draftData);
     localStorage.removeItem(DRAFT_KEY);
     // Now override the fields you want
     setValue("company", data.unitId ?? null);
+    pendingGradeRef.current = data.gradeId ?? null;
+    pendingDesignationRef.current = data.designationId ?? null;
+
     setValue("grade", data.gradeId ?? null);
-    setValue("designation", data.designationId ?? null);
     setValue("mobileNumber", data.mobile ?? null);
 
     setValue("permanentDivision", data.permanentDivisionId ?? null);
@@ -1463,6 +1418,30 @@ const HRExecutiveEntryDetails = () => {
     setValue("presentPoliceStation", data.presentUpazilaId ?? null);
 
   };
+
+  useEffect(() => {
+    if (!grades.length) return;
+    if (!pendingGradeRef.current) return;
+
+    const exists = grades.some(g => g.id === pendingGradeRef.current);
+
+    if (!exists) return;
+
+    setValue("grade", pendingGradeRef.current);
+  }, [grades]);
+
+  useEffect(() => {
+    if (!designations.length) return;
+    if (!pendingDesignationRef.current) return;
+
+    const exists = designations.some(
+      d => d.id === pendingDesignationRef.current
+    );
+
+    if (!exists) return;
+
+    setValue("designation", pendingDesignationRef.current);
+  }, [designations]);
 
   return (<>
 
