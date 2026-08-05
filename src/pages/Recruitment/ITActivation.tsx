@@ -474,7 +474,7 @@ const ITActivationPage: React.FC = () => {
                                 }}>
                                 <div>
                                     <div style={{ fontWeight: 700, fontSize: 13, color: "#0f172a" }}>{c.employeeName}</div>
-                                    <div style={{ fontSize: 11, color: "#6b7280" }}>{c.employeeId} &bull; {c.department}</div>
+                                    <div style={{ fontSize: 11, color: "#6b7280" }}>{c.employeeCode}</div>
                                 </div>
                                 {c.employeeId === selectedId && (
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="3">
@@ -888,6 +888,7 @@ const ITActivationPage: React.FC = () => {
                 padding: "14px 24px", display: "flex", gap: 12, flexWrap: "wrap",
                 position: "sticky", bottom: 0, zIndex: 10,
                 boxShadow: "0 -4px 12px rgba(0,0,0,0.06)",
+                justifyContent: "flex-end", // center the buttons horizontally
             }}>
 
 
@@ -922,19 +923,6 @@ const ITActivationPage: React.FC = () => {
                         <path d="m9 18 6-6-6-6" />
                     </svg>
                 </button>
-
-                {/* 
-                <button style={{
-                    display: "flex", alignItems: "center", gap: 7, marginLeft: "auto",
-                    background: "#fff", border: "1.5px solid #ef4444",
-                    borderRadius: 8, padding: "9px 20px", cursor: "pointer",
-                    fontSize: 13, color: "#dc2626", fontWeight: 600,
-                }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <path d="M18 6 6 18M6 6l12 12" />
-                    </svg>
-                    Cancel Activation
-                </button> */}
                 <div
                     style={{
                         position: "fixed",
