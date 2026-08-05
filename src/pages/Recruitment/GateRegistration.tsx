@@ -622,6 +622,7 @@ const GateRegistration = ({
       designation: "",
       referenceName: "",
       referenceMobile: "",
+      grade: "",
 
       sameAsPermanent: false,
     });
@@ -633,13 +634,6 @@ const GateRegistration = ({
 
     setValue("company", draftData.company);
   }, [draftData, units]);
-
-  useEffect(() => {
-    if (!draftData) return;
-    if (!designations.length) return;
-
-    setValue("designation", draftData.designation);
-  }, [draftData, designations]);
 
   useEffect(() => {
     if (!draftData) return;
@@ -696,8 +690,11 @@ const GateRegistration = ({
 
         company: candidate.unitId ?? "",
 
+        grade: candidate.gradeId ?? "",
+
         designation:
           candidate.designationId ?? "",
+
 
         joiningDate:
           candidate.joiningDate ?? "",
@@ -740,6 +737,19 @@ const GateRegistration = ({
 
     setValue("permanentDistrict", draftData.permanentDistrict);
   }, [draftData, permanentDistricts]);
+
+  useEffect(() => {
+    if (!draftData) return;
+
+    setValue("grade", draftData.grade);
+  }, [draftData, setValue]);
+
+  useEffect(() => {
+    if (!draftData) return;
+    if (!designations.length) return;
+
+    setValue("designation", draftData.designation);
+  }, [draftData, designations, setValue]);
 
   useEffect(() => {
     if (!draftData) return;
@@ -891,6 +901,7 @@ const GateRegistration = ({
           .split("T")[0],
 
       enrolledBy: "",
+      gradeId: data.grade,
       designationId: data.designation,
       enrolledDate:
         new Date()
