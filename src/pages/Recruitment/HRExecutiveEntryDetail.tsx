@@ -1885,7 +1885,7 @@ const HRExecutiveEntryDetails = () => {
                         Click to upload
                       </span>
 
-                      <span className="text-xs text-gray-500 mt-1">
+                      <span className="text-xs text-gray-500 mt-1 text-center">
                         PDF, JPG, PNG supported
                       </span>
 
