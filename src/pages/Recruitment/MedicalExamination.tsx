@@ -5,6 +5,7 @@ import {
 } from "react";
 
 import { useGet } from "../../hooks/useGet";
+import MedicalPrintPopup from "./MedicalPrintPopup";
 
 import {
     ClipboardCheck,
@@ -72,6 +73,8 @@ const MedicalExamination = () => {
                     .includes(searchText.toLowerCase())
         );
     }, [candidates, searchText]);
+
+    const [showMedicalPrintPopup, setShowMedicalPrintPopup] = useState(false);
 
     useEffect(() => {
         setCurrentPage(1);
@@ -755,10 +758,30 @@ const MedicalExamination = () => {
                     </div>
                 </div>
 
+
+
                 {/* Submit Button */}
 
                 <div className="flex justify-end mt-6">
-
+                    <button
+                        type="button"
+                        onClick={() => setShowMedicalPrintPopup(true)}
+                        className="
+            bg-green-600
+            hover:bg-green-700
+            text-white
+            px-8
+            py-3
+            rounded-lg
+            flex
+            items-center
+            gap-3
+            font-medium
+            shadow-sm
+            mr-4
+        ">
+                        Print Doctor's Slip
+                    </button>
                     <button
                         type="submit"
                         className="
@@ -778,33 +801,18 @@ const MedicalExamination = () => {
                         <ArrowRight
                             size={18}
                         />
-
                         Send Candidates
                         to HR Executive Entry
-
-                        <span
-                            className="
-                h-6
-                min-w-[24px]
-                px-2
-                rounded-full
-                bg-white/20
-                text-xs
-                flex
-                items-center
-                justify-center
-              "
-                        >
-                            {
-                                filteredData.length
-                            }
-                        </span>
-
                     </button>
 
                 </div>
 
             </div>
+            {showMedicalPrintPopup && (
+                <MedicalPrintPopup
+                    onClose={() => setShowMedicalPrintPopup(false)}
+                />
+            )}
         </form>
     );
 };
