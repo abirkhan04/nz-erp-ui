@@ -1,4 +1,7 @@
 @import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 html,
 body,
@@ -19,4 +22,20 @@ body,
 
 .react-datepicker__input-container input {
   width: 100%;
+}
+
+
+
+@layer components {
+  .input-field {
+    @apply h-8 w-full rounded border border-slate-200 bg-white px-2.5 text-[10px] text-slate-700 outline-none transition focus:border-blue-400 focus:ring-1 focus:ring-blue-100;
+  }
+
+  .select-field {
+    @apply flex h-8 w-full items-center justify-between rounded border border-slate-200 bg-white px-2.5 text-[10px] text-slate-700;
+  }
+
+  .pagination-btn {
+    @apply flex h-7 min-w-7 items-center justify-center rounded border border-slate-200 px-2 text-[10px] font-medium text-slate-700 hover:bg-blue-50;
+  }
 }

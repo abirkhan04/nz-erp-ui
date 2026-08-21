@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import { lazy, Suspense } from "react";
 import Topbar from "./components/Topbar";
+import OTForwardingPage from "./pages/Attendance/OTForwarding";
 
 const Login = lazy(() => import("./pages/Login"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -17,6 +18,13 @@ const ITActivation = lazy(() => import("./pages/Recruitment/ITActivation"));
 const RecruitmentReports = lazy(() => import("./pages/Recruitment/RecruitmentReport"));
 const EmployeeMasterList = lazy(() => import("./pages/Recruitment/recruitment-reports/EmployeeMasterList"));
 const EmployeeDetailProfile = lazy(()=> import("./pages/Recruitment/recruitment-reports/EmployeeDetailProfile/EmployeeDetailProfile"));
+const ProductionFloorPortal = lazy(()=> import("./pages/Attendance/ProductionFloorPortal"));
+
+
+/*
+    Attendance related tasks
+*/
+const AttendanceSummary = lazy(() => import("./pages/Attendance/AttendanceSummary"));
 
 /**
  * 🔐 Auth Check
@@ -183,6 +191,26 @@ export default function App() {
               </ProtectedRoute>
             }
           />
+
+          <Route
+            path="/attendance-summary"
+            element={<ProtectedRoute>
+              <AttendanceSummary/>
+            </ProtectedRoute>}/>
+
+          <Route
+            path="/production-floor-portal"
+            element={<ProtectedRoute>
+              <ProductionFloorPortal/>
+            </ProtectedRoute>}
+          />
+
+          <Route
+            path="/ot-forwarding"
+            element={<ProtectedRoute>
+              <OTForwardingPage/>
+            </ProtectedRoute>}
+            />
 
           {/* Protected Application Routes (With Topbar) */}
           <Route
