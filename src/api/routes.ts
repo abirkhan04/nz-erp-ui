@@ -47,5 +47,6 @@ export const API_ROUTES = {
 
   // OT forwarding
   SHIFTS: "shifts",
-  OVERTIME_REQUESTS: "OvertimeRequests"
+  OVERTIME_REQUESTS: "OvertimeRequests",
+  ATTENDANCE: "attendance"
 };
