@@ -20,7 +20,7 @@ import {
   Controller,
 } from "react-hook-form";
 
-type Option = {
+export type Option = {
   label: string;
   value: string | number;
 };

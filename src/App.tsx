@@ -20,7 +20,7 @@ const EmployeeMasterList = lazy(() => import("./pages/Recruitment/recruitment-re
 const EmployeeDetailProfile = lazy(() => import("./pages/Recruitment/recruitment-reports/EmployeeDetailProfile/EmployeeDetailProfile"));
 const ProductionFloorPortal = lazy(() => import("./pages/Attendance/ProductionFloorPortal"));
 const LeavePortal = lazy(() => import("./pages/Attendance/leave-portal"));
-
+const ForwardLeaveRequest = lazy(()=> import("./pages/Attendance/ForwardLeaveRequest"));
 
 /*
     Attendance related tasks
@@ -220,6 +220,12 @@ export default function App() {
             </ProtectedRoute>}
           />
 
+          <Route
+            path="/forward-leave-request"
+            element={<ProtectedRoute>
+              <ForwardLeaveRequest />
+            </ProtectedRoute>}
+          />
 
           {/* Protected Application Routes (With Topbar) */}
           <Route

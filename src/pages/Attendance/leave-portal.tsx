@@ -84,7 +84,7 @@ const LeavePortal: React.FC = () => {
                         <div className="leading-tight">
                             <p className="text-sm font-bold">{user.userName}</p>
                             <p className="text-[11px] text-cyan-400">
-                                Weaving Section - {currentShift.shiftName.split("-")[0]} Shift
+                                Weaving Section - {currentShift?.shiftName.split("-")[0]} Shift
                             </p>
                         </div>
 
@@ -164,7 +164,8 @@ const LeavePortal: React.FC = () => {
                             ))}
                         </div>
 
-                        <button className="mt-auto flex h-[34px] items-center justify-center gap-4 rounded-md bg-[#008b68] text-sm font-bold text-white transition hover:bg-[#00755a]">
+                        <button className="mt-auto flex h-[34px] items-center justify-center gap-4 rounded-md bg-[#008b68] text-sm font-bold text-white transition hover:bg-[#00755a]"
+                         onClick={()=> navigate("/forward-leave-request")}>
                             Go to Leave Forwarding
                             <ArrowRight size={22} />
                         </button>
