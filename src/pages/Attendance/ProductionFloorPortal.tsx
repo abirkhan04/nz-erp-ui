@@ -36,6 +36,7 @@ const portalOptions: PortalOption[] = [
     description: "Forward Leave &\nLeave Encashment\nto Attendance Cell",
     icon: CalendarDays,
     gradient: "from-teal-500 to-teal-700",
+    url: "/leave-portal"
   },
   {
     id: "increment",

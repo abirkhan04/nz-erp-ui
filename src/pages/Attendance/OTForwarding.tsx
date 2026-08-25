@@ -19,6 +19,7 @@ import AddNewEmployee from "./AddNewEmployee";
 import type { NewEmployee } from "./AddNewEmployee";
 import { usePost } from "../../hooks/usePost";
 import toast from "react-hot-toast";
+import { useCurrentShift } from "./utls/getCurrentShifts.ts";
 
 interface PreviousShiftEmployee {
     employeeId: string;
@@ -51,10 +52,6 @@ const footerItems = [
 const ITEMS_PER_PAGE = 5;
 
 const OTForwardingPage: React.FC = () => {
-    const { data: shifts = [] } = useGet<any[]>({
-        key: ["shifts"],
-        url: `${API_ROUTES.SHIFTS}?includeInactive=false`,
-    });
 
     const user = JSON.parse(localStorage.getItem("user") || "{}");
 
@@ -68,52 +65,7 @@ const OTForwardingPage: React.FC = () => {
 
     const { mutate: ForwardToTimeCell } = usePost(API_ROUTES.OVERTIME_REQUESTS);
 
-    const rosterShifts = shifts?.filter(
-        (shift) => shift.shiftType === "Roster" && shift.isActive
-    );
-
-    const getCurrentShift = () => {
-        const now = new Date();
-
-        const currentMinutes =
-            now.getHours() * 60 + now.getMinutes();
-
-        return rosterShifts?.find((shift) => {
-            const [startHour, startMinute] = shift.startTime
-                .split(":")
-                .map(Number);
-
-            const [endHour, endMinute] = shift.endTime
-                .split(":")
-                .map(Number);
-
-            const startMinutes =
-                startHour * 60 + startMinute;
-
-            let endMinutes =
-                endHour * 60 + endMinute;
-
-            if (endMinutes <= startMinutes) {
-                endMinutes += 24 * 60;
-            }
-
-            let current = currentMinutes;
-
-            if (
-                current < startMinutes &&
-                endMinutes > 24 * 60
-            ) {
-                current += 24 * 60;
-            }
-
-            return (
-                current >= startMinutes &&
-                current < endMinutes
-            );
-        });
-    };
-
-    const currentShift = getCurrentShift();
+    const { currentShift ={}} = useCurrentShift();
 
     const shiftId = currentShift?.id;
     const departmentId = employee.departmentId;
@@ -636,20 +588,10 @@ const OTForwardingPage: React.FC = () => {
                                 <div className="select-field">
                                     {currentShift ? (
                                         <>
-                                            {currentShift.shiftName.replace(
-                                                "-",
-                                                " Shift ("
-                                            )}
-                                            {") "}
-                                            {currentShift.startTime.slice(
-                                                0,
-                                                5
-                                            )}{" "}
-                                            -{" "}
-                                            {currentShift.endTime.slice(
-                                                0,
-                                                5
-                                            )}
+                                            {currentShift.shiftName} (
+                                            {currentShift.startTime?.slice(0, 5)} -{" "}
+                                            {currentShift.endTime?.slice(0, 5)}
+                                            )
                                         </>
                                     ) : (
                                         "No active roster shift"

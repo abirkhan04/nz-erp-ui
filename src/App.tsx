@@ -17,8 +17,9 @@ const DirectorsReview = lazy(() => import("./pages/Recruitment/DirectorsReview")
 const ITActivation = lazy(() => import("./pages/Recruitment/ITActivation"));
 const RecruitmentReports = lazy(() => import("./pages/Recruitment/RecruitmentReport"));
 const EmployeeMasterList = lazy(() => import("./pages/Recruitment/recruitment-reports/EmployeeMasterList"));
-const EmployeeDetailProfile = lazy(()=> import("./pages/Recruitment/recruitment-reports/EmployeeDetailProfile/EmployeeDetailProfile"));
-const ProductionFloorPortal = lazy(()=> import("./pages/Attendance/ProductionFloorPortal"));
+const EmployeeDetailProfile = lazy(() => import("./pages/Recruitment/recruitment-reports/EmployeeDetailProfile/EmployeeDetailProfile"));
+const ProductionFloorPortal = lazy(() => import("./pages/Attendance/ProductionFloorPortal"));
+const LeavePortal = lazy(() => import("./pages/Attendance/leave-portal"));
 
 
 /*
@@ -195,22 +196,30 @@ export default function App() {
           <Route
             path="/attendance-summary"
             element={<ProtectedRoute>
-              <AttendanceSummary/>
-            </ProtectedRoute>}/>
+              <AttendanceSummary />
+            </ProtectedRoute>} />
 
           <Route
             path="/production-floor-portal"
             element={<ProtectedRoute>
-              <ProductionFloorPortal/>
+              <ProductionFloorPortal />
             </ProtectedRoute>}
           />
 
           <Route
             path="/ot-forwarding"
             element={<ProtectedRoute>
-              <OTForwardingPage/>
+              <OTForwardingPage />
             </ProtectedRoute>}
-            />
+          />
+
+          <Route
+            path="/leave-portal"
+            element={<ProtectedRoute>
+              <LeavePortal />
+            </ProtectedRoute>}
+          />
+
 
           {/* Protected Application Routes (With Topbar) */}
           <Route
