@@ -3,10 +3,8 @@ import {
     ArrowLeft,
     CalendarDays,
     Check,
-    CircleDollarSign,
     Info,
     Plus,
-    Search,
     Trash2,
     UserRound,
 } from "lucide-react";
@@ -119,7 +117,7 @@ const PerformanceIncrementRequest: React.FC = () => {
         handleSubmit,
         setValue,
         watch,
-        reset,
+        // reset,
     } = useForm<PerformanceIncrementForm>({
         defaultValues: {
             searchEmployee: "",
@@ -363,19 +361,19 @@ const PerformanceIncrementRequest: React.FC = () => {
     /* CLEAR ALL                                                              */
     /* ====================================================================== */
 
-    const handleClearAll = () => {
-        reset({
-            searchEmployee: "",
-            currentIncrementPercentage: 7,
-            requests: [],
-        });
+    // const handleClearAll = () => {
+    //     reset({
+    //         searchEmployee: "",
+    //         currentIncrementPercentage: 7,
+    //         requests: [],
+    //     });
 
-        setSelectedEmployee(null);
-        setEmployeeOptions([]);
-        setSearchedEmployees([]);
-        setEmployeeFound(false);
-        setIncrementPercentage(7);
-    };
+    //     setSelectedEmployee(null);
+    //     setEmployeeOptions([]);
+    //     setSearchedEmployees([]);
+    //     setEmployeeFound(false);
+    //     setIncrementPercentage(7);
+    // };
 
     /* ====================================================================== */
     /* SUBMIT                                                                 */
@@ -418,86 +416,6 @@ const PerformanceIncrementRequest: React.FC = () => {
                       request.currentIncrementPercentage,
                   0,
               ) / totalEmployees;
-
-    /* ====================================================================== */
-    /* WORKFLOW                                                               */
-    /* ====================================================================== */
-
-    const workflow: WorkflowItem[] = [
-        {
-            number: "1.",
-            title: "PRODUCTION FLOOR",
-            subtitle: "(You)",
-            description: <>Create Request</>,
-            icon: UserRound,
-            iconClass: "text-[#1764e8]",
-            circleClass:
-                "bg-[#edf4ff] border-[#cbdcff]",
-            titleClass: "text-[#174bd4]",
-        },
-        {
-            number: "2.",
-            title: "DIRECTOR",
-            subtitle: "",
-            description: (
-                <>
-                    Review & Approve
-                    <br />
-                    Request
-                </>
-            ),
-            icon: UserRound,
-            iconClass: "text-[#f27b00]",
-            circleClass:
-                "bg-[#fff5e8] border-[#ffe0bb]",
-            titleClass: "text-[#ed6b00]",
-        },
-        {
-            number: "3.",
-            title: "EMPLOYEE MOVEMENT CELL",
-            subtitle: "",
-            description: (
-                <>
-                    Review & Forward to
-                    <br />
-                    HR Branch Manager
-                </>
-            ),
-            icon: UserRound,
-            iconClass: "text-[#00974d]",
-            circleClass:
-                "bg-[#eefaf3] border-[#ccebd9]",
-            titleClass: "text-[#008f43]",
-        },
-        {
-            number: "4.",
-            title: "HR BRANCH MANAGER",
-            subtitle: "",
-            description: (
-                <>
-                    Review & Forward to
-                    <br />
-                    CEO
-                </>
-            ),
-            icon: UserRound,
-            iconClass: "text-[#175de0]",
-            circleClass:
-                "bg-[#edf4ff] border-[#cbdcff]",
-            titleClass: "text-[#174bd4]",
-        },
-        {
-            number: "5.",
-            title: "CEO",
-            subtitle: "",
-            description: <>Final Approval</>,
-            icon: UserRound,
-            iconClass: "text-[#5914d9]",
-            circleClass:
-                "bg-[#f7f0ff] border-[#dfceff]",
-            titleClass: "text-[#5914d9]",
-        },
-    ];
 
     /* ====================================================================== */
     /* DATE                                                                   */
