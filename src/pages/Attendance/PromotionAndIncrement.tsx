@@ -16,7 +16,7 @@ import type {
 } from "react-hook-form";
 import { useForm } from "react-hook-form";
 
-import CommonInputField from "../../components/CommonInputFields";
+import CommonInputField , {type Option }from "../../components/CommonInputFields";
 import RequestForwardingFlow from "./shared/RequestForwardingFlow";
 import { API_ROUTES } from "../../api/routes";
 import { api } from "../../api/client";
@@ -82,15 +82,12 @@ const PromotionIncrementRequest: React.FC = () => {
     const {
         register,
         control,
-        watch,
         setValue,
     } = useForm<PromotionSearchForm>({
         defaultValues: {
             searchEmployee: "",
         },
     });
-
-    const searchEmployee = watch("searchEmployee");
 
     /* =========================================================
        EMPLOYEE STATE
@@ -239,13 +236,7 @@ const PromotionIncrementRequest: React.FC = () => {
        The selected object from searchedEmployees is directly
        used to populate Section 2.
     ========================================================= */
-
-    const handleEmployeeSelect = (
-        option: {
-            label: string;
-            value: string;
-        } | null,
-    ) => {
+const handleEmployeeSelect = (option: Option) => {
         const employeeId = option?.value;
 
         if (!employeeId) {
