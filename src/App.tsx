@@ -18,14 +18,18 @@ const ITActivation = lazy(() => import("./pages/Recruitment/ITActivation"));
 const RecruitmentReports = lazy(() => import("./pages/Recruitment/RecruitmentReport"));
 const EmployeeMasterList = lazy(() => import("./pages/Recruitment/recruitment-reports/EmployeeMasterList"));
 const EmployeeDetailProfile = lazy(() => import("./pages/Recruitment/recruitment-reports/EmployeeDetailProfile/EmployeeDetailProfile"));
-const ProductionFloorPortal = lazy(() => import("./pages/Attendance/ProductionFloorPortal"));
-const LeavePortal = lazy(() => import("./pages/Attendance/leave-portal"));
-const ForwardLeaveRequest = lazy(()=> import("./pages/Attendance/ForwardLeaveRequest"));
+
 
 /*
     Attendance related tasks
 */
 const AttendanceSummary = lazy(() => import("./pages/Attendance/AttendanceSummary"));
+const ProductionFloorPortal = lazy(() => import("./pages/Attendance/ProductionFloorPortal"));
+const LeavePortal = lazy(() => import("./pages/Attendance/leave-portal"));
+const ForwardLeaveRequest = lazy(() => import("./pages/Attendance/ForwardLeaveRequest"));
+const LeaveEncashment = lazy(() => import("./pages/Attendance/LeaveEncashment"));
+const EarnedLeaveEncashment = lazy(() => import("./pages/Attendance/EarnedLeaveEncashment"));
+const MaternityLeaveEncashment = lazy(() => import("./pages/Attendance/MaternityLeaveEncashment"));
 
 /**
  * 🔐 Auth Check
@@ -224,6 +228,28 @@ export default function App() {
             path="/forward-leave-request"
             element={<ProtectedRoute>
               <ForwardLeaveRequest />
+            </ProtectedRoute>}
+          />
+
+          <Route
+            path="/leave-encashment"
+            element={<ProtectedRoute>
+              <LeaveEncashment />
+            </ProtectedRoute>}
+          />
+
+
+          <Route
+            path="/earned-leave-encashment"
+            element={<ProtectedRoute>
+              <EarnedLeaveEncashment />
+            </ProtectedRoute>}
+          />
+
+          <Route
+            path="/maternity-leave-encashment"
+            element={<ProtectedRoute>
+              <MaternityLeaveEncashment />
             </ProtectedRoute>}
           />
 

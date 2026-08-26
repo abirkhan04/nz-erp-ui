@@ -3,24 +3,17 @@ import {
     ArrowLeft,
     ArrowRight,
     CalendarDays,
-    CheckCircle2,
     CircleUserRound,
     LogOut,
     Settings,
+    HandCoins,
+    Heart,
     ShieldCheck,
-    FileText,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useCurrentShift } from "./utls/getCurrentShifts";
 
-const LeavePortal: React.FC = () => {
-    const leaveTypes = [
-        "Casual Leave",
-        "Earned Leave",
-        "Medical Leave",
-        "Maternity Leave",
-        "Special Leave",
-    ];
+const LeaveEncashment: React.FC = () => {
 
     const navigate = useNavigate();
 
@@ -99,12 +92,16 @@ const LeavePortal: React.FC = () => {
             </header>
 
             {/* Main */}
+            {/* Main */}
             <main className="flex-1 px-10 py-4">
                 {/* Top row */}
                 <div className="flex items-center justify-between">
-                    <button className="flex items-center gap-3 text-sm font-semibold text-[#0645d8] hover:underline" onClick={() => navigate("/production-floor-portal")}>
+                    <button
+                        className="flex items-center gap-3 text-sm font-semibold text-[#0645d8] hover:underline"
+                        onClick={() => navigate("/leave-portal")}
+                    >
                         <ArrowLeft size={22} strokeWidth={1.5} />
-                        Back to Dashboard
+                        Back to Leave Portal
                     </button>
 
                     <div className="flex items-center gap-3 rounded-md border border-[#d9dfed] px-5 py-2 text-sm font-semibold">
@@ -116,87 +113,81 @@ const LeavePortal: React.FC = () => {
                 </div>
 
                 {/* Title */}
-                <div className="mt-2 text-center">
-                    <h2 className="text-[22px] font-bold">Leave Portal</h2>
-                    <p className="mt-1 text-sm font-medium text-gray-500">
-                        Please select an option to continue
+                <div className="mt-8 text-center">
+                    <h2 className="text-[18px] font-bold text-[#07153f]">
+                        SELECT LEAVE ENCASHMENT TYPE
+                    </h2>
+
+                    <div className="mx-auto mt-2 h-[2px] w-[38px] bg-[#0752d8]" />
+
+                    <p className="mt-3 text-sm font-medium text-[#536078]">
+                        Please select the type of leave encashment request you want to
+                        forward.
                     </p>
                 </div>
 
-                {/* Cards */}
-                <div className="mx-auto mt-5 grid max-w-[935px] grid-cols-1 gap-8 md:grid-cols-2">
-                    {/* Forward Leave */}
-                    <div className="flex min-h-[382px] flex-col rounded-lg border border-[#aee5d7] bg-gradient-to-br from-[#fbfffe] to-[#f4faf9] px-12 py-5">
+                {/* Encashment Types */}
+                <div className="mx-auto mt-7 grid max-w-[725px] grid-cols-1 gap-9 md:grid-cols-2">
+                    {/* Earned Leave Encashment */}
+                    <div className="flex min-h-[335px] flex-col rounded-lg border border-[#dce5f2] bg-gradient-to-br from-[#ffffff] to-[#f8fbff] px-10 py-6">
                         {/* Icon */}
-                        <div className="mx-auto flex h-[76px] w-[100px] items-center justify-center rounded-full bg-[#c9f4e9]">
-                            <CalendarDays
-                                size={42}
-                                strokeWidth={2.2}
+                        <div className="mx-auto flex h-[100px] w-[100px] items-center justify-center rounded-full bg-[#dff5ed]">
+                            <HandCoins
+                                size={51}
+                                strokeWidth={1.8}
                                 className="text-[#008b68]"
                             />
                         </div>
 
-                        <h3 className="mt-3 text-center text-[20px] font-bold text-[#008b68]">
-                            FORWARD LEAVE
+                        <h3 className="mt-4 text-center text-[18px] font-bold text-[#008b68]">
+                            EARNED LEAVE ENCASHMENT
                         </h3>
 
-                        <div className="mx-auto mt-2 h-px w-[305px] bg-[#008b68]" />
+                        <div className="mx-auto mt-3 h-px w-[150px] bg-[#66c9b0]" />
 
-                        <p className="mt-3 text-center text-sm leading-5 text-[#536078]">
-                            Forward all types of leave requests
+                        <p className="mt-4 text-center text-sm leading-6 text-[#536078]">
+                            Encashment of earned (unutilized)
                             <br />
-                            to Attendance Cell
+                            leave balance as per policy.
                         </p>
 
-                        <div className="mt-3 space-y-1">
-                            {leaveTypes.map((leave) => (
-                                <div
-                                    key={leave}
-                                    className="flex items-center gap-2 text-[13px] font-semibold"
-                                >
-                                    <CheckCircle2
-                                        size={17}
-                                        fill="#008b68"
-                                        className="text-white"
-                                    />
-                                    <span>{leave}</span>
-                                </div>
-                            ))}
-                        </div>
-
-                        <button className="mt-auto flex h-[34px] items-center justify-center gap-4 rounded-md bg-[#008b68] text-sm font-bold text-white transition hover:bg-[#00755a]"
-                         onClick={()=> navigate("/forward-leave-request")}>
-                            Go to Leave Forwarding
+                        <button
+                            className="mt-auto flex h-[41px] items-center justify-center gap-3 rounded-md bg-[#008b68] text-sm font-bold text-white transition hover:bg-[#00755a]"
+                            onClick={() => navigate("/earned-leave-encashment")}
+                        >
+                            Proceed
                             <ArrowRight size={22} />
                         </button>
                     </div>
 
-                    {/* Leave Encashment */}
-                    <div className="flex min-h-[382px] flex-col rounded-lg border border-[#b9d0ff] bg-gradient-to-br from-[#fbfcff] to-[#f3f6fd] px-12 py-5">
+                    {/* Maternity Leave Encashment */}
+                    <div className="flex min-h-[335px] flex-col rounded-lg border border-[#dce5f2] bg-gradient-to-br from-[#ffffff] to-[#f8fbff] px-10 py-6">
                         {/* Icon */}
-                        <div className="mx-auto flex h-[76px] w-[100px] items-center justify-center rounded-full bg-[#d4e2ff]">
-                            <FileText
-                                size={43}
-                                strokeWidth={2}
+                        <div className="mx-auto flex h-[100px] w-[100px] items-center justify-center rounded-full bg-[#dce8ff]">
+                            <Heart
+                                size={51}
+                                strokeWidth={1.8}
                                 className="text-[#0752d8]"
                             />
                         </div>
 
-                        <h3 className="mt-3 text-center text-[20px] font-bold text-[#0752d8]">
-                            LEAVE ENCASHMENT
+                        <h3 className="mt-4 text-center text-[18px] font-bold text-[#0752d8]">
+                            MATERNITY LEAVE ENCASHMENT
                         </h3>
 
-                        <div className="mx-auto mt-2 h-px w-[305px] bg-[#6d9dff]" />
+                        <div className="mx-auto mt-3 h-px w-[150px] bg-[#7ca5ff]" />
 
-                        <p className="mt-3 text-center text-sm leading-5 text-[#536078]">
-                            Forward Earned Leave encashment
+                        <p className="mt-4 text-center text-sm leading-6 text-[#536078]">
+                            Encashment of maternity leave
                             <br />
-                            requests to Attendance Cell
+                            (Pre-delivery &amp; Post-delivery) in two installments.
                         </p>
 
-                        <button className="mt-auto flex h-[34px] items-center justify-center gap-4 rounded-md bg-[#0752d8] text-sm font-bold text-white transition hover:bg-[#0646b9]"
-                           onClick={()=> navigate("/leave-encashment")}>
-                            Go to Leave Encashment
+                        <button
+                            className="mt-auto flex h-[41px] items-center justify-center gap-3 rounded-md bg-[#0752d8] text-sm font-bold text-white transition hover:bg-[#0646b9]"
+                            onClick={() => navigate("/maternity-leave-encashment")}
+                        >
+                            Proceed
                             <ArrowRight size={22} />
                         </button>
                     </div>
@@ -262,4 +253,4 @@ const FooterItem: React.FC<FooterItemProps> = ({
     );
 };
 
-export default LeavePortal;
+export default LeaveEncashment;
