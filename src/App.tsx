@@ -33,7 +33,8 @@ const MaternityLeaveEncashment = lazy(() => import("./pages/Attendance/Maternity
 const EmployeeIncrementAndPromotion = lazy(() => import("./pages/Attendance/EmployeeIncrementAndPromotion"));
 const PerformanceIncrementRequest = lazy(() => import("./pages/Attendance/PerformanceIncrementRequest"));
 const PromotionAndIncrementRequest = lazy(() => import("./pages/Attendance/PromotionAndIncrement"));
-
+const AttendanceDashboard = lazy(()=> import("./pages/Attendance/AttendanceDashboard"));
+const TimeOfficeDashboard = lazy(()=>import("./pages/Attendance/TimeOfficeDashboard"));
 /**
  * 🔐 Auth Check
  */
@@ -277,6 +278,24 @@ export default function App() {
               <PromotionAndIncrementRequest />
             </ProtectedRoute>}
           />
+
+          <Route
+             path="/attendance-dashboard"
+             element={
+                <ProtectedRoute>
+                   <AttendanceDashboard/>
+                </ProtectedRoute>
+             }/>
+
+          <Route
+            path="/time-office-dashboard"
+            element={
+              <ProtectedRoute>
+                <TimeOfficeDashboard/>
+              </ProtectedRoute>
+
+            }
+            />   
 
           {/* Protected Application Routes (With Topbar) */}
           <Route

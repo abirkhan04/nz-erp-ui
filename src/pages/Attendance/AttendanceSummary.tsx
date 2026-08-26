@@ -526,7 +526,8 @@ const AttendanceSummary: React.FC = () => {
               </tfoot>
             </table>
           </div>
-          <a href="/production-floor-portal" >Click here to go to Production Floor Portal</a>
+          <a href="/production-floor-portal" >Click here to go to Production Floor Portal</a><br/>
+          <a href="/attendance-dashboard">Go to Attendance Dashboard</a>
         </section>
 
         {/* =================================================
