@@ -30,6 +30,8 @@ const ForwardLeaveRequest = lazy(() => import("./pages/Attendance/ForwardLeaveRe
 const LeaveEncashment = lazy(() => import("./pages/Attendance/LeaveEncashment"));
 const EarnedLeaveEncashment = lazy(() => import("./pages/Attendance/EarnedLeaveEncashment"));
 const MaternityLeaveEncashment = lazy(() => import("./pages/Attendance/MaternityLeaveEncashment"));
+const EmployeeIncrementAndPromotion = lazy(() => import("./pages/Attendance/EmployeeIncrementAndPromotion"));
+const PerformanceIncrementRequest = lazy(() => import("./pages/Attendance/PerformanceIncrementRequest"));
 
 /**
  * 🔐 Auth Check
@@ -250,6 +252,21 @@ export default function App() {
             path="/maternity-leave-encashment"
             element={<ProtectedRoute>
               <MaternityLeaveEncashment />
+            </ProtectedRoute>}
+          />
+
+
+          <Route
+            path="/employee-increment"
+            element={<ProtectedRoute>
+              <EmployeeIncrementAndPromotion />
+            </ProtectedRoute>}
+          />
+
+          <Route
+            path="/employee-increment/performance"
+            element={<ProtectedRoute>
+              <PerformanceIncrementRequest />
             </ProtectedRoute>}
           />
 

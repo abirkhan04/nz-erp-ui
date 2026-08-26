@@ -523,7 +523,7 @@ const MaternityLeaveEncashment = () => {
                     >
                         <ArrowLeft size={20} />
 
-                        Back to Leave Portal
+                        Back to Leave Encashment
                     </button>
 
                     <div className="flex items-center gap-3 rounded-md border border-[#dce3f0] bg-white px-5 py-2 text-sm font-semibold">

@@ -7,6 +7,7 @@ import {
   LogOut,
   ShieldCheck,
   UserCircle,
+  ArrowLeft,
   Zap,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -44,6 +45,7 @@ const portalOptions: PortalOption[] = [
     description: "Forward Increment &\nPromotion Request to\nMovement Cell",
     icon: BarChart3,
     gradient: "from-violet-600 to-purple-800",
+    url: "/employee-increment"
   },
 ];
 
@@ -67,14 +69,14 @@ const features = [
 
 const ProductionFloorPortal: React.FC = () => {
 
-    const navigate = useNavigate();
+  const navigate = useNavigate();
   const handleLogout = () => {
     console.log("Logout clicked");
   };
 
   const handleOptionClick = (option: PortalOption) => {
     console.log(`Selected: ${option.id}`);
-    navigate(option.url?option.url: "/production-floor-portal");
+    navigate(option.url ? option.url : "/production-floor-portal");
     option.onClick?.();
   };
 
@@ -161,6 +163,20 @@ const ProductionFloorPortal: React.FC = () => {
             </p>
           </div>
         </header>
+
+        <div>
+          <button
+            type="button"
+            className="flex items-center gap-2 text-sm font-semibold text-[#1554d1]"
+            onClick={() =>
+              navigate("/attendance-summary")
+            }
+          >
+            <ArrowLeft size={20} />
+
+            Back to Attendance Summary
+          </button>
+        </div>
 
         {/* ================= MAIN ================= */}
         <main className="relative flex flex-1 flex-col overflow-hidden">
