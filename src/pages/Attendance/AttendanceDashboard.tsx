@@ -38,7 +38,7 @@ interface ModuleCard {
     iconContainerClass: string;
     iconClass: string;
     buttonClass: string;
-    url?: string;
+    url: string;
 }
 
 const AttendanceDashboard: React.FC = () => {

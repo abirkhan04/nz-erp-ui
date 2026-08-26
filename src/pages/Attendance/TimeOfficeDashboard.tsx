@@ -17,6 +17,7 @@ import {
     Eye,
     LogIn,
     LogOut,
+    ArrowLeft
 } from "lucide-react";
 
 /* =========================================================
@@ -266,16 +267,6 @@ const TimeOfficeDashboard: React.FC = () => {
                 ? prev.filter((item) => item !== id)
                 : [...prev, id],
         );
-    };
-
-    const toggleSelectAll = () => {
-        if (allSelected) {
-            setSelectedOTIds([]);
-        } else {
-            setSelectedOTIds(
-                otRequests.map((request) => request.id),
-            );
-        }
     };
 
     /* =========================================================
@@ -530,6 +521,18 @@ const TimeOfficeDashboard: React.FC = () => {
                 </div>
 
             </header>
+
+                                <button
+                        type="button"
+                        className="flex items-center gap-2 text-sm font-semibold text-[#1554d1]"
+                        onClick={() =>
+                            navigate("/attendance-dashboard")
+                        }
+                    >
+                        <ArrowLeft size={20} />
+
+                        Back to Attendance Dashboard
+                    </button>
 
             {/* =====================================================
                 MAIN
