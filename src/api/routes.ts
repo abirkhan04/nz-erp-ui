@@ -45,9 +45,10 @@ export const API_ROUTES = {
   EMPLOYEE_REPORTS: "EmployeeReports",
   EMPLOYEE_VERIFICATION: "EmployeeVerification/verify-code-uniqueness",
 
-  // OT forwarding
+  // Attendance
   SHIFTS: "shifts",
   OVERTIME_REQUESTS: "OvertimeRequests",
   ATTENDANCE: "attendance",
-  LEAVE: "Leave"
+  LEAVE: "Leave",
+  EMPLOYEE_MASTERS: "EmployeeMasters"
 };

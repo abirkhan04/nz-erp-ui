@@ -22,7 +22,6 @@ import { useAuth } from "../../context/AuthContext";
 import { useCurrentShift } from "./utls/getCurrentShifts";
 import { usePost } from "../../hooks/usePost";
 import toast from "react-hot-toast";
-
 /* -------------------------------------------------------------------------- */
 /* TYPES                                                                      */
 /* -------------------------------------------------------------------------- */

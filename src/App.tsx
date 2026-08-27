@@ -33,8 +33,11 @@ const MaternityLeaveEncashment = lazy(() => import("./pages/Attendance/Maternity
 const EmployeeIncrementAndPromotion = lazy(() => import("./pages/Attendance/EmployeeIncrementAndPromotion"));
 const PerformanceIncrementRequest = lazy(() => import("./pages/Attendance/PerformanceIncrementRequest"));
 const PromotionAndIncrementRequest = lazy(() => import("./pages/Attendance/PromotionAndIncrement"));
-const AttendanceDashboard = lazy(()=> import("./pages/Attendance/AttendanceDashboard"));
-const TimeOfficeDashboard = lazy(()=>import("./pages/Attendance/TimeOfficeDashboard"));
+const AttendanceDashboard = lazy(() => import("./pages/Attendance/AttendanceDashboard"));
+const TimeOfficeDashboard = lazy(() => import("./pages/Attendance/TimeOfficeDashboard"));
+const AttendanceCellDashboard = lazy(() => import("./pages/Attendance/AttendanceCellDashboard"));
+const AttendanceCellEarnedLeaveEncashment = lazy(()=> import("./pages/Attendance/AttendanceCellEarnedLeaveEncashment"));
+const AttendanceCellMaternityLeaveEncashment = lazy(()=> import("./pages/Attendance/AttendanceCellMaternityLeaveEncashment"));
 /**
  * 🔐 Auth Check
  */
@@ -280,22 +283,46 @@ export default function App() {
           />
 
           <Route
-             path="/attendance-dashboard"
-             element={
-                <ProtectedRoute>
-                   <AttendanceDashboard/>
-                </ProtectedRoute>
-             }/>
+            path="/attendance-dashboard"
+            element={
+              <ProtectedRoute>
+                <AttendanceDashboard />
+              </ProtectedRoute>
+            } />
 
           <Route
             path="/time-office-dashboard"
             element={
               <ProtectedRoute>
-                <TimeOfficeDashboard/>
+                <TimeOfficeDashboard />
               </ProtectedRoute>
 
             }
-            />   
+          />
+
+          <Route
+            path="/attendance-cell"
+            element={
+              <ProtectedRoute>
+                <AttendanceCellDashboard />
+              </ProtectedRoute>
+
+            }
+          />
+
+          <Route
+             path="/attendance-cell-earned-leave-encashment"
+             element={<ProtectedRoute>
+              <AttendanceCellEarnedLeaveEncashment />
+             </ProtectedRoute>}
+          />
+
+          <Route
+             path="/attendance-cell-maternity-leave-encashment"
+             element={<ProtectedRoute>
+              <AttendanceCellMaternityLeaveEncashment />
+             </ProtectedRoute>}
+          />
 
           {/* Protected Application Routes (With Topbar) */}
           <Route

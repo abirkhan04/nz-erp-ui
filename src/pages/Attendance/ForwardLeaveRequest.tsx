@@ -211,7 +211,7 @@ const ForwardLeaveRequest = () => {
 
         try {
             const response = await api.get<Employee[]>(
-                `${API_ROUTES.EMPLOYEES}/search?searchText=${encodeURIComponent(
+                `${API_ROUTES.EMPLOYEE_MASTERS}/basic-information?searchText=${encodeURIComponent(
                     searchText.trim(),
                 )}`,
             );
@@ -517,7 +517,7 @@ const ForwardLeaveRequest = () => {
                         </p>
 
                         <p className="text-xs text-[#00c9ed]">
-                            Weaving Section - {currentShift.shiftName.split("-")[0]} Shift
+                            Weaving Section - {currentShift?.shiftName.split("-")[0]} Shift
                         </p>
                     </div>
 
