@@ -36,8 +36,10 @@ const PromotionAndIncrementRequest = lazy(() => import("./pages/Attendance/Promo
 const AttendanceDashboard = lazy(() => import("./pages/Attendance/AttendanceDashboard"));
 const TimeOfficeDashboard = lazy(() => import("./pages/Attendance/TimeOfficeDashboard"));
 const AttendanceCellDashboard = lazy(() => import("./pages/Attendance/AttendanceCellDashboard"));
-const AttendanceCellEarnedLeaveEncashment = lazy(()=> import("./pages/Attendance/AttendanceCellEarnedLeaveEncashment"));
-const AttendanceCellMaternityLeaveEncashment = lazy(()=> import("./pages/Attendance/AttendanceCellMaternityLeaveEncashment"));
+const AttendanceCellEarnedLeaveEncashment = lazy(() => import("./pages/Attendance/AttendanceCellEarnedLeaveEncashment"));
+const AttendanceCellMaternityLeaveEncashment = lazy(() => import("./pages/Attendance/AttendanceCellMaternityLeaveEncashment"));
+const AttendanceExceptionRequest = lazy(() => import("./pages/Attendance/AttendanceExceptionRequest"));
+const NormalExceptionRequest = lazy(() => import("./pages/Attendance/NormalExceptionRequest"));
 /**
  * 🔐 Auth Check
  */
@@ -311,17 +313,32 @@ export default function App() {
           />
 
           <Route
-             path="/attendance-cell-earned-leave-encashment"
-             element={<ProtectedRoute>
+            path="/attendance-cell-earned-leave-encashment"
+            element={<ProtectedRoute>
               <AttendanceCellEarnedLeaveEncashment />
-             </ProtectedRoute>}
+            </ProtectedRoute>}
           />
 
           <Route
-             path="/attendance-cell-maternity-leave-encashment"
-             element={<ProtectedRoute>
+            path="/attendance-cell-maternity-leave-encashment"
+            element={<ProtectedRoute>
               <AttendanceCellMaternityLeaveEncashment />
-             </ProtectedRoute>}
+            </ProtectedRoute>}
+          />
+
+          <Route
+            path="/attendance-cell-exception-request"
+            element={<ProtectedRoute>
+              <AttendanceExceptionRequest />
+            </ProtectedRoute>}
+          />
+
+          <Route
+            path="/attendance-cell/exception-request/normal-exception-requests"
+            element={<ProtectedRoute>
+              <NormalExceptionRequest/>
+            </ProtectedRoute>
+            }
           />
 
           {/* Protected Application Routes (With Topbar) */}
