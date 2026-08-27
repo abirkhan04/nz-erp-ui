@@ -40,6 +40,14 @@ const AttendanceCellEarnedLeaveEncashment = lazy(() => import("./pages/Attendanc
 const AttendanceCellMaternityLeaveEncashment = lazy(() => import("./pages/Attendance/AttendanceCellMaternityLeaveEncashment"));
 const AttendanceExceptionRequest = lazy(() => import("./pages/Attendance/AttendanceExceptionRequest"));
 const NormalExceptionRequest = lazy(() => import("./pages/Attendance/NormalExceptionRequest"));
+
+/**
+ * Payroll and workforce movement
+ */
+const PayrollAndWorkforceMovement = lazy(()=>import("./pages/Payroll/PayrollAndWorkforceMovement"));
+const PayrollAttendanceCell = lazy(()=>import("./pages/Payroll/PayrollAttendanceCell"));
+const LeaveRequestList = lazy(()=> import("./pages/Payroll/LeaveRequestList"));
+
 /**
  * 🔐 Auth Check
  */
@@ -340,6 +348,28 @@ export default function App() {
             </ProtectedRoute>
             }
           />
+
+          <Route
+            path="/payroll-and-workforce-movement"
+            element={<ProtectedRoute>
+              <PayrollAndWorkforceMovement/>
+            </ProtectedRoute>}
+          />
+
+          <Route
+            path="/payroll-and-workforce-movement/attendance-cell"
+            element={<ProtectedRoute>
+              <PayrollAttendanceCell />
+            </ProtectedRoute>}
+          />
+
+          <Route
+             path="/payroll-and-workforce-movement/attendance-cell/leave-requests"
+             element={<ProtectedRoute>
+              <LeaveRequestList />
+            </ProtectedRoute>
+             }
+             />
 
           {/* Protected Application Routes (With Topbar) */}
           <Route
