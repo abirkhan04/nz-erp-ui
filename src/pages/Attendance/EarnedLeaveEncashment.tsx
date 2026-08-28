@@ -258,29 +258,16 @@ const EarnedLeaveEncashment = () => {
         data: EarnedLeaveEncashmentForm,
     ) => {
         const payload = {
-            requests: data.requests.map(
-                (request) => ({
-                    employeeId: String(
-                        request.employeeId,
-                    ),
-                    employeeName:
-                        request.employeeName,
-                    earnedLeaveBalance:
-                        request.earnedLeaveBalance,
-                    earnedLeaveAccruedThisYear:
-                        request.earnedLeaveAccruedThisYear,
-                    maximumEncashable:
-                        request.maximumEncashable,
-                    daysToBeEncashed:
-                        request.daysToBeEncashed,
-                    reason: request.reason,
-                    forwardedBy:
-                        user?.userName,
-                    forwardedDate: new Date()
-                        .toISOString()
-                        .split("T")[0],
-                }),
-            ),
+            requests: data.requests.map((request) => ({
+                employeeId: String(request.employeeId),
+                employeeName: request.employeeName,
+                leaveType: "EL",
+                encashDate: new Date().toISOString().split("T")[0],
+                encashDays: request.daysToBeEncashed,
+                reason: request.reason,
+                forwardedBy: user?.userName,
+                forwardedDate: new Date().toISOString().split("T")[0],
+            })),
 
             createdBy: user?.userName,
         };
@@ -294,7 +281,7 @@ const EarnedLeaveEncashment = () => {
             onSuccess: (response) => {
                 toast.success(
                     response.message ||
-                        "Leave encashment forwarded successfully!",
+                    "Leave encashment forwarded successfully!",
                 );
 
                 handleClearAll();
@@ -303,7 +290,7 @@ const EarnedLeaveEncashment = () => {
             onError: (error) => {
                 toast.error(
                     error.message ||
-                        "Failed to forward leave encashment.",
+                    "Failed to forward leave encashment.",
                 );
             },
         });

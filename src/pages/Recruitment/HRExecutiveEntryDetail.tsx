@@ -1096,6 +1096,10 @@ const HRExecutiveEntryDetails = () => {
       label: "Nominee NID",
       type: "text",
       name: "nomineeNID",
+      rules: {
+        validate: (value: string) =>
+          /^\d+$/.test(value) ? true : "Only numbers are allowed",
+      }
     },
     {
       label: "Nominee Relation",
