@@ -88,7 +88,7 @@ const MaternityLeaveEncashment = () => {
         useState<Employee | null>(null);
 
     const { mutate: ForwardToAttendanceCell } =
-        usePost(API_ROUTES.LEAVE);
+        usePost(API_ROUTES.LEAVE_ENCASHMENT_REQUESTS);
 
     /* ---------------------------------------------------------------------- */
     /* REACT HOOK FORM                                                        */
