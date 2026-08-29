@@ -294,7 +294,7 @@ const BiometricCapture = () => {
     const navigate = useNavigate();
 
     const handleFingerPrintCaptured = async () => {
-        const response = await api.get("Fingerprint/verify-employee-code?deviceId=10&unit=textile");
+        const response = await api.get("Fingerprint/verify-employee-code?deviceId=10&unit=ho");
         if (response.data.employeeCode === selectedCandidate?.employeeCode)
           setFingerprintCaptured(true);
     }
