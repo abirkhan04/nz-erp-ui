@@ -26,15 +26,21 @@ import toast from "react-hot-toast";
 /* TYPES                                                                      */
 /* -------------------------------------------------------------------------- */
 
+interface Leave {
+    leaveCode: string;
+    leaveName: string;
+    closingBalance: number;
+    accruedLeave?: number;
+}
+
 interface Employee {
-    id: string | number;
-    employeeNameEnglish: string;
+    employeeId: string | number;
+    employeeName: string;
     employeeCode: string;
     designationName: string;
     departmentName: string;
 
-    earnedLeaveBalance?: number;
-    earnedLeaveAccruedThisYear?: number;
+    leaves?: Leave[];
 }
 
 interface EncashmentRow {
@@ -125,7 +131,7 @@ const EarnedLeaveEncashment = () => {
 
         try {
             const response = await api.get<Employee[]>(
-                `${API_ROUTES.EMPLOYEES}/search?searchText=${encodeURIComponent(
+                `${API_ROUTES.EMPLOYEE_MASTERS}/basic-information?searchText=${encodeURIComponent(
                     searchText.trim(),
                 )}`,
             );
@@ -136,8 +142,8 @@ const EarnedLeaveEncashment = () => {
 
             setEmployeeOptions(
                 data.map((employee) => ({
-                    label: `${employee.employeeCode} - ${employee.employeeNameEnglish}`,
-                    value: employee.id,
+                    label: `${employee.employeeCode} - ${employee.employeeName}`,
+                    value: employee.employeeId,
                 })),
             );
         } catch (error) {
@@ -155,13 +161,11 @@ const EarnedLeaveEncashment = () => {
     /* SELECT EMPLOYEE                                                        */
     /* ---------------------------------------------------------------------- */
 
-    const handleEmployeeSelect = (
-        option: Option,
-    ) => {
+    const handleEmployeeSelect = (option: Option) => {
         const employee = searchedEmployees.find(
             (item) =>
-                String(item.id) ===
-                String(option.value),
+                String(item.employeeId) ===
+                String(option.value)
         );
 
         if (!employee) {
@@ -169,9 +173,14 @@ const EarnedLeaveEncashment = () => {
         }
 
         setSelectedEmployee(employee);
+
         setValue(
             "employeeId",
-            String(employee.id),
+            String(employee.employeeId),
+            {
+                shouldValidate: false,
+                shouldDirty: true,
+            }
         );
     };
 
@@ -187,48 +196,55 @@ const EarnedLeaveEncashment = () => {
         const alreadyExists = fields.some(
             (field) =>
                 String(field.employeeId) ===
-                String(selectedEmployee.id),
+                String(selectedEmployee.employeeId)
         );
 
         if (alreadyExists) {
             toast.error(
-                "Employee already exists in the list.",
+                "Employee already exists in the list."
             );
             return;
         }
 
+        const earnedLeave = selectedEmployee.leaves?.find(
+            (leave) => leave.leaveCode === "EL"
+        );
+
         const earnedLeaveBalance =
-            selectedEmployee.earnedLeaveBalance ?? 0;
+            earnedLeave?.closingBalance ?? 0;
 
         const earnedLeaveAccruedThisYear =
-            selectedEmployee.earnedLeaveAccruedThisYear ?? 0;
+            earnedLeave?.accruedLeave ?? 0;
 
-        /*
-         * Maximum encashable = 50% of accrued earned leave.
-         */
         const maximumEncashable =
             earnedLeaveAccruedThisYear / 2;
 
-        append({
-            employeeId: selectedEmployee.id,
-            employeeName:
-                selectedEmployee.employeeNameEnglish ?? "",
-            employeeCode:
-                selectedEmployee.employeeCode ?? "",
-            designationName:
-                selectedEmployee.designationName ?? "",
-            departmentName:
-                selectedEmployee.departmentName ?? "",
+        append(
+            {
+                employeeId: selectedEmployee.employeeId,
+                employeeName:
+                    selectedEmployee.employeeName ?? "",
+                employeeCode:
+                    selectedEmployee.employeeCode ?? "",
+                designationName:
+                    selectedEmployee.designationName ?? "",
+                departmentName:
+                    selectedEmployee.departmentName ?? "",
 
-            earnedLeaveBalance,
-            earnedLeaveAccruedThisYear,
-            maximumEncashable,
+                earnedLeaveBalance,
+                earnedLeaveAccruedThisYear,
+                maximumEncashable,
 
-            daysToBeEncashed: 0,
-            reason: "",
-        });
+                daysToBeEncashed: 0,
+                reason: "",
+            },
+            {
+                shouldFocus: false,
+            }
+        );
 
-        /* Clear search */
+        // Clear only the search/selection.
+        // This does NOT clear the already appended employees.
         setValue("employeeId", "");
         setSelectedEmployee(null);
         setEmployeeOptions([]);

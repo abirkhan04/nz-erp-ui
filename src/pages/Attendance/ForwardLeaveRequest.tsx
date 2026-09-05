@@ -27,21 +27,19 @@ import toast from "react-hot-toast";
 /* TYPES                                                                      */
 /* -------------------------------------------------------------------------- */
 
-type LeaveType =
-    | "Casual Leave"
-    | "Earned Leave"
-    | "Medical Leave";
+type LeaveItem = {
+    leaveCode: string;
+    leaveName: string;
+    closingBalance: number;
+};
 
 interface Employee {
-    id: string | number;
-    employeeNameEnglish: string;
+    employeeId: string;
+    employeeName: string;
     employeeCode: string;
     designationName: string;
     departmentName: string;
-
-    casualLeaveBalance?: number;
-    earnedLeaveBalance?: number;
-    medicalLeaveBalance?: number;
+    leaves: LeaveItem[];
 }
 
 interface LeaveRequestRow {
@@ -51,16 +49,15 @@ interface LeaveRequestRow {
     designationName: string;
     departmentName: string;
 
-    leaveType: LeaveType;
+    leaves: LeaveItem[];
+
+    leaveType: string;
     fromDate: string;
     toDate: string;
 
     leaveBalance: number;
 
-    /*
-     * Keep all balances in the row so changing
-     * leave type does not depend on the search list.
-     */
+    // Individual leave balances
     casualLeaveBalance: number;
     earnedLeaveBalance: number;
     medicalLeaveBalance: number;
@@ -76,25 +73,6 @@ interface ForwardLeaveForm {
 
     leaveRequests: LeaveRequestRow[];
 }
-
-/* -------------------------------------------------------------------------- */
-/* CONSTANTS                                                                  */
-/* -------------------------------------------------------------------------- */
-
-const leaveTypeOptions: Option[] = [
-    {
-        label: "Casual Leave",
-        value: "Casual Leave",
-    },
-    {
-        label: "Earned Leave",
-        value: "Earned Leave",
-    },
-    {
-        label: "Medical Leave",
-        value: "Medical Leave",
-    },
-];
 
 /* -------------------------------------------------------------------------- */
 /* HELPERS                                                                    */
@@ -118,28 +96,9 @@ const calculateDays = (
     return (
         Math.floor(
             (to.getTime() - from.getTime()) /
-            (1000 * 60 * 60 * 24),
+                (1000 * 60 * 60 * 24),
         ) + 1
     );
-};
-
-const getLeaveBalance = (
-    employee: Employee,
-    leaveType: LeaveType,
-) => {
-    switch (leaveType) {
-        case "Casual Leave":
-            return employee.casualLeaveBalance ?? 0;
-
-        case "Earned Leave":
-            return employee.earnedLeaveBalance ?? 0;
-
-        case "Medical Leave":
-            return employee.medicalLeaveBalance ?? 0;
-
-        default:
-            return 0;
-    }
 };
 
 /* -------------------------------------------------------------------------- */
@@ -150,11 +109,14 @@ const ForwardLeaveRequest = () => {
     const [employeeOptions, setEmployeeOptions] =
         useState<Option[]>([]);
 
-    const { mutate: ForwardToAttendanceCell } = usePost(API_ROUTES.LEAVE);
+    const { mutate: ForwardToAttendanceCell } =
+        usePost(API_ROUTES.LEAVE);
 
     const [searchedEmployees, setSearchedEmployees] =
         useState<Employee[]>([]);
+
     const { user } = useAuth();
+
     /* ------------------------------------------------------------------------ */
     /* REACT HOOK FORM                                                          */
     /* ------------------------------------------------------------------------ */
@@ -222,8 +184,8 @@ const ForwardLeaveRequest = () => {
 
             setEmployeeOptions(
                 data.map((employee) => ({
-                    label: `${employee.employeeCode} - ${employee.employeeNameEnglish}`,
-                    value: employee.id,
+                    label: `${employee.employeeCode} - ${employee.employeeName}`,
+                    value: employee.employeeId,
                 })),
             );
         } catch (error) {
@@ -241,77 +203,78 @@ const ForwardLeaveRequest = () => {
     /* SELECT EMPLOYEE                                                          */
     /* ------------------------------------------------------------------------ */
 
-    const handleEmployeeSelect = (
-        option: Option,
-    ) => {
+    const handleEmployeeSelect = (option: Option) => {
         const employee = searchedEmployees.find(
             (item) =>
-                String(item.id) ===
+                String(item.employeeId) ===
                 String(option.value),
         );
 
         if (!employee) {
+            console.error("Employee not found:", option);
             return;
         }
 
-        /* Prevent duplicate employees */
-
+        // Prevent duplicate employees
         const alreadyExists = fields.some(
             (field) =>
                 String(field.employeeId) ===
-                String(employee.id),
+                String(employee.employeeId),
         );
 
         if (alreadyExists) {
-            setValue("employeeId", "");
-            setEmployeeOptions([]);
-            setSearchedEmployees([]);
+            toast.error("Employee already added.");
             return;
         }
 
-        /* Add employee directly to table */
+        const firstLeave = employee.leaves?.[0];
+
+        /* ------------------------------------------------------------------ */
+        /* GET INDIVIDUAL LEAVE BALANCES                                      */
+        /* ------------------------------------------------------------------ */
+
+        const casualLeaveBalance =
+            employee.leaves?.find(
+                (leave) => leave.leaveCode === "CL",
+            )?.closingBalance ?? 0;
+
+        const earnedLeaveBalance =
+            employee.leaves?.find(
+                (leave) => leave.leaveCode === "EL",
+            )?.closingBalance ?? 0;
+
+        const medicalLeaveBalance =
+            employee.leaves?.find(
+                (leave) => leave.leaveCode === "ML",
+            )?.closingBalance ?? 0;
 
         append({
-            employeeId: employee.id,
+            employeeId: employee.employeeId,
 
-            employeeName:
-                employee.employeeNameEnglish ?? "",
+            employeeName: employee.employeeName ?? "",
+            employeeCode: employee.employeeCode ?? "",
+            designationName: employee.designationName ?? "",
+            departmentName: employee.departmentName ?? "",
 
-            employeeCode:
-                employee.employeeCode ?? "",
+            leaves: employee.leaves ?? [],
 
-            designationName:
-                employee.designationName ?? "",
-
-            departmentName:
-                employee.departmentName ?? "",
-
-            leaveType: "Casual Leave",
+            leaveType: firstLeave?.leaveCode ?? "",
 
             fromDate: "",
             toDate: "",
 
-            casualLeaveBalance:
-                employee.casualLeaveBalance ?? 0,
+            leaveBalance:
+                firstLeave?.closingBalance ?? 0,
 
-            earnedLeaveBalance:
-                employee.earnedLeaveBalance ?? 0,
-
-            medicalLeaveBalance:
-                employee.medicalLeaveBalance ?? 0,
-
-            leaveBalance: getLeaveBalance(
-                employee,
-                "Casual Leave",
-            ),
+            casualLeaveBalance,
+            earnedLeaveBalance,
+            medicalLeaveBalance,
 
             reason: "",
         });
 
-        /* Clear search field */
-
+        // Clear only the search input/options.
         setValue("employeeId", "");
-
         setEmployeeOptions([]);
         setSearchedEmployees([]);
     };
@@ -322,7 +285,7 @@ const ForwardLeaveRequest = () => {
 
     const handleLeaveTypeChange = (
         index: number,
-        leaveType: LeaveType,
+        leaveCode: string,
     ) => {
         const row = leaveRequests[index];
 
@@ -330,34 +293,47 @@ const ForwardLeaveRequest = () => {
             return;
         }
 
-        let balance = 0;
+        const selectedLeave = row.leaves.find(
+            (leave) => leave.leaveCode === leaveCode,
+        );
 
-        switch (leaveType) {
-            case "Casual Leave":
-                balance = row.casualLeaveBalance ?? 0;
-                break;
-
-            case "Earned Leave":
-                balance = row.earnedLeaveBalance ?? 0;
-                break;
-
-            case "Medical Leave":
-                balance = row.medicalLeaveBalance ?? 0;
-                break;
-
-            default:
-                balance = 0;
-        }
+        const selectedBalance =
+            selectedLeave?.closingBalance ?? 0;
 
         setValue(
             `leaveRequests.${index}.leaveType`,
-            leaveType,
+            leaveCode,
         );
 
         setValue(
             `leaveRequests.${index}.leaveBalance`,
-            balance,
+            selectedBalance,
         );
+
+        /* ------------------------------------------------------------------ */
+        /* Keep individual leave balances synchronized                         */
+        /* ------------------------------------------------------------------ */
+
+        if (leaveCode === "CL") {
+            setValue(
+                `leaveRequests.${index}.casualLeaveBalance`,
+                selectedBalance,
+            );
+        }
+
+        if (leaveCode === "EL") {
+            setValue(
+                `leaveRequests.${index}.earnedLeaveBalance`,
+                selectedBalance,
+            );
+        }
+
+        if (leaveCode === "ML") {
+            setValue(
+                `leaveRequests.${index}.medicalLeaveBalance`,
+                selectedBalance,
+            );
+        }
     };
 
     /* ------------------------------------------------------------------------ */
@@ -375,7 +351,9 @@ const ForwardLeaveRequest = () => {
                 fromDate: request.fromDate,
                 toDate: request.toDate,
                 reason: request.reason,
+
                 forwardedBy: user?.userName,
+
                 forwardedDate: new Date()
                     .toISOString()
                     .split("T")[0],
@@ -388,13 +366,22 @@ const ForwardLeaveRequest = () => {
             "Forward Leave Request Payload:",
             payload,
         );
+
         ForwardToAttendanceCell(payload, {
             onSuccess: (response) => {
-                toast.success(response.message || "Review submitted to IT successfully!");
+                toast.success(
+                    response.message ||
+                        "Review submitted to IT successfully!",
+                );
+
                 handleClearAll();
             },
+
             onError: (error) => {
-                toast.error(error.message || "Failed to submit review.");
+                toast.error(
+                    error.message ||
+                        "Failed to submit review.",
+                );
             },
         });
     };
@@ -450,7 +437,9 @@ const ForwardLeaveRequest = () => {
     /* ------------------------------------------------------------------------ */
     /* RENDER                                                                   */
     /* ------------------------------------------------------------------------ */
+
     const navigate = useNavigate();
+
     const handleLogout = () => {
         localStorage.clear();
         navigate("/login");
@@ -460,17 +449,13 @@ const ForwardLeaveRequest = () => {
 
     return (
         <div className="min-h-screen bg-[#f8faff] text-[#172554]">
-
             {/* ====================================================================
           HEADER
           ==================================================================== */}
 
             <header className="flex h-[74px] items-center justify-between bg-[#001744] px-8 text-white">
-
                 <div className="flex items-center gap-5">
-
                     <div className="flex items-center gap-3">
-
                         <div className="flex h-12 w-12 items-center justify-center">
                             <div className="text-4xl font-bold text-[#00a9e8]">
                                 S
@@ -486,7 +471,6 @@ const ForwardLeaveRequest = () => {
                                 Creating Enterprise Synergy
                             </p>
                         </div>
-
                     </div>
 
                     <div className="h-12 w-px bg-[#12618b]" />
@@ -500,24 +484,18 @@ const ForwardLeaveRequest = () => {
                             Forward Leave Requests to Attendance Cell
                         </p>
                     </div>
-
                 </div>
 
                 <div className="flex items-center gap-4">
-
-                    {/* <div className="flex h-11 w-11 items-center justify-center rounded-full border border-[#3d668e]">
-                        <span className="text-lg font-semibold">
-                            JH
-                        </span>
-                    </div> */}
-
                     <div>
                         <p className="text-sm font-bold">
                             {user?.userName}
                         </p>
 
                         <p className="text-xs text-[#00c9ed]">
-                            Weaving Section - {currentShift?.shiftName.split("-")[0]} Shift
+                            Weaving Section -{" "}
+                            {currentShift?.shiftName?.split("-")[0]}{" "}
+                            Shift
                         </p>
                     </div>
 
@@ -525,9 +503,8 @@ const ForwardLeaveRequest = () => {
 
                     <button
                         type="button"
-                        className="flex flex-col items-center gap-1 text-xs cursor-pointer"
+                        className="flex cursor-pointer flex-col items-center gap-1 text-xs"
                         onClick={() => handleLogout()}
-
                     >
                         <LogOut
                             size={20}
@@ -536,9 +513,7 @@ const ForwardLeaveRequest = () => {
 
                         <span>Logout</span>
                     </button>
-
                 </div>
-
             </header>
 
             {/* ====================================================================
@@ -546,15 +521,15 @@ const ForwardLeaveRequest = () => {
           ==================================================================== */}
 
             <main className="px-9 py-4">
-
                 {/* Back / Date */}
 
                 <div className="mb-3 flex items-center justify-between">
-
                     <button
                         type="button"
                         className="flex items-center gap-2 text-sm font-semibold text-[#1554d1]"
-                        onClick={() => navigate("/leave-portal")}
+                        onClick={() =>
+                            navigate("/leave-portal")
+                        }
                     >
                         <ArrowLeft size={20} />
 
@@ -562,7 +537,6 @@ const ForwardLeaveRequest = () => {
                     </button>
 
                     <div className="flex items-center gap-3 rounded-md border border-[#dce3f0] bg-white px-5 py-2 text-sm font-semibold">
-
                         <CalendarDays size={18} />
 
                         <span>
@@ -576,9 +550,7 @@ const ForwardLeaveRequest = () => {
                         <span>
                             {dayName}
                         </span>
-
                     </div>
-
                 </div>
 
                 {/* ==================================================================
@@ -586,22 +558,19 @@ const ForwardLeaveRequest = () => {
             ================================================================== */}
 
                 <div className="rounded-md border border-[#dfe5ef] bg-white shadow-sm">
-
                     {/* ================================================================
               ADD EMPLOYEE
               ================================================================ */}
 
                     <section className="border-b border-[#e5e9f1] px-4 py-3">
-
                         <h3 className="mb-3 text-sm font-bold text-[#16244d]">
                             ADD EMPLOYEE LEAVE REQUEST
                         </h3>
 
                         <div className="flex items-end gap-4">
-
                             <div className="w-[360px]">
-
                                 <CommonInputField
+                                    key={fields.length}
                                     label="Search Employee"
                                     name="employeeId"
                                     register={register}
@@ -617,11 +586,8 @@ const ForwardLeaveRequest = () => {
                                         handleEmployeeSelect
                                     }
                                 />
-
                             </div>
-
                         </div>
-
                     </section>
 
                     {/* ================================================================
@@ -631,25 +597,19 @@ const ForwardLeaveRequest = () => {
                     <form
                         onSubmit={handleSubmit(onSubmit)}
                     >
-
                         <section className="px-4 pb-3 pt-3">
-
                             <h3 className="mb-2 text-sm font-bold text-[#078d79]">
                                 LEAVE REQUEST LIST
                             </h3>
 
                             <div className="overflow-hidden rounded-md border border-[#e1e6ef]">
-
                                 <table className="w-full border-collapse text-xs">
-
                                     {/* ========================================================
                       TABLE HEADER
                       ======================================================== */}
 
                                     <thead>
-
                                         <tr className="bg-[#001c49] text-white">
-
                                             <th className="w-[45px] px-3 py-3 text-center">
                                                 #
                                             </th>
@@ -689,9 +649,7 @@ const ForwardLeaveRequest = () => {
                                             <th className="w-[60px] px-3 py-3 text-center">
                                                 Action
                                             </th>
-
                                         </tr>
-
                                     </thead>
 
                                     {/* ========================================================
@@ -699,11 +657,8 @@ const ForwardLeaveRequest = () => {
                       ======================================================== */}
 
                                     <tbody>
-
                                         {fields.length === 0 ? (
-
                                             <tr>
-
                                                 <td
                                                     colSpan={10}
                                                     className="py-10 text-center text-sm text-gray-400"
@@ -711,17 +666,12 @@ const ForwardLeaveRequest = () => {
                                                     Search and select an employee
                                                     to add a leave request.
                                                 </td>
-
                                             </tr>
-
                                         ) : (
-
                                             fields.map(
                                                 (field, index) => {
-
                                                     const row =
                                                         leaveRequests[index];
-
 
                                                     const days =
                                                         calculateDays(
@@ -730,12 +680,10 @@ const ForwardLeaveRequest = () => {
                                                         );
 
                                                     return (
-
                                                         <tr
                                                             key={field.id}
                                                             className="border-b border-[#e6eaf1] last:border-b-0"
                                                         >
-
                                                             {/* # */}
 
                                                             <td className="px-3 py-2 text-center font-medium">
@@ -745,8 +693,9 @@ const ForwardLeaveRequest = () => {
                                                             {/* Employee ID */}
 
                                                             <td className="px-3 py-2 font-semibold text-[#1554d1]">
-
-                                                                {field.employeeCode}
+                                                                {
+                                                                    field.employeeCode
+                                                                }
 
                                                                 <input
                                                                     type="hidden"
@@ -754,15 +703,15 @@ const ForwardLeaveRequest = () => {
                                                                         `leaveRequests.${index}.employeeId`,
                                                                     )}
                                                                 />
-
                                                             </td>
 
                                                             {/* Employee Name */}
 
                                                             <td className="px-3 py-2">
-
                                                                 <div className="font-medium">
-                                                                    {field.employeeName}
+                                                                    {
+                                                                        field.employeeName
+                                                                    }
                                                                 </div>
 
                                                                 <input
@@ -793,77 +742,91 @@ const ForwardLeaveRequest = () => {
                                                                     )}
                                                                 />
 
+                                                                {/* Casual Leave Balance */}
+
                                                                 <input
                                                                     type="hidden"
                                                                     {...register(
                                                                         `leaveRequests.${index}.casualLeaveBalance`,
                                                                         {
-                                                                            valueAsNumber: true,
+                                                                            valueAsNumber:
+                                                                                true,
                                                                         },
                                                                     )}
                                                                 />
+
+                                                                {/* Earned Leave Balance */}
 
                                                                 <input
                                                                     type="hidden"
                                                                     {...register(
                                                                         `leaveRequests.${index}.earnedLeaveBalance`,
                                                                         {
-                                                                            valueAsNumber: true,
+                                                                            valueAsNumber:
+                                                                                true,
                                                                         },
                                                                     )}
                                                                 />
+
+                                                                {/* Medical Leave Balance */}
 
                                                                 <input
                                                                     type="hidden"
                                                                     {...register(
                                                                         `leaveRequests.${index}.medicalLeaveBalance`,
                                                                         {
-                                                                            valueAsNumber: true,
+                                                                            valueAsNumber:
+                                                                                true,
                                                                         },
                                                                     )}
                                                                 />
-
                                                             </td>
 
                                                             {/* Leave Type */}
 
                                                             <td className="px-3 py-2">
-
                                                                 <select
                                                                     {...register(
                                                                         `leaveRequests.${index}.leaveType`,
                                                                         {
-                                                                            onChange: (
-                                                                                event,
-                                                                            ) => {
-                                                                                handleLeaveTypeChange(
-                                                                                    index,
-                                                                                    event.target
-                                                                                        .value as LeaveType,
-                                                                                );
-                                                                            },
+                                                                            onChange:
+                                                                                (
+                                                                                    event,
+                                                                                ) => {
+                                                                                    handleLeaveTypeChange(
+                                                                                        index,
+                                                                                        event
+                                                                                            .target
+                                                                                            .value,
+                                                                                    );
+                                                                                },
                                                                         },
                                                                     )}
                                                                     className="h-[32px] w-full rounded-md border border-[#d6deeb] bg-white px-2 text-xs outline-none focus:border-[#2862d3]"
                                                                 >
-
-                                                                    {leaveTypeOptions.map(
-                                                                        (option) => (
+                                                                    {row?.leaves?.map(
+                                                                        (
+                                                                            leave,
+                                                                        ) => (
                                                                             <option
                                                                                 key={
-                                                                                    option.value
+                                                                                    leave.leaveCode
                                                                                 }
                                                                                 value={
-                                                                                    option.value
+                                                                                    leave.leaveCode
                                                                                 }
                                                                             >
-                                                                                {option.label}
+                                                                                {
+                                                                                    leave.leaveCode
+                                                                                }{" "}
+                                                                                -{" "}
+                                                                                {
+                                                                                    leave.leaveName
+                                                                                }
                                                                             </option>
                                                                         ),
                                                                     )}
-
                                                                 </select>
-
                                                             </td>
 
                                                             {/* From Date */}
@@ -872,9 +835,15 @@ const ForwardLeaveRequest = () => {
                                                                 <CommonInputField
                                                                     label=""
                                                                     name={`leaveRequests.${index}.fromDate`}
-                                                                    register={register}
-                                                                    control={control}
-                                                                    errors={errors}
+                                                                    register={
+                                                                        register
+                                                                    }
+                                                                    control={
+                                                                        control
+                                                                    }
+                                                                    errors={
+                                                                        errors
+                                                                    }
                                                                     type="date"
                                                                     className="w-full"
                                                                 />
@@ -886,9 +855,15 @@ const ForwardLeaveRequest = () => {
                                                                 <CommonInputField
                                                                     label=""
                                                                     name={`leaveRequests.${index}.toDate`}
-                                                                    register={register}
-                                                                    control={control}
-                                                                    errors={errors}
+                                                                    register={
+                                                                        register
+                                                                    }
+                                                                    control={
+                                                                        control
+                                                                    }
+                                                                    errors={
+                                                                        errors
+                                                                    }
                                                                     type="date"
                                                                     className="w-full"
                                                                 />
@@ -897,9 +872,9 @@ const ForwardLeaveRequest = () => {
                                                             {/* Leave Balance */}
 
                                                             <td className="px-3 py-2">
-
                                                                 <div className="flex h-[32px] items-center justify-center rounded-md border border-[#d6deeb] bg-[#f8faff] font-semibold text-[#078d72]">
-                                                                    {row?.leaveBalance ?? 0}
+                                                                    {row?.leaveBalance ??
+                                                                        0}
                                                                 </div>
 
                                                                 <input
@@ -907,27 +882,24 @@ const ForwardLeaveRequest = () => {
                                                                     {...register(
                                                                         `leaveRequests.${index}.leaveBalance`,
                                                                         {
-                                                                            valueAsNumber: true,
+                                                                            valueAsNumber:
+                                                                                true,
                                                                         },
                                                                     )}
                                                                 />
-
                                                             </td>
 
                                                             {/* Total Days */}
 
                                                             <td className="px-3 py-2">
-
                                                                 <div className="flex h-[32px] items-center justify-center rounded-md border border-[#d6deeb] bg-[#f8faff] font-medium">
                                                                     {days}
                                                                 </div>
-
                                                             </td>
 
                                                             {/* Reason */}
 
                                                             <td className="px-3 py-2">
-
                                                                 <input
                                                                     type="text"
                                                                     {...register(
@@ -936,34 +908,33 @@ const ForwardLeaveRequest = () => {
                                                                     placeholder="Enter reason"
                                                                     className="h-[32px] w-full rounded-md border border-[#d6deeb] px-3 text-xs outline-none focus:border-[#2862d3]"
                                                                 />
-
                                                             </td>
 
                                                             {/* Action */}
 
                                                             <td className="px-3 py-2 text-center">
-
                                                                 <button
                                                                     type="button"
                                                                     onClick={() =>
-                                                                        remove(index)
+                                                                        remove(
+                                                                            index,
+                                                                        )
                                                                     }
                                                                     className="text-red-500 transition hover:text-red-700"
                                                                     title="Remove"
                                                                 >
-                                                                    <Trash2 size={18} />
+                                                                    <Trash2
+                                                                        size={
+                                                                            18
+                                                                        }
+                                                                    />
                                                                 </button>
-
                                                             </td>
-
                                                         </tr>
-
                                                     );
                                                 },
                                             )
-
                                         )}
-
                                     </tbody>
 
                                     {/* ========================================================
@@ -971,11 +942,8 @@ const ForwardLeaveRequest = () => {
                       ======================================================== */}
 
                                     {fields.length > 0 && (
-
                                         <tfoot>
-
                                             <tr className="bg-[#f8faff]">
-
                                                 <td
                                                     colSpan={7}
                                                     className="px-3 py-3 text-right font-semibold"
@@ -988,25 +956,17 @@ const ForwardLeaveRequest = () => {
                                                 </td>
 
                                                 <td className="px-3 py-3 text-center font-semibold">
-
                                                     <span>
                                                         {totalDays}
                                                     </span>
-
                                                 </td>
 
                                                 <td colSpan={2} />
-
                                             </tr>
-
                                         </tfoot>
-
                                     )}
-
                                 </table>
-
                             </div>
-
                         </section>
 
                         {/* ===============================================================
@@ -1014,16 +974,13 @@ const ForwardLeaveRequest = () => {
                 =============================================================== */}
 
                         <section className="flex items-center justify-between gap-5 px-4 pb-4">
-
                             <div className="flex flex-1 items-center gap-3 rounded-md border border-[#dce4f1] bg-[#f8faff] px-4 py-2">
-
                                 <Info
                                     size={21}
                                     className="shrink-0 text-[#155bd1]"
                                 />
 
                                 <div>
-
                                     <p className="text-xs font-bold text-[#1554d1]">
                                         Note:
                                     </p>
@@ -1033,9 +990,7 @@ const ForwardLeaveRequest = () => {
                                         before forwarding to
                                         Attendance Cell.
                                     </p>
-
                                 </div>
-
                             </div>
 
                             <button
@@ -1057,15 +1012,10 @@ const ForwardLeaveRequest = () => {
 
                                 Forward to Attendance Cell
                             </button>
-
                         </section>
-
                     </form>
-
                 </div>
-
             </main>
-
         </div>
     );
 };
