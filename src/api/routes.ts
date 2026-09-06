@@ -51,5 +51,9 @@ export const API_ROUTES = {
   ATTENDANCE: "attendance",
   LEAVE: "Leave",
   EMPLOYEE_MASTERS: "EmployeeMasters",
-  LEAVE_ENCASHMENT_REQUESTS: "v1/leave-encashment-requests"
+  LEAVE_ENCASHMENT_REQUESTS: "v1/leave-encashment-requests",
+
+  // Payroll
+  PAYROLL: "payroll"
+
 };

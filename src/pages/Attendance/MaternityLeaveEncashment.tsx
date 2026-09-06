@@ -37,8 +37,8 @@ type MaternityPeriod =
     | "Post-Delivery";
 
 interface Employee {
-    id: string | number;
-    employeeNameEnglish: string;
+    employeeId: string | number;
+    employeeName: string;
     employeeCode: string;
     designationName: string;
     departmentName: string;
@@ -135,7 +135,7 @@ const MaternityLeaveEncashment = () => {
 
         try {
             const response = await api.get<Employee[]>(
-                `${API_ROUTES.EMPLOYEES}/search?searchText=${encodeURIComponent(
+                `${API_ROUTES.EMPLOYEE_MASTERS}/basic-information?searchText=${encodeURIComponent(
                     searchText.trim(),
                 )}`,
             );
@@ -146,8 +146,8 @@ const MaternityLeaveEncashment = () => {
 
             setEmployeeOptions(
                 data.map((employee) => ({
-                    label: `${employee.employeeCode} - ${employee.employeeNameEnglish}`,
-                    value: employee.id,
+                    label: `${employee.employeeCode} - ${employee.employeeName}`,
+                    value: employee.employeeId,
                 })),
             );
         } catch (error) {
@@ -155,7 +155,6 @@ const MaternityLeaveEncashment = () => {
                 "Failed to search employees:",
                 error,
             );
-
             setEmployeeOptions([]);
             setSearchedEmployees([]);
         }
@@ -170,7 +169,7 @@ const MaternityLeaveEncashment = () => {
     ) => {
         const employee = searchedEmployees.find(
             (item) =>
-                String(item.id) ===
+                String(item.employeeId) ===
                 String(option.value),
         );
 
@@ -182,7 +181,7 @@ const MaternityLeaveEncashment = () => {
 
         setValue(
             "employeeId",
-            String(employee.id),
+            String(employee.employeeId),
         );
     };
 
@@ -201,7 +200,7 @@ const MaternityLeaveEncashment = () => {
         const alreadyExists = fields.some(
             (field) =>
                 String(field.employeeId) ===
-                String(selectedEmployee.id),
+                String(selectedEmployee.employeeId),
         );
 
         if (alreadyExists) {
@@ -219,9 +218,9 @@ const MaternityLeaveEncashment = () => {
 
         append([
             {
-                employeeId: selectedEmployee.id,
+                employeeId: selectedEmployee.employeeId,
                 employeeName:
-                    selectedEmployee.employeeNameEnglish ?? "",
+                    selectedEmployee.employeeName ?? "",
                 employeeCode:
                     selectedEmployee.employeeCode ?? "",
 
@@ -243,9 +242,9 @@ const MaternityLeaveEncashment = () => {
             },
 
             {
-                employeeId: selectedEmployee.id,
+                employeeId: selectedEmployee.employeeId,
                 employeeName:
-                    selectedEmployee.employeeNameEnglish ?? "",
+                    selectedEmployee.employeeName ?? "",
                 employeeCode:
                     selectedEmployee.employeeCode ?? "",
 
@@ -331,6 +330,8 @@ const MaternityLeaveEncashment = () => {
                     employeeName:
                         request.employeeName,
 
+                    leaveType: "ML",
+
                     installment:
                         request.installment,
 
@@ -359,6 +360,15 @@ const MaternityLeaveEncashment = () => {
                         new Date()
                             .toISOString()
                             .split("T")[0],
+                    encashDate:
+                        new Date()
+                            .toISOString()
+                            .split("T")[0],
+                    encashDays: Math.ceil(
+                        (new Date(request.toDate).getTime() -
+                            new Date(request.fromDate).getTime()) /
+                        (1000 * 60 * 60 * 24),
+                    ) + 1
                 }),
             ),
 
@@ -375,7 +385,7 @@ const MaternityLeaveEncashment = () => {
             onSuccess: (response) => {
                 toast.success(
                     response.message ||
-                        "Maternity leave encashment forwarded successfully!",
+                    "Maternity leave encashment forwarded successfully!",
                 );
 
                 handleClearAll();
@@ -384,7 +394,7 @@ const MaternityLeaveEncashment = () => {
             onError: (error) => {
                 toast.error(
                     error.message ||
-                        "Failed to forward maternity leave encashment.",
+                    "Failed to forward maternity leave encashment.",
                 );
             },
         });
@@ -799,12 +809,11 @@ const MaternityLeaveEncashment = () => {
                                                         <td className="px-2 py-2 text-center">
 
                                                             <div
-                                                                className={`rounded-md px-2 py-2 text-[11px] font-semibold leading-4 ${
-                                                                    field.period ===
-                                                                    "Pre-Delivery"
+                                                                className={`rounded-md px-2 py-2 text-[11px] font-semibold leading-4 ${field.period ===
+                                                                        "Pre-Delivery"
                                                                         ? "bg-[#e3f7ef] text-[#078d72]"
                                                                         : "bg-[#e5f1ff] text-[#1554d1]"
-                                                                }`}
+                                                                    }`}
                                                             >
 
                                                                 <div>
@@ -908,11 +917,10 @@ const MaternityLeaveEncashment = () => {
                                                         <td className="px-2 py-2 text-center">
 
                                                             <label
-                                                                className={`inline-flex cursor-pointer items-center gap-1 rounded-md border px-3 py-2 text-[11px] font-semibold ${
-                                                                    field.documentAttached
+                                                                className={`inline-flex cursor-pointer items-center gap-1 rounded-md border px-3 py-2 text-[11px] font-semibold ${field.documentAttached
                                                                         ? "border-[#a9decf] bg-[#effaf6] text-[#078d72]"
                                                                         : "border-[#d6deeb] bg-white text-[#536078]"
-                                                                }`}
+                                                                    }`}
                                                             >
 
                                                                 <Paperclip

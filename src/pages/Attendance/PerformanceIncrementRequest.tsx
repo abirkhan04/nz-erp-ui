@@ -8,7 +8,7 @@ import {
     Trash2,
     UserRound,
 } from "lucide-react";
-import {useForm} from "react-hook-form";
+import { useForm } from "react-hook-form";
 import type {
     Control,
     FieldErrors,
@@ -22,23 +22,26 @@ import type { Option } from "../../components/CommonInputFields";
 import RequestForwardingFlow from "./shared/RequestForwardingFlow";
 import { api } from "../../api/client";
 import { API_ROUTES } from "../../api/routes";
+import { usePost } from "../../hooks/usePost";
+import { useAuth } from "../../context/AuthContext";
+import toast from "react-hot-toast";
 
 /* -------------------------------------------------------------------------- */
 /* TYPES                                                                      */
 /* -------------------------------------------------------------------------- */
 
 interface Employee {
-    id: string | number;
+    employeeId: string | number;
     employeeCode: string;
-    employeeNameEnglish: string;
+    employeeName: string;
     designationName: string;
     departmentName: string;
     sectionName: string;
     grade: string;
-    currentBasicSalary: number;
-    currentGrossSalary: number;
+    basicSalary: number;
+    grossSalary: number;
     shiftName: string;
-    dateOfJoining: string;
+    effectiveDate: string;
 }
 
 interface PerformanceIncrementRequest {
@@ -94,6 +97,10 @@ const formatDate = (date: string) => {
 /* -------------------------------------------------------------------------- */
 
 const PerformanceIncrementRequest: React.FC = () => {
+
+    const { mutate: PerformanceIncrement } =
+        usePost(`${API_ROUTES.PAYROLL}/increment-histories`);
+
     const navigate = useNavigate();
 
     const [employeeOptions, setEmployeeOptions] =
@@ -147,21 +154,20 @@ const PerformanceIncrementRequest: React.FC = () => {
              * Replace this URL with the same employee-search API
              * used by ForwardLeaveRequest.
              */
-            const response = await api.get(
-                `${API_ROUTES.EMPLOYEES}/search?searchText=${encodeURIComponent(
+            const response = await api.get<Employee[]>(
+                `${API_ROUTES.EMPLOYEES}/search-extention?searchText=${encodeURIComponent(
                     searchText.trim(),
                 )}`,
             );
 
-            const data: Employee[] =
-                await response.data;
+            const data = response.data ?? [];
 
             setSearchedEmployees(data);
 
             setEmployeeOptions(
                 data.map((employee) => ({
-                    label: `${employee.employeeCode} - ${employee.employeeNameEnglish}`,
-                    value: employee.id,
+                    label: `${employee.employeeCode} - ${employee.employeeName}`,
+                    value: employee.employeeId,
                 })),
             );
 
@@ -186,7 +192,7 @@ const PerformanceIncrementRequest: React.FC = () => {
     ) => {
         const employee = searchedEmployees.find(
             (item) =>
-                String(item.id) ===
+                String(item.employeeId) ===
                 String(option.value),
         );
 
@@ -197,7 +203,7 @@ const PerformanceIncrementRequest: React.FC = () => {
 
         setValue(
             "searchEmployee",
-            String(employee.id),
+            String(employee.employeeId),
         );
 
         /*
@@ -227,7 +233,7 @@ const PerformanceIncrementRequest: React.FC = () => {
         }
 
         const basicSalary =
-            selectedEmployee.currentBasicSalary;
+            selectedEmployee.basicSalary;
 
         const fivePercentAmount =
             basicSalary * 0.05;
@@ -274,7 +280,7 @@ const PerformanceIncrementRequest: React.FC = () => {
         const alreadyAdded = requests.some(
             (request) =>
                 String(request.employeeId) ===
-                String(selectedEmployee.id),
+                String(selectedEmployee.employeeId),
         );
 
         if (alreadyAdded) {
@@ -286,15 +292,15 @@ const PerformanceIncrementRequest: React.FC = () => {
                 String(selectedEmployee.employeeCode),
 
             employeeName:
-                selectedEmployee.employeeNameEnglish,
+                selectedEmployee.employeeName,
 
             departmentSection: `${selectedEmployee.departmentName} / ${selectedEmployee.sectionName}`,
 
             fivePercentEffectiveDate:
-                selectedEmployee.dateOfJoining,
+                selectedEmployee.effectiveDate,
 
             fivePercentBasicSalary:
-                selectedEmployee.currentBasicSalary,
+                selectedEmployee.basicSalary,
 
             fivePercentIncrementAmount:
                 calculatedIncrement.fivePercentAmount,
@@ -312,7 +318,7 @@ const PerformanceIncrementRequest: React.FC = () => {
                 500,
 
             lastPerformanceNewBasicSalary:
-                selectedEmployee.currentBasicSalary,
+                selectedEmployee.basicSalary,
 
             currentIncrementPercentage:
                 incrementPercentage,
@@ -357,6 +363,8 @@ const PerformanceIncrementRequest: React.FC = () => {
         );
     };
 
+    const {user} = useAuth();
+
     /* ====================================================================== */
     /* CLEAR ALL                                                              */
     /* ====================================================================== */
@@ -382,10 +390,45 @@ const PerformanceIncrementRequest: React.FC = () => {
     const onSubmit = (
         data: PerformanceIncrementForm,
     ) => {
+
+
         console.log(
             "Performance Increment Request:",
             data,
         );
+        const payload = {
+            requests: data.requests.map((item) => ({
+                employeeId: item.employeeId,
+                effectiveDate: item.fivePercentEffectiveDate ?? new Date().toISOString().split("T")[0],
+                oldGrossSalary: item.lastPerformanceNewBasicSalary ?? 0,
+                newGrossSalary: item.currentNewBasicSalary ?? 0,
+                incrementAmount: item.currentIncrementAmount ?? 0,
+                incrementPercent: item.currentIncrementPercentage,
+                incrementType: "performance",
+            })),
+
+            createdBy: user?.userName ?? "",
+            forwardedBy: user?.userName ?? "",
+            forwardDate: new Date().toISOString(),
+        };
+
+        PerformanceIncrement(payload, {
+            onSuccess: (response) => {
+                toast.success(
+                    response.message ||
+                    "Maternity leave encashment forwarded successfully!",
+                );
+
+                // handleClearAll();
+            },
+
+            onError: (error) => {
+                toast.error(
+                    error.message ||
+                    "Failed to forward maternity leave encashment.",
+                );
+            },
+        });
 
         /*
          * API call goes here.
@@ -411,11 +454,11 @@ const PerformanceIncrementRequest: React.FC = () => {
         totalEmployees === 0
             ? 0
             : requests.reduce(
-                  (total, request) =>
-                      total +
-                      request.currentIncrementPercentage,
-                  0,
-              ) / totalEmployees;
+                (total, request) =>
+                    total +
+                    request.currentIncrementPercentage,
+                0,
+            ) / totalEmployees;
 
     /* ====================================================================== */
     /* DATE                                                                   */
@@ -678,7 +721,7 @@ const PerformanceIncrementRequest: React.FC = () => {
                                     <InfoRow
                                         label="Employee Name"
                                         value={
-                                            selectedEmployee.employeeNameEnglish
+                                            selectedEmployee.employeeName
                                         }
                                     />
 
@@ -704,7 +747,7 @@ const PerformanceIncrementRequest: React.FC = () => {
                                     <InfoRow
                                         label="Date of Joining"
                                         value={formatDate(
-                                            selectedEmployee.dateOfJoining,
+                                            selectedEmployee.effectiveDate,
                                         )}
                                     />
 
@@ -734,14 +777,14 @@ const PerformanceIncrementRequest: React.FC = () => {
                                     <InfoRow
                                         label="Current Basic Salary"
                                         value={`${formatCurrency(
-                                            selectedEmployee.currentBasicSalary,
+                                            selectedEmployee.basicSalary,
                                         )} BDT`}
                                     />
 
                                     <InfoRow
                                         label="Current Gross Salary"
                                         value={`${formatCurrency(
-                                            selectedEmployee.currentGrossSalary,
+                                            selectedEmployee.grossSalary,
                                         )} BDT`}
                                     />
 
@@ -835,8 +878,8 @@ const PerformanceIncrementRequest: React.FC = () => {
                                     value={
                                         selectedEmployee
                                             ? formatDate(
-                                                  selectedEmployee.dateOfJoining,
-                                              )
+                                                selectedEmployee.effectiveDate,
+                                            )
                                             : "-"
                                     }
                                 />
@@ -846,8 +889,8 @@ const PerformanceIncrementRequest: React.FC = () => {
                                     value={
                                         selectedEmployee
                                             ? `${formatCurrency(
-                                                  selectedEmployee.currentBasicSalary,
-                                              )}`
+                                                selectedEmployee.basicSalary,
+                                            )}`
                                             : "-"
                                     }
                                 />
@@ -857,8 +900,8 @@ const PerformanceIncrementRequest: React.FC = () => {
                                     value={
                                         selectedEmployee
                                             ? `${formatCurrency(
-                                                  calculatedIncrement.fivePercentAmount,
-                                              )}`
+                                                calculatedIncrement.fivePercentAmount,
+                                            )}`
                                             : "-"
                                     }
                                     valueClass="text-[#00965a]"
@@ -869,8 +912,8 @@ const PerformanceIncrementRequest: React.FC = () => {
                                     value={
                                         selectedEmployee
                                             ? `${formatCurrency(
-                                                  calculatedIncrement.fivePercentNewBasic,
-                                              )}`
+                                                calculatedIncrement.fivePercentNewBasic,
+                                            )}`
                                             : "-"
                                     }
                                     valueClass="text-[#00965a]"
@@ -992,8 +1035,8 @@ const PerformanceIncrementRequest: React.FC = () => {
                                     value={
                                         selectedEmployee
                                             ? formatCurrency(
-                                                  calculatedIncrement.currentIncrementAmount,
-                                              )
+                                                calculatedIncrement.currentIncrementAmount,
+                                            )
                                             : "-"
                                     }
                                     valueClass="text-[#00965a]"
@@ -1004,8 +1047,8 @@ const PerformanceIncrementRequest: React.FC = () => {
                                     value={
                                         selectedEmployee
                                             ? formatCurrency(
-                                                  calculatedIncrement.currentNewBasic,
-                                              )
+                                                calculatedIncrement.currentNewBasic,
+                                            )
                                             : "-"
                                     }
                                     valueClass="text-[#00965a]"
@@ -1325,7 +1368,7 @@ const PerformanceIncrementRequest: React.FC = () => {
                         Back to Request Type
                     </button>
 
-                    <RequestForwardingFlow/>
+                    <RequestForwardingFlow />
 
                     <button
                         type="submit"
