@@ -54,6 +54,6 @@ export const API_ROUTES = {
   LEAVE_ENCASHMENT_REQUESTS: "v1/leave-encashment-requests",
 
   // Payroll
-  PAYROLL: "payroll"
-
+  PAYROLL: "payroll",
+  LEARNERS: "Learners"
 };

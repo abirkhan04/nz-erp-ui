@@ -32,6 +32,7 @@ const EarnedLeaveEncashment = lazy(() => import("./pages/Attendance/EarnedLeaveE
 const MaternityLeaveEncashment = lazy(() => import("./pages/Attendance/MaternityLeaveEncashment"));
 const EmployeeIncrementAndPromotion = lazy(() => import("./pages/Attendance/EmployeeIncrementAndPromotion"));
 const PerformanceIncrementRequest = lazy(() => import("./pages/Attendance/PerformanceIncrementRequest"));
+const AdjustmentIncrementRequest = lazy(()=> import("./pages/Attendance/AdjustmentIncrementRequest"))
 const PromotionAndIncrementRequest = lazy(() => import("./pages/Attendance/PromotionAndIncrement"));
 const AttendanceDashboard = lazy(() => import("./pages/Attendance/AttendanceDashboard"));
 const TimeOfficeDashboard = lazy(() => import("./pages/Attendance/TimeOfficeDashboard"));
@@ -282,6 +283,13 @@ export default function App() {
             path="/employee-increment/performance"
             element={<ProtectedRoute>
               <PerformanceIncrementRequest />
+            </ProtectedRoute>}
+          />
+
+          <Route
+            path="/employee-increment/adjustment"
+            element={<ProtectedRoute>
+              <AdjustmentIncrementRequest />
             </ProtectedRoute>}
           />
 
