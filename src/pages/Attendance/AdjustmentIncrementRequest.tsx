@@ -18,16 +18,17 @@ import RequestForwardingFlow from "./shared/RequestForwardingFlow";
 import { api } from "../../api/client";
 import { API_ROUTES } from "../../api/routes";
 import CommonInputField from "../../components/CommonInputFields"
+import { useAuth } from "../../context/AuthContext";
 
 interface Learner {
     id: string;
     employeeId: string;
     employeeName: string;
-    department: string;
+    departmentName: string;
     currentDesignation: string;
     previousDesignation: string;
     dateOfJoining: string;
-    probationCompletedDate: string;
+    probationCompletedOn: string;
     probationPeriodMonths: number;
     currentGrossSalary: number;
     standardGrossSalary: number;
@@ -125,8 +126,8 @@ const AdjustmentIncrementRequest: React.FC = () => {
             );
 
             setLearners(
-                Array.isArray(response.data)
-                    ? response.data
+                Array.isArray(response.data.learners)
+                    ? response.data.learners
                     : response.data.data ?? [],
             );
 
@@ -197,7 +198,7 @@ const AdjustmentIncrementRequest: React.FC = () => {
 
     const selectedLearners = useMemo(() => {
         return learners.filter((learner) =>
-            selectedIds.has(learner.id),
+            selectedIds.has(learner.employeeId),
         );
     }, [learners, selectedIds]);
 
@@ -271,6 +272,8 @@ const AdjustmentIncrementRequest: React.FC = () => {
     // FORWARD SELECTED ROWS
     // =========================================================
 
+    const {user} = useAuth();
+
     const handleForwardToDirector = async () => {
         if (selectedLearners.length === 0) {
             return;
@@ -279,12 +282,24 @@ const AdjustmentIncrementRequest: React.FC = () => {
         try {
             setForwarding(true);
 
+            setForwarding(true);
+
+            const { probationPeriodMonths } =
+                getValues();
+
             const payload = {
-                requests: selectedLearners,
+                employeeIds: selectedLearners.map(
+                    (learner) => learner.employeeId,
+                ),
+
+                probationPeriodMonths:
+                    Number(probationPeriodMonths),
+
+                forwardedBy: user?.userName ?? "",
             };
 
             const response = await api.post(
-                `${API_ROUTES.LEARNERS}/eligible-adjustments/forward-to-director`,
+                `${API_ROUTES.LEARNERS}/eligible-adjustments/forward-for-approval`,
                 payload,
                 {
                     headers: {
@@ -784,7 +799,7 @@ const AdjustmentIncrementRequest: React.FC = () => {
                                         ) => {
                                             const selected =
                                                 selectedIds.has(
-                                                    learner.id,
+                                                    learner.employeeId,
                                                 );
 
                                             return (
@@ -806,7 +821,7 @@ const AdjustmentIncrementRequest: React.FC = () => {
                                                             }
                                                             onChange={() =>
                                                                 handleToggleRow(
-                                                                    learner.id,
+                                                                    learner.employeeId,
                                                                 )
                                                             }
                                                             className="h-4 w-4 accent-[#102878]"
@@ -835,7 +850,7 @@ const AdjustmentIncrementRequest: React.FC = () => {
 
                                                     <td className="border-b px-3 py-3">
                                                         {
-                                                            learner.department
+                                                            learner.departmentName
                                                         }
                                                     </td>
 
@@ -861,7 +876,7 @@ const AdjustmentIncrementRequest: React.FC = () => {
 
                                                     <td className="border-b px-3 py-3">
                                                         {
-                                                            learner.probationCompletedDate
+                                                            learner.probationCompletedOn
                                                         }
                                                     </td>
 
