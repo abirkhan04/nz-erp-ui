@@ -7,7 +7,6 @@ import {
     ClipboardList,
     FileSpreadsheet,
     Filter,
-    Search,
     Send,
     Users,
     X,
@@ -51,6 +50,7 @@ const AdjustmentIncrementRequest: React.FC = () => {
         control,
         handleSubmit,
         register,
+        getValues,
         formState: { errors },
     } = useForm<AdjustmentIncrementForm>({
         defaultValues: {
@@ -59,9 +59,6 @@ const AdjustmentIncrementRequest: React.FC = () => {
             probationPeriodMonths: 3,
         },
     });
-
-    const [probationPeriod, setProbationPeriod] =
-        useState<number>(3);
 
     // =========================================================
     // API DATA
@@ -282,61 +279,35 @@ const AdjustmentIncrementRequest: React.FC = () => {
         try {
             setForwarding(true);
 
-            /*
-             * IMPORTANT:
-             *
-             * Only selectedLearners are sent.
-             *
-             * learners is NOT sent.
-             */
-
             const payload = {
                 requests: selectedLearners,
             };
 
-            const response = await fetch(
-                "/api/adjustment-increment/forward-to-director",
+            const response = await api.post(
+                `${API_ROUTES.LEARNERS}/eligible-adjustments/forward-to-director`,
+                payload,
                 {
-                    method: "POST",
                     headers: {
-                        "Content-Type":
-                            "application/json",
+                        accept: "text/plain",
+                        "Content-Type": "application/json",
                     },
-                    body: JSON.stringify(payload),
                 },
             );
 
-            if (!response.ok) {
-                throw new Error(
-                    "Failed to forward adjustment request.",
-                );
-            }
-
-            const result = await response.json();
-
             console.log(
                 "Forwarded successfully:",
-                result,
+                response.data,
             );
 
-            // Clear selection after successful forwarding.
+            // Clear selection after successful forwarding
             setSelectedIds(new Set());
 
-            /*
-             * Depending on your business logic, we can either:
-             *
-             * 1. Remove forwarded employees from learners
-             * 2. Re-fetch the filtered list
-             * 3. Keep them but mark them as forwarded
-             *
-             * I recommend re-fetching once we know your API.
-             */
+            // Re-fetch using the currently applied filter
+            const currentFilterValues = getValues();
 
-            await getEligibleLearners({
-                joiningDateFrom,
-                joiningDateTo,
-                probationPeriod,
-            });
+            await getEligibleLearners(
+                currentFilterValues,
+            );
         } catch (error) {
             console.error(
                 "Forwarding failed:",
