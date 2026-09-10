@@ -16,15 +16,18 @@ import type {
 } from "react-hook-form";
 import { useForm } from "react-hook-form";
 
-import CommonInputField , {type Option }from "../../components/CommonInputFields";
+import CommonInputField, { type Option } from "../../components/CommonInputFields";
 import RequestForwardingFlow from "./shared/RequestForwardingFlow";
 import { API_ROUTES } from "../../api/routes";
 import { api } from "../../api/client";
+import { usePost } from "../../hooks/usePost";
+import toast from "react-hot-toast";
+import { useAuth } from "../../context/AuthContext";
 
 interface Employee {
     id: string;
     employeeCode: string;
-    employeeNameEnglish: string;
+    employeeName: string;
     employeeType: string;
     department: string;
     section: string;
@@ -58,8 +61,11 @@ interface PromotionSearchForm {
 }
 
 const PromotionIncrementRequest: React.FC = () => {
-    const navigate = useNavigate();
 
+    const { mutate: PromotionIncrement } =
+        usePost(`${API_ROUTES.PAYROLL}/increment-histories`);
+
+    const navigate = useNavigate();
     /* =========================================================
        SEARCH OPTIONS
     ========================================================= */
@@ -190,28 +196,19 @@ const PromotionIncrementRequest: React.FC = () => {
         }
 
         try {
-            const response = await api.get(
-                `${API_ROUTES.EMPLOYEES}/search?searchText=${encodeURIComponent(
-                    text,
+            const response = await api.get<Employee[]>(
+                `${API_ROUTES.EMPLOYEES}/search-extention?searchText=${encodeURIComponent(
+                    searchText.trim(),
                 )}`,
             );
 
-            /*
-             * IMPORTANT:
-             *
-             * The search API response itself is used as the
-             * employee-detail source.
-             *
-             * No second API request is made after selection.
-             */
-            const data: Employee[] =
-                response.data ?? [];
+            const data = response.data ?? [];
 
             setSearchedEmployees(data);
 
             setEmployeeOptions(
                 data.map((item) => ({
-                    label: `${item.employeeCode} - ${item.employeeNameEnglish}`,
+                    label: `${item.employeeCode} - ${item.employeeName}`,
                     value: item.id,
                 })),
             );
@@ -236,7 +233,7 @@ const PromotionIncrementRequest: React.FC = () => {
        The selected object from searchedEmployees is directly
        used to populate Section 2.
     ========================================================= */
-const handleEmployeeSelect = (option: Option) => {
+    const handleEmployeeSelect = (option: Option) => {
         const employeeId = option?.value;
 
         if (!employeeId) {
@@ -366,16 +363,16 @@ const handleEmployeeSelect = (option: Option) => {
                 return (
                     employee.grossSalary +
                     employee.grossSalary *
-                        (Number(
-                            incrementPercent,
-                        ) / 100)
+                    (Number(
+                        incrementPercent,
+                    ) / 100)
                 );
             }
 
             const ratio =
                 employee.basicSalary > 0
                     ? calculatedIncrementAmount /
-                      employee.basicSalary
+                    employee.basicSalary
                     : 0;
 
             return (
@@ -416,60 +413,60 @@ const handleEmployeeSelect = (option: Option) => {
 
         const requestIncrementPercent =
             incrementType ===
-            "percentage"
+                "percentage"
                 ? Number(
-                      incrementPercent,
-                  )
+                    incrementPercent,
+                )
                 : employee.basicSalary > 0
-                ? (calculatedIncrementAmount /
-                      employee.basicSalary) *
-                  100
-                : 0;
+                    ? (calculatedIncrementAmount /
+                        employee.basicSalary) *
+                    100
+                    : 0;
 
         const newRequest: PromotionRequest =
-            {
-                employeeId:
-                    employee.id,
+        {
+            employeeId:
+                employee.id,
 
-                employeeName:
-                    employee.employeeNameEnglish,
+            employeeName:
+                employee.employeeName,
 
-                department:
-                    employee.department,
+            department:
+                employee.department,
 
-                currentDesignation:
-                    employee.designation,
+            currentDesignation:
+                employee.designation,
 
-                proposedDesignation,
+            proposedDesignation,
 
-                currentGrade:
-                    employee.grade,
+            currentGrade:
+                employee.grade,
 
-                newGrade,
+            newGrade,
 
-                currentBasicSalary:
-                    employee.basicSalary,
+            currentBasicSalary:
+                employee.basicSalary,
 
-                currentGrossSalary:
-                    employee.grossSalary,
+            currentGrossSalary:
+                employee.grossSalary,
 
-                incrementPercent:
-                    requestIncrementPercent,
+            incrementPercent:
+                requestIncrementPercent,
 
-                incrementAmount:
-                    calculatedIncrementAmount,
+            incrementAmount:
+                calculatedIncrementAmount,
 
-                newBasicSalary:
-                    calculatedNewBasicSalary,
+            newBasicSalary:
+                calculatedNewBasicSalary,
 
-                newGrossSalary:
-                    calculatedNewGrossSalary,
+            newGrossSalary:
+                calculatedNewGrossSalary,
 
-                effectiveFrom,
+            effectiveFrom,
 
-                reason:
-                    reason.trim(),
-            };
+            reason:
+                reason.trim(),
+        };
 
         setRequests((prev) => [
             ...prev,
@@ -549,14 +546,14 @@ const handleEmployeeSelect = (option: Option) => {
     const averageIncrement =
         requests.length > 0
             ? requests.reduce(
-                  (
-                      sum,
-                      item,
-                  ) =>
-                      sum +
-                      item.incrementPercent,
-                  0,
-              ) / requests.length
+                (
+                    sum,
+                    item,
+                ) =>
+                    sum +
+                    item.incrementPercent,
+                0,
+            ) / requests.length
             : 0;
 
     /* =========================================================
@@ -578,15 +575,53 @@ const handleEmployeeSelect = (option: Option) => {
        SUBMIT
     ========================================================= */
 
-    const handleForward = () => {
-        console.log(
-            "Promotion + Increment Requests:",
-            requests,
-        );
+    const {user} = useAuth();
 
-        /*
-         * API call here.
-         */
+    const handleForward = () => {
+        if (requests.length === 0) {
+            toast.error("Please add at least one promotion request.");
+            return;
+        }
+
+        const payload = {
+            requests: requests.map((item) => ({
+                employeeId: item.employeeId,
+                effectiveDate: item.effectiveFrom,
+                oldGrossSalary: item.currentGrossSalary,
+                newGrossSalary: item.newGrossSalary,
+                incrementAmount: item.incrementAmount,
+                incrementPercent: item.incrementPercent,
+                incrementType: incrementType,
+            })),
+            createdBy: user?.userName ?? "",
+            forwardedBy: user?.userName ?? "",
+            forwardDate: new Date().toISOString(),
+        };
+
+        console.log("Promotion + Increment Payload:", payload);
+
+        PromotionIncrement(payload, {
+            onSuccess: (response) => {
+                toast.success(
+                    response.message ||
+                    "Promotion + increment request forwarded successfully!",
+                );
+
+                setRequests([]);
+            },
+
+            onError: (error) => {
+                console.error(
+                    "Failed to forward promotion + increment request:",
+                    error,
+                );
+
+                toast.error(
+                    error.message ||
+                    "Failed to forward promotion + increment request.",
+                );
+            },
+        });
     };
 
     return (
@@ -1178,10 +1213,10 @@ const handleEmployeeSelect = (option: Option) => {
                                         type="number"
                                         value={
                                             incrementType ===
-                                            "percentage"
+                                                "percentage"
                                                 ? calculatedIncrementAmount.toFixed(
-                                                      2,
-                                                  )
+                                                    2,
+                                                )
                                                 : incrementAmount
                                         }
                                         disabled={
@@ -1249,19 +1284,19 @@ const handleEmployeeSelect = (option: Option) => {
                                             {" ("}
 
                                             {incrementType ===
-                                            "percentage"
+                                                "percentage"
                                                 ? incrementPercent
                                                 : employee &&
-                                                  employee.basicSalary >
-                                                      0
-                                                ? (
-                                                      (calculatedIncrementAmount /
-                                                          employee.basicSalary) *
-                                                      100
-                                                  ).toFixed(
-                                                      2,
-                                                  )
-                                                : "0.00"}
+                                                    employee.basicSalary >
+                                                    0
+                                                    ? (
+                                                        (calculatedIncrementAmount /
+                                                            employee.basicSalary) *
+                                                        100
+                                                    ).toFixed(
+                                                        2,
+                                                    )
+                                                    : "0.00"}
 
                                             {"%)"}
 
@@ -1500,7 +1535,7 @@ const handleEmployeeSelect = (option: Option) => {
                             <tbody>
 
                                 {requests.length ===
-                                0 ? (
+                                    0 ? (
 
                                     <tr>
 
