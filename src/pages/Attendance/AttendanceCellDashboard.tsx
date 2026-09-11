@@ -14,6 +14,8 @@ import {
     Send,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { API_ROUTES } from "../../api/routes";
+import { useGet } from "../../hooks/useGet";
 
 interface LeaveRequest {
     id: number;
@@ -205,6 +207,8 @@ const DashboardCard = ({
 };
 
 const AttendanceCellDashboard: React.FC = () => {
+
+    const { data: {data: leaveRequests = []}={}} = useGet({key: ["leaveRequests"], url: `${API_ROUTES.LEAVE}?status=FORWARDED`});
     const handleForward = (request: LeaveRequest) => {
         console.log("Forward leave request:", request);
     };
@@ -491,7 +495,7 @@ const AttendanceCellDashboard: React.FC = () => {
                             </thead>
 
                             <tbody>
-                                {leaveRequests.map((request, index) => {
+                                {leaveRequests.map((request: LeaveRequest, index: number) => {
                                     const hasSufficientBalance =
                                         request.leaveAvailable >= request.requestedDays;
 
@@ -533,15 +537,15 @@ const AttendanceCellDashboard: React.FC = () => {
                                             </td>
 
                                             <td className="border border-[#e1e7f0] px-2 py-2 text-center text-[8px]">
-                                                {request.days.toFixed(1)}
+                                                {request.days?.toFixed(1)}
                                             </td>
 
                                             <td className="border border-[#e1e7f0] px-2 py-2 text-center text-[8px] font-bold text-[#07994b]">
-                                                {request.leaveAvailable.toFixed(1)}
+                                                {request.leaveAvailable?.toFixed(1)}
                                             </td>
 
                                             <td className="border border-[#e1e7f0] px-2 py-2 text-center text-[8px]">
-                                                {request.requestedDays.toFixed(1)}
+                                                {request.requestedDays?.toFixed(1)}
                                             </td>
 
                                             <td
@@ -550,7 +554,7 @@ const AttendanceCellDashboard: React.FC = () => {
                                                         : "text-[#07994b]"
                                                     }`}
                                             >
-                                                {request.balanceAfter.toFixed(1)}
+                                                {request.balanceAfter?.toFixed(1)}
                                             </td>
 
                                             <td className="border border-[#e1e7f0] px-2 py-2 text-center text-[8px]">
