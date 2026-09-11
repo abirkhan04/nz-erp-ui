@@ -24,7 +24,7 @@ import {
     Eye,
     LogIn,
     LogOut,
-    ArrowLeft
+    ArrowLeft,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useGet } from "../../hooks/useGet";
@@ -53,7 +53,6 @@ interface Employee {
     grossSalary?: number;
 }
 
-
 interface ExceptionForm {
     employeeCode: string;
     employeeId?: string;
@@ -72,29 +71,47 @@ const TimeOfficeDashboard: React.FC = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
 
+    /* =========================================================
+       ATTENDANCE / OT API
+    ========================================================= */
+
     const { data: punchSummary } = useGet({
-        key: ["punchSummary"], url: `${API_ROUTES.ATTENDANCE}/punch-summary?unitId=${user?.unitId}&isPreviouse=false`,
-    },);
+        key: ["punchSummary"],
+        url: `${API_ROUTES.ATTENDANCE}/punch-summary?unitId=${user?.unitId}&isPreviouse=false`,
+    });
 
     const { data: punchSummaryPrevious } = useGet({
-        key: ["punchSummaryPrevious"], url: `${API_ROUTES.ATTENDANCE}/punch-summary?unitId=${user?.unitId}&isPreviouse=true`,
-    },);
+        key: ["punchSummaryPrevious"],
+        url: `${API_ROUTES.ATTENDANCE}/punch-summary?unitId=${user?.unitId}&isPreviouse=true`,
+    });
 
-    const { data: { items: otRequests = [] } = {} } = useGet({ key: ["otRequests"], url: `${API_ROUTES.OVERTIME_REQUESTS}?unitId=${user?.unitId}` });
+    const {
+        data: { items: otRequests = [] } = {},
+    } = useGet({
+        key: ["otRequests"],
+        url: `${API_ROUTES.OVERTIME_REQUESTS}?unitId=${user?.unitId}`,
+    });
 
-    const { data: { items: exceptions = [] } = {}, refetch: refetchExceptions } = useGet({ key: ["attendanceExceptions"], url: `${API_ROUTES.ATTENDANCE_EXCEPTIONS}?pageNumber=1&pageSize=10000` });
+    const { mutate: mutateOTRequests } = usePost(
+        `${API_ROUTES.OVERTIME_REQUESTS}`
+    );
+
     /* =========================================================
        OT REQUEST STATE
     ========================================================= */
-    const { mutate: mutateOTRequests } = usePost(`${API_ROUTES.OVERTIME_REQUESTS}`);
-    const { mutate: mutateAttendanceExceptions } = usePost(`${API_ROUTES.ATTENDANCE_EXCEPTIONS}`);
 
-    const [selectedOTIds, setSelectedOTIds] =
-        useState<string[]>([]);
+    const [selectedOTIds, setSelectedOTIds] = useState<string[]>([]);
 
     /* =========================================================
        EXCEPTION STATE
+       
+       IMPORTANT:
+       ExceptionRequest is completely frontend-managed.
+       There is NO GET API for exceptions.
+       There is NO POST API when adding an exception.
     ========================================================= */
+
+    const [exceptions, setExceptions] = useState<ExceptionForm[]>([]);
 
     const [employeeOptions, setEmployeeOptions] = useState<
         {
@@ -109,6 +126,7 @@ const TimeOfficeDashboard: React.FC = () => {
     const [exceptionForm, setExceptionForm] =
         useState<ExceptionForm>({
             employeeCode: "",
+            employeeId: "",
             employeeName: "",
             department: "",
             exceptionType: "",
@@ -142,7 +160,7 @@ const TimeOfficeDashboard: React.FC = () => {
     const selectedCount = selectedOTIds.length;
 
     /* =========================================================
-       OT SELECTION
+       EMPLOYEE SEARCH
     ========================================================= */
 
     const handleEmployeeSearch = async (searchText: string) => {
@@ -157,8 +175,8 @@ const TimeOfficeDashboard: React.FC = () => {
         try {
             const response = await api.get<Employee[]>(
                 `${API_ROUTES.EMPLOYEES}/search-extention?searchText=${encodeURIComponent(
-                    text,
-                )}`,
+                    text
+                )}`
             );
 
             const data = response.data ?? [];
@@ -167,12 +185,13 @@ const TimeOfficeDashboard: React.FC = () => {
 
             setEmployeeOptions(
                 data.map((item) => ({
-                    label: `${item.employeeCode} - ${item.employeeNameEnglish ||
+                    label: `${item.employeeCode} - ${
+                        item.employeeNameEnglish ||
                         item.employeeName ||
                         ""
-                        }`,
-                    value: item.id ,
-                })),
+                    }`,
+                    value: item.id,
+                }))
             );
         } catch (error) {
             console.error("Employee search failed:", error);
@@ -182,29 +201,37 @@ const TimeOfficeDashboard: React.FC = () => {
         }
     };
 
+    /* =========================================================
+       EMPLOYEE SELECT
+    ========================================================= */
 
     const handleEmployeeSelect = (option: Option) => {
         console.log("Selected Employee Option:", option);
+
         const employeeId = option?.value;
 
         if (!employeeId) {
             setExceptionForm((prev) => ({
                 ...prev,
                 employeeCode: "",
+                employeeId: "",
                 employeeName: "",
                 department: "",
             }));
+
             return;
         }
 
         const selectedEmployee = searchedEmployees.find(
-            (item) => item.id === employeeId,
+            (item) => item.id === employeeId
         );
 
         if (!selectedEmployee) {
             return;
         }
+
         console.log("Selected Employee:", selectedEmployee);
+
         setExceptionForm((prev) => ({
             ...prev,
             employeeCode: selectedEmployee.employeeCode || "",
@@ -220,17 +247,21 @@ const TimeOfficeDashboard: React.FC = () => {
         }));
     };
 
+    /* =========================================================
+       OT SELECTION
+    ========================================================= */
+
     const toggleOTSelection = (id: string) => {
-        // console.log(selectedOTIds);
+        console.log("selectedOTIds", selectedOTIds);
         setSelectedOTIds((prev) =>
             prev.includes(id)
                 ? prev.filter((item) => item !== id)
-                : [...prev, id],
+                : [...prev, id]
         );
     };
 
     /* =========================================================
-       APPROVE SELECTED
+       APPROVE SELECTED OT
     ========================================================= */
 
     const handleApproveSelected = () => {
@@ -238,7 +269,11 @@ const TimeOfficeDashboard: React.FC = () => {
             return;
         }
 
-        const payload = selectedOTIds.map((requestId) => ({ overtimeRequestId: requestId, approved: true, approvedBy: user?.userName }));
+        const payload = selectedOTIds.map((requestId) => ({
+            overtimeRequestId: requestId,
+            approved: true,
+            approvedBy: user?.userName,
+        }));
 
         mutateOTRequests(payload);
 
@@ -246,7 +281,7 @@ const TimeOfficeDashboard: React.FC = () => {
     };
 
     /* =========================================================
-       APPROVE ALL
+       APPROVE ALL OT
     ========================================================= */
 
     const handleApproveAll = () => {
@@ -254,36 +289,44 @@ const TimeOfficeDashboard: React.FC = () => {
             setSelectedOTIds([]);
         } else {
             setSelectedOTIds(
-                otRequests.map((request: any) => request.requestId),
+                otRequests.map(
+                    (request: any) => request.requestId
+                )
             );
         }
     };
 
     /* =========================================================
-       PENDING COUNT
+       PENDING OT COUNT
     ========================================================= */
 
     const pendingCount = useMemo(
         () =>
             otRequests.filter(
-                (item: any) => item.status === "Pending",
+                (item: any) => item.status === "Pending"
             ).length,
-        [otRequests],
+        [otRequests]
     );
 
     /* =========================================================
-       ADD EXCEPTION
+       EXCEPTION FORM CHANGE
     ========================================================= */
 
     const handleExceptionChange = (
         field: keyof ExceptionForm,
-        value: string,
+        value: string
     ) => {
         setExceptionForm((prev) => ({
             ...prev,
             [field]: value,
         }));
     };
+
+    /* =========================================================
+       ADD EXCEPTION TO FRONTEND LIST
+       
+       NO BACKEND API CALL HERE
+    ========================================================= */
 
     const handleAddException = () => {
         console.log("ADD TO LIST CLICKED");
@@ -296,71 +339,53 @@ const TimeOfficeDashboard: React.FC = () => {
             !exceptionForm.time ||
             !exceptionForm.reason
         ) {
-
-            console.log("exception form values", exceptionForm);
             toast.error("Please fill all exception fields.");
-
-            console.log("Missing fields:", {
-                employeeId: exceptionForm.employeeId,
-                employeeCode: exceptionForm.employeeCode,
-                exceptionType: exceptionForm.exceptionType,
-                time: exceptionForm.time,
-                reason: exceptionForm.reason,
-            });
 
             return;
         }
 
-        const payload = {
-            employeeId: exceptionForm.employeeId,
+        const newException: ExceptionForm = {
             employeeCode: exceptionForm.employeeCode,
+            employeeId: exceptionForm.employeeId,
             employeeName: exceptionForm.employeeName || "-",
             department: exceptionForm.department || "-",
             exceptionType: exceptionForm.exceptionType,
             time: exceptionForm.time,
             reason: exceptionForm.reason,
-            userId: user?.userId || "",
         };
 
-        console.log("POST payload:", payload);
+        setExceptions((prev) => [
+            ...prev,
+            newException,
+        ]);
 
-        mutateAttendanceExceptions(payload, {
-            onSuccess: (response) => {
-                console.log("Exception POST success:", response);
+        toast.success("Exception added to list.");
 
-                toast.success(
-                    response?.message || "Exception added successfully."
-                );
+        /* Clear form */
 
-                refetchExceptions();
-
-                setExceptionForm({
-                    employeeCode: "",
-                    employeeId: "",
-                    employeeName: "",
-                    department: "",
-                    exceptionType: "",
-                    time: "",
-                    reason: "",
-                });
-            },
-
-            onError: (error: any) => {
-                console.error("Exception POST failed:", error);
-
-                toast.error(
-                    error?.message || "Failed to add exception."
-                );
-            },
+        setExceptionForm({
+            employeeCode: "",
+            employeeId: "",
+            employeeName: "",
+            department: "",
+            exceptionType: "",
+            time: "",
+            reason: "",
         });
     };
 
     /* =========================================================
        DELETE EXCEPTION
+       
+       FRONTEND ONLY
     ========================================================= */
 
-    const handleDeleteException = (id: string) => {
-        console.log("Delete Exception ID:", id);
+    const handleDeleteException = (index: number) => {
+        setExceptions((prev) =>
+            prev.filter((_, exceptionIndex) => exceptionIndex !== index)
+        );
+
+        toast.success("Exception removed.");
     };
 
     /* =========================================================
@@ -380,18 +405,66 @@ const TimeOfficeDashboard: React.FC = () => {
     };
 
     /* =========================================================
-       FORWARD EXCEPTIONS
+       FORWARD EXCEPTIONS TO ATTENDANCE CELL
+       
+       THIS IS THE ONLY EXCEPTION BACKEND API CALL
     ========================================================= */
 
     const handleForwardExceptions = () => {
         if (exceptions.length === 0) {
+            toast.error("No exceptions to forward.");
             return;
         }
 
+        const payload = {
+            exceptions: exceptions.map((exception) => ({
+                employeeId: exception.employeeId,
+                employeeCode: exception.employeeCode,
+                employeeName: exception.employeeName,
+                department: exception.department,
+                exceptionType: exception.exceptionType,
+                time: exception.time,
+                reason: exception.reason,
+            })),
+            forwardedBy: user?.userId || "",
+        };
+
         console.log(
-            "Forward Exceptions:",
-            exceptions,
+            "Forward Exceptions Payload:",
+            payload
         );
+
+        api.post(
+            `${API_ROUTES.ATTENDANCE_EXCEPTIONS}/forward`,
+            payload
+        )
+            .then((response) => {
+                console.log(
+                    "Exceptions forwarded successfully:",
+                    response.data
+                );
+
+                toast.success(
+                    response.data?.message ||
+                    "Exceptions forwarded to Attendance Cell successfully."
+                );
+
+                /* Clear local list after successful forwarding */
+
+                setExceptions([]);
+            })
+            .catch((error) => {
+                console.error(
+                    "Failed to forward exceptions:",
+                    error
+                );
+
+                toast.error(
+                    error?.response?.data?.message ||
+                    error?.message ||
+                    "Failed to forward exceptions."
+                );
+            });
     };
 
     return (
@@ -611,15 +684,17 @@ const TimeOfficeDashboard: React.FC = () => {
 
                         <div className="mt-3 grid grid-cols-3">
 
-                            {/* IN PUNCH */}
-
                             <ShiftMetric
                                 icon={
                                     <LogIn size={24} />
                                 }
                                 iconClass="text-green-600"
                                 label="IN PUNCH DONE"
-                                value={punchSummary?.inPunch ? String(punchSummary.inPunch) : "0"}
+                                value={
+                                    punchSummary?.inPunch
+                                        ? String(punchSummary.inPunch)
+                                        : "0"
+                                }
                                 valueClass="text-green-600"
                                 footer={
                                     <>
@@ -631,8 +706,6 @@ const TimeOfficeDashboard: React.FC = () => {
                                     </>
                                 }
                             />
-
-                            {/* HEAD COUNT */}
 
                             <div className="border-l border-r border-[#e6eaf2] px-5">
 
@@ -651,7 +724,9 @@ const TimeOfficeDashboard: React.FC = () => {
 
                                 <input
                                     type="number"
-                                    defaultValue={punchSummary?.headCount || 0}
+                                    defaultValue={
+                                        punchSummary?.headCount || 0
+                                    }
                                     className="mt-2 h-[27px] w-full rounded border border-[#d8dfeb] px-2 text-center text-[12px] font-bold text-blue-600 outline-none"
                                 />
 
@@ -668,15 +743,19 @@ const TimeOfficeDashboard: React.FC = () => {
 
                             </div>
 
-                            {/* MISSING */}
-
                             <ShiftMetric
                                 icon={
                                     <UserRoundXIcon />
                                 }
                                 iconClass="text-red-600"
                                 label="MISSING IN PUNCH"
-                                value={punchSummary?.missingInPunch ? String(punchSummary?.missingInPunch) : "0"}
+                                value={
+                                    punchSummary?.missingInPunch
+                                        ? String(
+                                            punchSummary.missingInPunch
+                                        )
+                                        : "0"
+                                }
                                 valueClass="text-red-600"
                                 footer={
                                     <>
@@ -746,7 +825,13 @@ const TimeOfficeDashboard: React.FC = () => {
                                 }
                                 iconClass="text-green-600"
                                 label="IN PUNCH (Prev Shift)"
-                                value={punchSummaryPrevious?.inPunch ? String(punchSummaryPrevious.inPunch) : "0"}
+                                value={
+                                    punchSummaryPrevious?.inPunch
+                                        ? String(
+                                            punchSummaryPrevious.inPunch
+                                        )
+                                        : "0"
+                                }
                                 valueClass="text-green-600"
                                 footer={
                                     <>
@@ -761,7 +846,13 @@ const TimeOfficeDashboard: React.FC = () => {
                                 }
                                 iconClass="text-blue-600"
                                 label="OUT PUNCH DONE"
-                                value={punchSummaryPrevious?.outPunch ? String(punchSummaryPrevious.outPunch) : "0"}
+                                value={
+                                    punchSummaryPrevious?.outPunch
+                                        ? String(
+                                            punchSummaryPrevious.outPunch
+                                        )
+                                        : "0"
+                                }
                                 valueClass="text-blue-600"
                                 footer={
                                     <>
@@ -780,7 +871,13 @@ const TimeOfficeDashboard: React.FC = () => {
                                 }
                                 iconClass="text-red-600"
                                 label="MISSING OUT PUNCH"
-                                value={punchSummaryPrevious?.missingOutPunch ? String(punchSummaryPrevious.missingOutPunch) : "0"}
+                                value={
+                                    punchSummaryPrevious?.missingOutPunch
+                                        ? String(
+                                            punchSummaryPrevious.missingOutPunch
+                                        )
+                                        : "0"
+                                }
                                 valueClass="text-red-600"
                                 footer={
                                     <>
@@ -886,9 +983,13 @@ const TimeOfficeDashboard: React.FC = () => {
                                 <tbody>
 
                                     {otRequests.map(
-                                        (request:any, index:number) => (
+                                        (
+                                            request: any,
+                                            index: number
+                                        ) => (
+
                                             <tr
-                                                key={request.id}
+                                                key={request.itemId}
                                                 className="border-t border-[#edf0f5]"
                                             >
 
@@ -919,14 +1020,15 @@ const TimeOfficeDashboard: React.FC = () => {
                                                 <td className="px-2 py-[4px] text-center">
 
                                                     <span
-                                                        className={`rounded px-2 py-[3px] text-[7px] font-bold ${request.status ===
+                                                        className={`rounded px-2 py-[3px] text-[7px] font-bold ${
+                                                            request.status ===
                                                             "Pending"
-                                                            ? "bg-orange-50 text-orange-600"
-                                                            : request.status ===
-                                                                "Approved"
+                                                                ? "bg-orange-50 text-orange-600"
+                                                                : request.status ===
+                                                                  "Approved"
                                                                 ? "bg-green-50 text-green-600"
                                                                 : "bg-red-50 text-red-600"
-                                                            }`}
+                                                        }`}
                                                     >
                                                         {request.status}
                                                     </span>
@@ -938,7 +1040,7 @@ const TimeOfficeDashboard: React.FC = () => {
                                                     <input
                                                         type="checkbox"
                                                         checked={selectedOTIds.includes(
-                                                            request.requestId,
+                                                            request.itemId
                                                         )}
                                                         disabled={
                                                             request.status !==
@@ -946,7 +1048,7 @@ const TimeOfficeDashboard: React.FC = () => {
                                                         }
                                                         onChange={() =>
                                                             toggleOTSelection(
-                                                                request.requestId,
+                                                                request.itemId
                                                             )
                                                         }
                                                         className="h-3 w-3 cursor-pointer accent-green-600 disabled:cursor-not-allowed"
@@ -955,7 +1057,8 @@ const TimeOfficeDashboard: React.FC = () => {
                                                 </td>
 
                                             </tr>
-                                        ),
+
+                                        )
                                     )}
 
                                 </tbody>
@@ -1000,6 +1103,7 @@ const TimeOfficeDashboard: React.FC = () => {
                                 className="flex h-[29px] flex-1 items-center justify-center gap-2 rounded bg-green-600 text-[8px] font-bold text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-40"
                             >
                                 <Check size={13} />
+
                                 {allSelected
                                     ? "Unselect All"
                                     : "Approve All"}
@@ -1054,7 +1158,10 @@ const TimeOfficeDashboard: React.FC = () => {
 
                             <div className="grid grid-cols-3 gap-2">
 
+                                {/* EMPLOYEE */}
+
                                 <div>
+
                                     <label className="mb-1 block text-[7px] font-bold text-[#26305d]">
                                         Search Employee
                                     </label>
@@ -1062,16 +1169,29 @@ const TimeOfficeDashboard: React.FC = () => {
                                     <CommonInputField
                                         label=""
                                         name="searchEmployee"
-                                        register={register as UseFormRegister<any>}
-                                        control={control as Control<any>}
-                                        errors={{} as FieldErrors<any>}
+                                        register={
+                                            register as UseFormRegister<any>
+                                        }
+                                        control={
+                                            control as Control<any>
+                                        }
+                                        errors={
+                                            {} as FieldErrors<any>
+                                        }
                                         type="searchable-dropdown"
                                         options={employeeOptions}
                                         placeholder="Search ID or Name"
-                                        onSearchChange={handleEmployeeSearch}
-                                        onOptionSelect={handleEmployeeSelect}
+                                        onSearchChange={
+                                            handleEmployeeSearch
+                                        }
+                                        onOptionSelect={
+                                            handleEmployeeSelect
+                                        }
                                     />
+
                                 </div>
+
+                                {/* DEPARTMENT */}
 
                                 <SmallInput
                                     label="Department"
@@ -1082,10 +1202,12 @@ const TimeOfficeDashboard: React.FC = () => {
                                     onChange={(value) =>
                                         handleExceptionChange(
                                             "department",
-                                            value,
+                                            value
                                         )
                                     }
                                 />
+
+                                {/* EXCEPTION TYPE */}
 
                                 <div>
 
@@ -1100,7 +1222,7 @@ const TimeOfficeDashboard: React.FC = () => {
                                         onChange={(e) =>
                                             handleExceptionChange(
                                                 "exceptionType",
-                                                e.target.value,
+                                                e.target.value
                                             )
                                         }
                                         className="h-[25px] w-full rounded border border-[#d9dfeb] px-2 text-[8px] outline-none"
@@ -1134,6 +1256,8 @@ const TimeOfficeDashboard: React.FC = () => {
 
                                 </div>
 
+                                {/* TIME */}
+
                                 <SmallInput
                                     label="Time"
                                     placeholder="--:-- ----"
@@ -1143,11 +1267,13 @@ const TimeOfficeDashboard: React.FC = () => {
                                     onChange={(value) =>
                                         handleExceptionChange(
                                             "time",
-                                            value,
+                                            value
                                         )
                                     }
                                     type="time"
                                 />
+
+                                {/* REASON */}
 
                                 <SmallInput
                                     label="Reason"
@@ -1158,7 +1284,7 @@ const TimeOfficeDashboard: React.FC = () => {
                                     onChange={(value) =>
                                         handleExceptionChange(
                                             "reason",
-                                            value,
+                                            value
                                         )
                                     }
                                 />
@@ -1182,8 +1308,19 @@ const TimeOfficeDashboard: React.FC = () => {
 
                         <div className="mt-2 border-t border-[#edf0f5] px-3 pt-2">
 
-                            <div className="mb-2 text-[8px] font-extrabold text-blue-600">
-                                EXCEPTION LIST
+                            <div className="mb-2 flex items-center justify-between">
+
+                                <div className="text-[8px] font-extrabold text-blue-600">
+                                    EXCEPTION LIST
+                                </div>
+
+                                <div className="text-[8px] font-bold text-gray-500">
+                                    {exceptions.length} Exception
+                                    {exceptions.length !== 1
+                                        ? "s"
+                                        : ""}
+                                </div>
+
                             </div>
 
                             <div className="overflow-x-auto">
@@ -1234,14 +1371,12 @@ const TimeOfficeDashboard: React.FC = () => {
 
                                         {exceptions.map(
                                             (
-                                                exception:any,
-                                                index:number,
+                                                exception,
+                                                index
                                             ) => (
 
                                                 <tr
-                                                    key={
-                                                        exception.id
-                                                    }
+                                                    key={`${exception.employeeId}-${index}`}
                                                     className="border-t border-[#edf0f5]"
                                                 >
 
@@ -1251,7 +1386,7 @@ const TimeOfficeDashboard: React.FC = () => {
 
                                                     <td className="px-2 py-[4px] font-semibold text-blue-600">
                                                         {
-                                                            exception.employeeId
+                                                            exception.employeeCode
                                                         }
                                                     </td>
 
@@ -1291,15 +1426,13 @@ const TimeOfficeDashboard: React.FC = () => {
                                                             type="button"
                                                             onClick={() =>
                                                                 handleDeleteException(
-                                                                    exception.id,
+                                                                    index
                                                                 )
                                                             }
                                                             className="text-red-500 hover:text-red-700"
                                                         >
                                                             <Trash2
-                                                                size={
-                                                                    12
-                                                                }
+                                                                size={12}
                                                             />
                                                         </button>
 
@@ -1307,7 +1440,7 @@ const TimeOfficeDashboard: React.FC = () => {
 
                                                 </tr>
 
-                                            ),
+                                            )
                                         )}
 
                                     </tbody>
@@ -1315,6 +1448,12 @@ const TimeOfficeDashboard: React.FC = () => {
                                 </table>
 
                             </div>
+
+                            {exceptions.length === 0 && (
+                                <div className="py-4 text-center text-[8px] text-gray-400">
+                                    No exceptions added yet.
+                                </div>
+                            )}
 
                         </div>
 
@@ -1616,6 +1755,7 @@ const CalendarIcon: React.FC = () => (
 
 const UserRoundXIcon: React.FC = () => (
     <div className="relative">
+
         <UserRound
             size={24}
             className="text-red-600"
@@ -1625,6 +1765,7 @@ const UserRoundXIcon: React.FC = () => (
             size={10}
             className="absolute -bottom-1 -right-1 fill-white"
         />
+
     </div>
 );
 
