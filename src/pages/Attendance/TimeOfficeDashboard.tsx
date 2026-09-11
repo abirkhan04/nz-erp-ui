@@ -1,5 +1,12 @@
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import CommonInputField, { type Option } from "../../components/CommonInputFields";
+import type {
+    Control,
+    FieldErrors,
+    UseFormRegister,
+} from "react-hook-form";
+import { useForm } from "react-hook-form";
 import {
     Check,
     ChevronDown,
@@ -19,10 +26,31 @@ import {
     LogOut,
     ArrowLeft
 } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
+import { useGet } from "../../hooks/useGet";
+import { API_ROUTES } from "../../api/routes";
+import { api } from "../../api/client";
+import { usePost } from "../../hooks/usePost";
 
 /* =========================================================
    TYPES
 ========================================================= */
+
+interface Employee {
+    id: string;
+    employeeCode: string;
+    employeeName?: string;
+    employeeNameEnglish?: string;
+    employeeType?: string;
+    department?: string;
+    departmentName?: string;
+    section?: string;
+    designation?: string;
+    grade?: string;
+    dateOfJoining?: string;
+    basicSalary?: number;
+    grossSalary?: number;
+}
 
 interface OTRequest {
     id: string;
@@ -45,7 +73,7 @@ interface ExceptionItem {
 }
 
 interface ExceptionForm {
-    employeeId: string;
+    employeeCode: string;
     employeeName: string;
     department: string;
     exceptionType: string;
@@ -54,172 +82,28 @@ interface ExceptionForm {
 }
 
 /* =========================================================
-   MOCK DATA
-========================================================= */
-
-const initialOTRequests: OTRequest[] = [
-    {
-        id: "1",
-        employeeId: "N2T25050123",
-        employeeName: "Abdul Karim",
-        department: "Weaving",
-        otHours: 2,
-        requestedBy: "Prod. Manager",
-        status: "Pending",
-    },
-    {
-        id: "2",
-        employeeId: "N2T25050124",
-        employeeName: "Rahim Uddin",
-        department: "Weaving",
-        otHours: 4,
-        requestedBy: "Prod. Manager",
-        status: "Pending",
-    },
-    {
-        id: "3",
-        employeeId: "N2T25050125",
-        employeeName: "Jalal Ahmed",
-        department: "Spinning",
-        otHours: 2,
-        requestedBy: "Prod. Manager",
-        status: "Pending",
-    },
-    {
-        id: "4",
-        employeeId: "N2T25050126",
-        employeeName: "Monir Hossain",
-        department: "Spinning",
-        otHours: 4,
-        requestedBy: "Prod. Manager",
-        status: "Pending",
-    },
-    {
-        id: "5",
-        employeeId: "N2T25050127",
-        employeeName: "Rashed Ali",
-        department: "Weaving",
-        otHours: 2,
-        requestedBy: "Prod. Manager",
-        status: "Pending",
-    },
-    {
-        id: "6",
-        employeeId: "N2T25050128",
-        employeeName: "Shakil Ahmed",
-        department: "Dyeing",
-        otHours: 3,
-        requestedBy: "Prod. Manager",
-        status: "Pending",
-    },
-    {
-        id: "7",
-        employeeId: "N2T25050129",
-        employeeName: "Farzana Begum",
-        department: "Finishing",
-        otHours: 2,
-        requestedBy: "Prod. Manager",
-        status: "Pending",
-    },
-    {
-        id: "8",
-        employeeId: "N2T25050130",
-        employeeName: "Mahbub Alam",
-        department: "Weaving",
-        otHours: 3,
-        requestedBy: "Prod. Manager",
-        status: "Pending",
-    },
-    {
-        id: "9",
-        employeeId: "N2T25050131",
-        employeeName: "Imran Hossain",
-        department: "Spinning",
-        otHours: 2,
-        requestedBy: "Prod. Manager",
-        status: "Pending",
-    },
-    {
-        id: "10",
-        employeeId: "N2T25050132",
-        employeeName: "Saddam Hossain",
-        department: "Weaving",
-        otHours: 3,
-        requestedBy: "Prod. Manager",
-        status: "Pending",
-    },
-    {
-        id: "11",
-        employeeId: "N2T25050133",
-        employeeName: "Shafiq Ahmed",
-        department: "Dyeing",
-        otHours: 2,
-        requestedBy: "Prod. Manager",
-        status: "Pending",
-    },
-    {
-        id: "12",
-        employeeId: "N2T25050134",
-        employeeName: "Asif Iqbal",
-        department: "Finishing",
-        otHours: 4,
-        requestedBy: "Prod. Manager",
-        status: "Pending",
-    },
-];
-
-const initialExceptions: ExceptionItem[] = [
-    {
-        id: "1",
-        employeeId: "N2T25050135",
-        employeeName: "Nazmul Islam",
-        department: "Weaving",
-        exceptionType: "Machine Failure",
-        time: "05:50 AM",
-        reason: "Motor Breakdown",
-    },
-    {
-        id: "2",
-        employeeId: "N2T25050136",
-        employeeName: "Habibur Rahman",
-        department: "Spinning",
-        exceptionType: "Power Failure",
-        time: "06:00 AM",
-        reason: "Power Issue",
-    },
-    {
-        id: "3",
-        employeeId: "N2T25050137",
-        employeeName: "Sharmin Akter",
-        department: "Finishing",
-        exceptionType: "Official Duty",
-        time: "06:20 AM",
-        reason: "Official Work",
-    },
-    {
-        id: "4",
-        employeeId: "N2T25050138",
-        employeeName: "Ibrahim Khalil",
-        department: "Dyeing",
-        exceptionType: "Medical Emergency",
-        time: "05:45 AM",
-        reason: "Hospital Visit",
-    },
-];
-
-/* =========================================================
    COMPONENT
 ========================================================= */
 
 const TimeOfficeDashboard: React.FC = () => {
     const navigate = useNavigate();
+    const { user } = useAuth();
 
+    const { data: punchSummary } = useGet({
+        key: ["punchSummary"], url: `${API_ROUTES.ATTENDANCE}/punch-summary?unitId=${user?.unitId}&isPreviouse=false`,
+    },);
+
+    const { data: punchSummaryPrevious } = useGet({
+        key: ["punchSummaryPrevious"], url: `${API_ROUTES.ATTENDANCE}/punch-summary?unitId=${user?.unitId}&isPreviouse=true`,
+    },);
+
+    const { data: { items: otRequests = [] } = {} } = useGet({ key: ["otRequests"], url: `${API_ROUTES.OVERTIME_REQUESTS}?unitId=${user?.unitId}` });
+
+    const { data: { items: exceptions = [] } = {} } = useGet({ key: ["attendanceExceptions"], url: `${API_ROUTES.ATTENDANCE_EXCEPTIONS}?pageNumber=1&pageSize=10000` });
     /* =========================================================
        OT REQUEST STATE
     ========================================================= */
-
-    const [otRequests, setOTRequests] =
-        useState<OTRequest[]>(initialOTRequests);
+    const { mutate: mutateOTRequests } = usePost(`${API_ROUTES.OVERTIME_REQUESTS}`);
 
     const [selectedOTIds, setSelectedOTIds] =
         useState<string[]>([]);
@@ -228,12 +112,19 @@ const TimeOfficeDashboard: React.FC = () => {
        EXCEPTION STATE
     ========================================================= */
 
-    const [exceptions, setExceptions] =
-        useState<ExceptionItem[]>(initialExceptions);
+    const [employeeOptions, setEmployeeOptions] = useState<
+        {
+            label: string;
+            value: string;
+        }[]
+    >([]);
+
+    const [searchedEmployees, setSearchedEmployees] =
+        useState<Employee[]>([]);
 
     const [exceptionForm, setExceptionForm] =
         useState<ExceptionForm>({
-            employeeId: "",
+            employeeCode: "",
             employeeName: "",
             department: "",
             exceptionType: "",
@@ -247,13 +138,22 @@ const TimeOfficeDashboard: React.FC = () => {
 
     const selectedDate = "15-May-2025";
 
+    const {
+        register,
+        control,
+    } = useForm<{ searchEmployee: string }>({
+        defaultValues: {
+            searchEmployee: "",
+        },
+    });
+
     /* =========================================================
        SELECTED OT REQUESTS
     ========================================================= */
 
     const allSelected =
-        otRequests.length > 0 &&
-        selectedOTIds.length === otRequests.length;
+        otRequests?.length > 0 &&
+        selectedOTIds.length === otRequests?.length;
 
     const selectedCount = selectedOTIds.length;
 
@@ -261,7 +161,81 @@ const TimeOfficeDashboard: React.FC = () => {
        OT SELECTION
     ========================================================= */
 
+    const handleEmployeeSearch = async (searchText: string) => {
+        const text = searchText.trim();
+
+        if (!text) {
+            setEmployeeOptions([]);
+            setSearchedEmployees([]);
+            return;
+        }
+
+        try {
+            const response = await api.get<Employee[]>(
+                `${API_ROUTES.EMPLOYEES}/search-extention?searchText=${encodeURIComponent(
+                    text,
+                )}`,
+            );
+
+            const data = response.data ?? [];
+
+            setSearchedEmployees(data);
+
+            setEmployeeOptions(
+                data.map((item) => ({
+                    label: `${item.employeeCode} - ${item.employeeNameEnglish ||
+                        item.employeeName ||
+                        ""
+                        }`,
+                    value: item.id,
+                })),
+            );
+        } catch (error) {
+            console.error("Employee search failed:", error);
+
+            setEmployeeOptions([]);
+            setSearchedEmployees([]);
+        }
+    };
+
+
+    const handleEmployeeSelect = (option: Option) => {
+        const employeeId = option?.value;
+
+        if (!employeeId) {
+            setExceptionForm((prev) => ({
+                ...prev,
+                employeeCode: "",
+                employeeName: "",
+                department: "",
+            }));
+            return;
+        }
+
+        const selectedEmployee = searchedEmployees.find(
+            (item) => item.id === employeeId,
+        );
+
+        if (!selectedEmployee) {
+            return;
+        }
+
+        setExceptionForm((prev) => ({
+            ...prev,
+            employeeCode: selectedEmployee.employeeCode || "",
+            employeeName:
+                selectedEmployee.employeeNameEnglish ||
+                selectedEmployee.employeeName ||
+                "",
+            department:
+                selectedEmployee.departmentName ||
+                selectedEmployee.department ||
+                "",
+        }));
+    };
+
     const toggleOTSelection = (id: string) => {
+        // console.log(selectedOTIds);
         setSelectedOTIds((prev) =>
             prev.includes(id)
                 ? prev.filter((item) => item !== id)
@@ -278,16 +252,9 @@ const TimeOfficeDashboard: React.FC = () => {
             return;
         }
 
-        setOTRequests((prev) =>
-            prev.map((request) =>
-                selectedOTIds.includes(request.id)
-                    ? {
-                        ...request,
-                        status: "Approved",
-                    }
-                    : request,
-            ),
-        );
+        const payload = selectedOTIds.map((requestId) => ({overtimeRequestId: requestId, approved: true, approvedBy: user?.userName}));
+
+        mutateOTRequests(payload);
 
         setSelectedOTIds([]);
     };
@@ -301,7 +268,7 @@ const TimeOfficeDashboard: React.FC = () => {
             setSelectedOTIds([]);
         } else {
             setSelectedOTIds(
-                otRequests.map((request) => request.id),
+                otRequests.map((request: any) => request.requestId),
             );
         }
     };
@@ -334,7 +301,7 @@ const TimeOfficeDashboard: React.FC = () => {
 
     const handleAddException = () => {
         if (
-            !exceptionForm.employeeId ||
+            !exceptionForm.employeeCode ||
             !exceptionForm.exceptionType ||
             !exceptionForm.time ||
             !exceptionForm.reason
@@ -344,7 +311,7 @@ const TimeOfficeDashboard: React.FC = () => {
 
         const newException: ExceptionItem = {
             id: String(Date.now()),
-            employeeId: exceptionForm.employeeId,
+            employeeId: exceptionForm.employeeCode,
             employeeName:
                 exceptionForm.employeeName || "-",
             department:
@@ -361,7 +328,7 @@ const TimeOfficeDashboard: React.FC = () => {
         ]);
 
         setExceptionForm({
-            employeeId: "",
+            employeeCode: "",
             employeeName: "",
             department: "",
             exceptionType: "",
@@ -522,17 +489,17 @@ const TimeOfficeDashboard: React.FC = () => {
 
             </header>
 
-                                <button
-                        type="button"
-                        className="flex items-center gap-2 text-sm font-semibold text-[#1554d1]"
-                        onClick={() =>
-                            navigate("/attendance-dashboard")
-                        }
-                    >
-                        <ArrowLeft size={20} />
+            <button
+                type="button"
+                className="flex items-center gap-2 text-sm font-semibold text-[#1554d1]"
+                onClick={() =>
+                    navigate("/attendance-dashboard")
+                }
+            >
+                <ArrowLeft size={20} />
 
-                        Back to Attendance Dashboard
-                    </button>
+                Back to Attendance Dashboard
+            </button>
 
             {/* =====================================================
                 MAIN
@@ -636,7 +603,7 @@ const TimeOfficeDashboard: React.FC = () => {
                                 }
                                 iconClass="text-green-600"
                                 label="IN PUNCH DONE"
-                                value="95"
+                                value={punchSummary?.inPunch ? String(punchSummary.inPunch) : "0"}
                                 valueClass="text-green-600"
                                 footer={
                                     <>
@@ -668,7 +635,7 @@ const TimeOfficeDashboard: React.FC = () => {
 
                                 <input
                                     type="number"
-                                    defaultValue={100}
+                                    defaultValue={punchSummary?.headCount || 0}
                                     className="mt-2 h-[27px] w-full rounded border border-[#d8dfeb] px-2 text-center text-[12px] font-bold text-blue-600 outline-none"
                                 />
 
@@ -693,7 +660,7 @@ const TimeOfficeDashboard: React.FC = () => {
                                 }
                                 iconClass="text-red-600"
                                 label="MISSING IN PUNCH"
-                                value="5"
+                                value={punchSummary?.missingInPunch ? String(punchSummary?.missingInPunch) : "0"}
                                 valueClass="text-red-600"
                                 footer={
                                     <>
@@ -763,7 +730,7 @@ const TimeOfficeDashboard: React.FC = () => {
                                 }
                                 iconClass="text-green-600"
                                 label="IN PUNCH (Prev Shift)"
-                                value="108"
+                                value={punchSummaryPrevious?.inPunch ? String(punchSummaryPrevious.inPunch) : "0"}
                                 valueClass="text-green-600"
                                 footer={
                                     <>
@@ -778,7 +745,7 @@ const TimeOfficeDashboard: React.FC = () => {
                                 }
                                 iconClass="text-blue-600"
                                 label="OUT PUNCH DONE"
-                                value="106"
+                                value={punchSummaryPrevious?.outPunch ? String(punchSummaryPrevious.outPunch) : "0"}
                                 valueClass="text-blue-600"
                                 footer={
                                     <>
@@ -797,7 +764,7 @@ const TimeOfficeDashboard: React.FC = () => {
                                 }
                                 iconClass="text-red-600"
                                 label="MISSING OUT PUNCH"
-                                value="2"
+                                value={punchSummaryPrevious?.missingOutPunch ? String(punchSummaryPrevious.missingOutPunch) : "0"}
                                 valueClass="text-red-600"
                                 footer={
                                     <>
@@ -922,15 +889,15 @@ const TimeOfficeDashboard: React.FC = () => {
                                                 </td>
 
                                                 <td className="px-2 py-[4px]">
-                                                    {request.department}
+                                                    {request.departmentName}
                                                 </td>
 
                                                 <td className="px-2 py-[4px] text-center font-semibold">
-                                                    {request.otHours.toFixed(2)}
+                                                    {request.otHours}
                                                 </td>
 
                                                 <td className="px-2 py-[4px]">
-                                                    {request.requestedBy}
+                                                    {request.submittedBy}
                                                 </td>
 
                                                 <td className="px-2 py-[4px] text-center">
@@ -955,7 +922,7 @@ const TimeOfficeDashboard: React.FC = () => {
                                                     <input
                                                         type="checkbox"
                                                         checked={selectedOTIds.includes(
-                                                            request.id,
+                                                            request.requestId,
                                                         )}
                                                         disabled={
                                                             request.status !==
@@ -963,7 +930,7 @@ const TimeOfficeDashboard: React.FC = () => {
                                                         }
                                                         onChange={() =>
                                                             toggleOTSelection(
-                                                                request.id,
+                                                                request.requestId,
                                                             )
                                                         }
                                                         className="h-3 w-3 cursor-pointer accent-green-600 disabled:cursor-not-allowed"
@@ -1071,34 +1038,24 @@ const TimeOfficeDashboard: React.FC = () => {
 
                             <div className="grid grid-cols-3 gap-2">
 
-                                <SmallInput
-                                    label="Employee ID"
-                                    placeholder="Enter ID or Name"
-                                    value={
-                                        exceptionForm.employeeId
-                                    }
-                                    onChange={(value) =>
-                                        handleExceptionChange(
-                                            "employeeId",
-                                            value,
-                                        )
-                                    }
-                                    icon
-                                />
+                                <div>
+                                    <label className="mb-1 block text-[7px] font-bold text-[#26305d]">
+                                        Search Employee
+                                    </label>
 
-                                <SmallInput
-                                    label="Employee Name"
-                                    placeholder=""
-                                    value={
-                                        exceptionForm.employeeName
-                                    }
-                                    onChange={(value) =>
-                                        handleExceptionChange(
-                                            "employeeName",
-                                            value,
-                                        )
-                                    }
-                                />
+                                    <CommonInputField
+                                        label=""
+                                        name="searchEmployee"
+                                        register={register as UseFormRegister<any>}
+                                        control={control as Control<any>}
+                                        errors={{} as FieldErrors<any>}
+                                        type="searchable-dropdown"
+                                        options={employeeOptions}
+                                        placeholder="Search ID or Name"
+                                        onSearchChange={handleEmployeeSearch}
+                                        onOptionSelect={handleEmployeeSelect}
+                                    />
+                                </div>
 
                                 <SmallInput
                                     label="Department"
