@@ -31,6 +31,7 @@ import { useGet } from "../../hooks/useGet";
 import { API_ROUTES } from "../../api/routes";
 import { api } from "../../api/client";
 import { usePost } from "../../hooks/usePost";
+import toast from "react-hot-toast";
 
 /* =========================================================
    TYPES
@@ -52,28 +53,10 @@ interface Employee {
     grossSalary?: number;
 }
 
-interface OTRequest {
-    id: string;
-    employeeId: string;
-    employeeName: string;
-    department: string;
-    otHours: number;
-    requestedBy: string;
-    status: "Pending" | "Approved" | "Rejected";
-}
-
-interface ExceptionItem {
-    id: string;
-    employeeId: string;
-    employeeName: string;
-    department: string;
-    exceptionType: string;
-    time: string;
-    reason: string;
-}
 
 interface ExceptionForm {
     employeeCode: string;
+    employeeId?: string;
     employeeName: string;
     department: string;
     exceptionType: string;
@@ -99,11 +82,12 @@ const TimeOfficeDashboard: React.FC = () => {
 
     const { data: { items: otRequests = [] } = {} } = useGet({ key: ["otRequests"], url: `${API_ROUTES.OVERTIME_REQUESTS}?unitId=${user?.unitId}` });
 
-    const { data: { items: exceptions = [] } = {} } = useGet({ key: ["attendanceExceptions"], url: `${API_ROUTES.ATTENDANCE_EXCEPTIONS}?pageNumber=1&pageSize=10000` });
+    const { data: { items: exceptions = [] } = {}, refetch: refetchExceptions } = useGet({ key: ["attendanceExceptions"], url: `${API_ROUTES.ATTENDANCE_EXCEPTIONS}?pageNumber=1&pageSize=10000` });
     /* =========================================================
        OT REQUEST STATE
     ========================================================= */
     const { mutate: mutateOTRequests } = usePost(`${API_ROUTES.OVERTIME_REQUESTS}`);
+    const { mutate: mutateAttendanceExceptions } = usePost(`${API_ROUTES.ATTENDANCE_EXCEPTIONS}`);
 
     const [selectedOTIds, setSelectedOTIds] =
         useState<string[]>([]);
@@ -187,7 +171,7 @@ const TimeOfficeDashboard: React.FC = () => {
                         item.employeeName ||
                         ""
                         }`,
-                    value: item.id,
+                    value: item.id ,
                 })),
             );
         } catch (error) {
@@ -200,6 +184,7 @@ const TimeOfficeDashboard: React.FC = () => {
 
 
     const handleEmployeeSelect = (option: Option) => {
+        console.log("Selected Employee Option:", option);
         const employeeId = option?.value;
 
         if (!employeeId) {
@@ -219,10 +204,11 @@ const TimeOfficeDashboard: React.FC = () => {
         if (!selectedEmployee) {
             return;
         }
-
+        console.log("Selected Employee:", selectedEmployee);
         setExceptionForm((prev) => ({
             ...prev,
             employeeCode: selectedEmployee.employeeCode || "",
+            employeeId: selectedEmployee.id || "",
             employeeName:
                 selectedEmployee.employeeNameEnglish ||
                 selectedEmployee.employeeName ||
@@ -252,7 +238,7 @@ const TimeOfficeDashboard: React.FC = () => {
             return;
         }
 
-        const payload = selectedOTIds.map((requestId) => ({overtimeRequestId: requestId, approved: true, approvedBy: user?.userName}));
+        const payload = selectedOTIds.map((requestId) => ({ overtimeRequestId: requestId, approved: true, approvedBy: user?.userName }));
 
         mutateOTRequests(payload);
 
@@ -280,7 +266,7 @@ const TimeOfficeDashboard: React.FC = () => {
     const pendingCount = useMemo(
         () =>
             otRequests.filter(
-                (item) => item.status === "Pending",
+                (item: any) => item.status === "Pending",
             ).length,
         [otRequests],
     );
@@ -300,40 +286,72 @@ const TimeOfficeDashboard: React.FC = () => {
     };
 
     const handleAddException = () => {
+        console.log("ADD TO LIST CLICKED");
+        console.log("exceptionForm:", exceptionForm);
+
         if (
+            !exceptionForm.employeeId ||
             !exceptionForm.employeeCode ||
             !exceptionForm.exceptionType ||
             !exceptionForm.time ||
             !exceptionForm.reason
         ) {
+
+            console.log("exception form values", exceptionForm);
+            toast.error("Please fill all exception fields.");
+
+            console.log("Missing fields:", {
+                employeeId: exceptionForm.employeeId,
+                employeeCode: exceptionForm.employeeCode,
+                exceptionType: exceptionForm.exceptionType,
+                time: exceptionForm.time,
+                reason: exceptionForm.reason,
+            });
+
             return;
         }
 
-        const newException: ExceptionItem = {
-            id: String(Date.now()),
-            employeeId: exceptionForm.employeeCode,
-            employeeName:
-                exceptionForm.employeeName || "-",
-            department:
-                exceptionForm.department || "-",
-            exceptionType:
-                exceptionForm.exceptionType,
+        const payload = {
+            employeeId: exceptionForm.employeeId,
+            employeeCode: exceptionForm.employeeCode,
+            employeeName: exceptionForm.employeeName || "-",
+            department: exceptionForm.department || "-",
+            exceptionType: exceptionForm.exceptionType,
             time: exceptionForm.time,
             reason: exceptionForm.reason,
+            userId: user?.userId || "",
         };
 
-        setExceptions((prev) => [
-            ...prev,
-            newException,
-        ]);
+        console.log("POST payload:", payload);
 
-        setExceptionForm({
-            employeeCode: "",
-            employeeName: "",
-            department: "",
-            exceptionType: "",
-            time: "",
-            reason: "",
+        mutateAttendanceExceptions(payload, {
+            onSuccess: (response) => {
+                console.log("Exception POST success:", response);
+
+                toast.success(
+                    response?.message || "Exception added successfully."
+                );
+
+                refetchExceptions();
+
+                setExceptionForm({
+                    employeeCode: "",
+                    employeeId: "",
+                    employeeName: "",
+                    department: "",
+                    exceptionType: "",
+                    time: "",
+                    reason: "",
+                });
+            },
+
+            onError: (error: any) => {
+                console.error("Exception POST failed:", error);
+
+                toast.error(
+                    error?.message || "Failed to add exception."
+                );
+            },
         });
     };
 
@@ -342,9 +360,7 @@ const TimeOfficeDashboard: React.FC = () => {
     ========================================================= */
 
     const handleDeleteException = (id: string) => {
-        setExceptions((prev) =>
-            prev.filter((item) => item.id !== id),
-        );
+        console.log("Delete Exception ID:", id);
     };
 
     /* =========================================================
@@ -870,7 +886,7 @@ const TimeOfficeDashboard: React.FC = () => {
                                 <tbody>
 
                                     {otRequests.map(
-                                        (request, index) => (
+                                        (request:any, index:number) => (
                                             <tr
                                                 key={request.id}
                                                 className="border-t border-[#edf0f5]"
@@ -1218,8 +1234,8 @@ const TimeOfficeDashboard: React.FC = () => {
 
                                         {exceptions.map(
                                             (
-                                                exception,
-                                                index,
+                                                exception:any,
+                                                index:number,
                                             ) => (
 
                                                 <tr

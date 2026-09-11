@@ -851,7 +851,7 @@ const PromotionIncrementRequest: React.FC = () => {
 
                                         <strong className="ml-8">
                                             {
-                                                employee.employeeNameEnglish
+                                                employee.employeeName
                                             }
                                         </strong>
                                     </div>
