@@ -96,6 +96,7 @@ const TimeOfficeDashboard: React.FC = () => {
         `${API_ROUTES.OVERTIME_REQUESTS}`
     );
 
+
     /* =========================================================
        OT REQUEST STATE
     ========================================================= */
@@ -185,11 +186,10 @@ const TimeOfficeDashboard: React.FC = () => {
 
             setEmployeeOptions(
                 data.map((item) => ({
-                    label: `${item.employeeCode} - ${
-                        item.employeeNameEnglish ||
+                    label: `${item.employeeCode} - ${item.employeeNameEnglish ||
                         item.employeeName ||
                         ""
-                    }`,
+                        }`,
                     value: item.id,
                 }))
             );
@@ -410,61 +410,56 @@ const TimeOfficeDashboard: React.FC = () => {
        THIS IS THE ONLY EXCEPTION BACKEND API CALL
     ========================================================= */
 
-    const handleForwardExceptions = () => {
+    const handleForwardExceptions = async () => {
         if (exceptions.length === 0) {
             toast.error("No exceptions to forward.");
             return;
         }
 
         const payload = {
-            exceptions: exceptions.map((exception) => ({
+            items: exceptions.map((exception) => ({
                 employeeId: exception.employeeId,
-                employeeCode: exception.employeeCode,
-                employeeName: exception.employeeName,
-                department: exception.department,
+                attendanceDate: new Date().toISOString().split("T")[0],
                 exceptionType: exception.exceptionType,
-                time: exception.time,
-                reason: exception.reason,
+                remarks: exception.reason,
+                severity: "test"
             })),
-            forwardedBy: user?.userId || "",
+            submitImmediately: true,
+            userId: user?.userId || "",
         };
 
-        console.log(
-            "Forward Exceptions Payload:",
-            payload
-        );
+        console.log("Forward Exceptions Payload:", payload);
 
-        api.post(
-            `${API_ROUTES.ATTENDANCE_EXCEPTIONS}/forward`,
-            payload
-        )
-            .then((response) => {
-                console.log(
-                    "Exceptions forwarded successfully:",
-                    response.data
-                );
+        try {
+            const response = await api.post(
+                `${API_ROUTES.ATTENDANCE_EXCEPTIONS}`,
+                payload
+            );
 
-                toast.success(
-                    response.data?.message ||
-                    "Exceptions forwarded to Attendance Cell successfully."
-                );
+            console.log(
+                "Exceptions forwarded successfully:",
+                response.data
+            );
 
-                /* Clear local list after successful forwarding */
+            toast.success(
+                response.data?.message ||
+                "Exceptions forwarded to Attendance Cell successfully."
+            );
 
-                setExceptions([]);
-            })
-            .catch((error) => {
-                console.error(
-                    "Failed to forward exceptions:",
-                    error
-                );
+            // Clear frontend list after successful forwarding
+            setExceptions([]);
+        } catch (error: any) {
+            console.error(
+                "Failed to forward exceptions:",
+                error
+            );
 
-                toast.error(
-                    error?.response?.data?.message ||
-                    error?.message ||
-                    "Failed to forward exceptions."
-                );
-            });
+            toast.error(
+                error?.response?.data?.message ||
+                error?.message ||
+                "Failed to forward exceptions."
+            );
+        }
     };
 
     return (
@@ -1020,15 +1015,14 @@ const TimeOfficeDashboard: React.FC = () => {
                                                 <td className="px-2 py-[4px] text-center">
 
                                                     <span
-                                                        className={`rounded px-2 py-[3px] text-[7px] font-bold ${
-                                                            request.status ===
-                                                            "Pending"
+                                                        className={`rounded px-2 py-[3px] text-[7px] font-bold ${request.status ===
+                                                                "Pending"
                                                                 ? "bg-orange-50 text-orange-600"
                                                                 : request.status ===
-                                                                  "Approved"
-                                                                ? "bg-green-50 text-green-600"
-                                                                : "bg-red-50 text-red-600"
-                                                        }`}
+                                                                    "Approved"
+                                                                    ? "bg-green-50 text-green-600"
+                                                                    : "bg-red-50 text-red-600"
+                                                            }`}
                                                     >
                                                         {request.status}
                                                     </span>
