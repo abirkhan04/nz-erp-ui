@@ -55,5 +55,6 @@ export const API_ROUTES = {
 
   // Payroll
   PAYROLL: "payroll",
-  LEARNERS: "Learners"
+  LEARNERS: "Learners",
+  ATTENDANCE_SUMMARY: "attendance/summary",
 };

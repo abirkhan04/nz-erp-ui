@@ -17,6 +17,8 @@ import {
     Bell,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useGet } from "../../hooks/useGet";
+import { API_ROUTES } from "../../api/routes";
 
 interface AttendanceStat {
     label: string;
@@ -46,6 +48,8 @@ const AttendanceDashboard: React.FC = () => {
        DATE
     ========================================================= */
 
+    const { data: attendanceSummary } = useGet({ key: ["attendanceSummary"], url: API_ROUTES.ATTENDANCE_SUMMARY });
+
     const selectedDate = "15-May-2025";
 
     /* =========================================================
@@ -55,7 +59,7 @@ const AttendanceDashboard: React.FC = () => {
     const organizationStats: AttendanceStat[] = [
         {
             label: "Total Employees",
-            value: "5,342",
+            value: String(attendanceSummary?.summary?.totalEmployees ?? 0),
             subtitle: "All Companies",
             icon: <Users size={30} />,
             iconClass: "bg-blue-100 text-blue-600",
@@ -63,40 +67,40 @@ const AttendanceDashboard: React.FC = () => {
         },
         {
             label: "Present",
-            value: "4,126",
-            percentage: "77.15%",
+            value: String(attendanceSummary?.summary?.presentCount ?? 0),
+            percentage: `${attendanceSummary?.summary?.presentPercentage ?? 0}%`,
             icon: <UserCheck size={30} />,
             iconClass: "bg-green-100 text-green-600",
             valueClass: "text-green-600",
         },
         {
             label: "Absent",
-            value: "612",
-            percentage: "11.45%",
+            value: String(attendanceSummary?.summary?.absentCount ?? 0),
+            percentage: `${attendanceSummary?.summary?.absentPercentage ?? 0}%`,
             icon: <UserRoundX size={30} />,
             iconClass: "bg-red-100 text-red-600",
             valueClass: "text-red-600",
         },
         {
-            label: "On Leave",
-            value: "402",
-            percentage: "7.53%",
+            label: "On Duty",
+            value: String(attendanceSummary?.summary?.totalOnDuty ?? 0),
+            percentage: `${attendanceSummary?.summary?.totalOnDutyPercentage ?? 0}%`,
             icon: <UserRoundCheck size={30} />,
             iconClass: "bg-orange-100 text-orange-600",
             valueClass: "text-orange-500",
         },
         {
             label: "OT Running",
-            value: "178",
-            percentage: "3.33%",
+            value: String(attendanceSummary?.summary?.onOtCount ?? 0),
+            percentage: `${attendanceSummary?.summary?.onOtPercentage ?? 0}%`,
             icon: <Clock3 size={30} />,
             iconClass: "bg-purple-100 text-purple-600",
             valueClass: "text-purple-600",
         },
         {
             label: "Missed Punch",
-            value: "24",
-            percentage: "0.45%",
+            value: "0",
+            percentage: "0%",
             icon: <UserX size={30} />,
             iconClass: "bg-teal-100 text-teal-600",
             valueClass: "text-teal-600",
@@ -175,7 +179,7 @@ const AttendanceDashboard: React.FC = () => {
             iconClass: "text-green-600",
             buttonClass:
                 "border-green-400 text-green-600 hover:bg-green-50",
-                url: "/attendance-cell"
+            url: "/attendance-cell"
         },
         {
             number: "3.",
@@ -190,7 +194,7 @@ const AttendanceDashboard: React.FC = () => {
             iconClass: "text-orange-500",
             buttonClass:
                 "border-orange-400 text-orange-500 hover:bg-orange-50",
-                url: "/payroll-processing"
+            url: "/payroll-processing"
         },
         {
             number: "4.",
@@ -515,7 +519,7 @@ const AttendanceDashboard: React.FC = () => {
                                 <button
                                     type="button"
                                     className={`mt-auto flex h-[35px] w-full max-w-[190px] items-center justify-center gap-3 rounded-md border text-[10px] font-bold transition ${card.buttonClass}`}
-                                  onClick={()=> navigate(card.url)}>
+                                    onClick={() => navigate(card.url)}>
 
                                     {card.buttonText}
 
