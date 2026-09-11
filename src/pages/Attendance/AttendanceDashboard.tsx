@@ -19,6 +19,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useGet } from "../../hooks/useGet";
 import { API_ROUTES } from "../../api/routes";
+import { useAuth } from "../../context/AuthContext";
 
 interface AttendanceStat {
     label: string;
@@ -48,7 +49,16 @@ const AttendanceDashboard: React.FC = () => {
        DATE
     ========================================================= */
 
-    const { data: attendanceSummary } = useGet({ key: ["attendanceSummary"], url: API_ROUTES.ATTENDANCE_SUMMARY });
+    const { user } = useAuth();
+
+    const { data: attendanceSummary } = useGet({ key: ["attendanceSummary"], url: `${API_ROUTES.ATTENDANCE}/summary` });
+    const { data: punchSummary } = useGet({
+        key: ["punchSummary"], url: `${API_ROUTES.ATTENDANCE}/punch-summary?unitId=${user?.unitId}&isPreviouse=false`, 
+    },);
+
+    const { data: punchSummaryPrev } = useGet({
+        key: ["punchSummaryPrevious"], url: `${API_ROUTES.ATTENDANCE}/punch-summary?unitId=${user?.unitId}&isPreviouse=true`, 
+    },);
 
     const selectedDate = "15-May-2025";
 
@@ -99,7 +109,7 @@ const AttendanceDashboard: React.FC = () => {
         },
         {
             label: "Missed Punch",
-            value: "0",
+            value: punchSummary?.missingInPunch ? String(punchSummary.missingInPunch) : "0",
             percentage: "0%",
             icon: <UserX size={30} />,
             iconClass: "bg-teal-100 text-teal-600",
@@ -138,7 +148,7 @@ const AttendanceDashboard: React.FC = () => {
         },
         {
             label: "Missed Punch",
-            value: "26",
+            value:  punchSummaryPrev?.missingInPunch ? String(punchSummaryPrev.missingInPunch) : "0",
             percentage: "1.74%",
             icon: <UserX size={25} />,
             className: "text-teal-600",
