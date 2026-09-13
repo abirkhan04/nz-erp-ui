@@ -16,9 +16,11 @@ import {
 import { useNavigate } from "react-router-dom";
 import { API_ROUTES } from "../../api/routes";
 import { useGet } from "../../hooks/useGet";
+import { api } from "../../api/client";
+import { useAuth } from "../../context/AuthContext";
 
 interface LeaveRequest {
-    id: number;
+    requestId: number;
     requestNo: string;
     employeeId: string;
     employeeName: string;
@@ -126,9 +128,27 @@ const DashboardCard = ({
 const AttendanceCellDashboard: React.FC = () => {
 
     const { data: { data: leaveRequests = [] } = {} } = useGet({ key: ["leaveRequests"], url: `${API_ROUTES.LEAVE}?status=FORWARDED` });
-    const handleForward = (request: LeaveRequest) => {
-        console.log("Forward leave request:", request);
+
+    const {user} = useAuth()
+    const handleForward = async (request: LeaveRequest) => {
+    console.log("Forward leave request:", request);
+
+    const payload = {
+        requestId: request.requestId,
+        leaveType: request.leaveType,
+        fromDate: request.fromDate,
+        toDate: request.toDate,
+        reason: request.reason,
+        forwardedBy: user?.userName,
+        forwardedDate: new Date().toISOString().split("T")[0],
+        approvedBy: user?.userName,
     };
+
+    await api.put(
+        `${API_ROUTES.LEAVE}/${request.requestId}`,
+        payload
+    );
+};
 
     const currentDate = new Date();
 
