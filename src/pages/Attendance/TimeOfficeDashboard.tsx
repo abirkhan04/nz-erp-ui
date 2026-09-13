@@ -86,10 +86,10 @@ const TimeOfficeDashboard: React.FC = () => {
     });
 
     const {
-        data: { items: otRequests = [] } = {},
+        data: { items: otRequests = [] } = {}, refetch: refetchOTRequests
     } = useGet({
         key: ["otRequests"],
-        url: `${API_ROUTES.OVERTIME_REQUESTS}?unitId=${user?.unitId}`,
+        url: `${API_ROUTES.OVERTIME_REQUESTS}?unitId=${user?.unitId}&status=Pending&pageNumber=1&pageSize=10000`,
     });
 
     const { mutate: mutateOTRequests } = usePost(
@@ -275,7 +275,23 @@ const TimeOfficeDashboard: React.FC = () => {
             approvedBy: user?.userName,
         }));
 
-        mutateOTRequests(payload);
+        mutateOTRequests(payload, {
+            onSuccess: (response) => {
+                toast.success(
+                    response.message ||
+                    "OT request approved successfully!",
+                );
+
+                refetchOTRequests();
+                // handleClearAll();
+            },
+
+            onError: (error) => {
+                toast.error(
+                    error.message ||
+                    "Failed to approve OT request.",
+                );
+            }});
 
         setSelectedOTIds([]);
     };
