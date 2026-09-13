@@ -115,7 +115,7 @@ const DashboardCard = ({
             <button
                 type="button"
                 className={`mt-auto flex h-[26px] w-full items-center justify-between rounded px-3 text-[10px] font-semibold text-white ${buttonColor}`}
-                onClick={()=> navigate(url)}>
+                onClick={() => navigate(url)}>
                 <span>View List</span>
                 <ArrowRight size={16} />
             </button>
@@ -125,7 +125,7 @@ const DashboardCard = ({
 
 const AttendanceCellDashboard: React.FC = () => {
 
-    const { data: {data: leaveRequests = []}={}} = useGet({key: ["leaveRequests"], url: `${API_ROUTES.LEAVE}?status=FORWARDED`});
+    const { data: { data: leaveRequests = [] } = {} } = useGet({ key: ["leaveRequests"], url: `${API_ROUTES.LEAVE}?status=FORWARDED` });
     const handleForward = (request: LeaveRequest) => {
         console.log("Forward leave request:", request);
     };
@@ -356,7 +356,7 @@ const AttendanceCellDashboard: React.FC = () => {
                         iconBg="bg-[#fff0dc]"
                         iconColor="text-[#fa8500]"
                         buttonColor="bg-[#fa8500]"
-                        url = "/attendance-cell-exception-request"
+                        url="/attendance-cell-exception-request"
                     />
                 </section>
 
@@ -462,10 +462,10 @@ const AttendanceCellDashboard: React.FC = () => {
 
                                             <td
                                                 className={`border border-[#e1e7f0] px-2 py-2 text-center text-[8px] font-bold ${request.balanceAfter <= 2
-                                                        ? "text-[#f28b00]"
-                                                        : "text-[#07994b]"
+                                                    ? "text-[#f28b00]"
+                                                    : "text-[#07994b]"
                                                     }`}
-                                                >
+                                            >
                                                 {request.availableLeaves[0].closingBalance - request.totalDays}
                                             </td>
 
@@ -482,10 +482,8 @@ const AttendanceCellDashboard: React.FC = () => {
                                             <td className="border border-[#e1e7f0] px-2 py-2 text-center">
                                                 <button
                                                     type="button"
-                                                    // disabled={!hasSufficientBalance}
                                                     onClick={() => handleForward(request)}
-                                                    className={`inline-flex items-center gap-1 rounded px-2 py-1 text-[8px] font-bold text-white transition"
-                                                        }`}
+                                                    className="inline-flex items-center gap-1 rounded bg-[#0757d6] px-2 py-1 text-[8px] font-bold text-white transition hover:bg-[#0648c7]"
                                                 >
                                                     <Send size={10} />
                                                     Forward
