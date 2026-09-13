@@ -52,7 +52,7 @@ const PayrollAttendanceCell: React.FC = () => {
       iconColor: "text-green-600",
       border: "border-green-100",
       button: "bg-green-600 hover:bg-green-700",
-      url: "earned-leave-encashment-request"
+      url: "earned-leave-encashment-requests"
     },
     {
       title: "MATERNITY LEAVE\nENCASHMENT REQUESTS",

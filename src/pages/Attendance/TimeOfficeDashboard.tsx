@@ -93,7 +93,7 @@ const TimeOfficeDashboard: React.FC = () => {
     });
 
     const { mutate: mutateOTRequests } = usePost(
-        `${API_ROUTES.OVERTIME_REQUESTS}`
+        `${API_ROUTES.OVERTIME_REQUESTS}/approve`
     );
 
 

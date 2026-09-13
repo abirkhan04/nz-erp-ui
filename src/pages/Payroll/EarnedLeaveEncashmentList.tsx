@@ -1,4 +1,9 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, {
+    useCallback,
+    useEffect,
+    useMemo,
+    useState,
+} from "react";
 import {
     ArrowLeft,
     CalendarDays,
@@ -14,299 +19,221 @@ import type { ColumnDef } from "@tanstack/react-table";
 
 import ReportTable from "../../components/table/ReportTable";
 
-interface LeaveRequest {
+/* ==========================================================================
+ * TYPES
+ * ========================================================================== */
+
+interface EarnedLeaveEncashmentRequest {
     id: string;
     employeeId: string;
     employeeName: string;
     department: string;
-    leaveType: string;
-    leaveFrom: string;
-    leaveTo: string;
+    designation: string;
     appliedOn: string;
-    reason: string;
-    forwardedBy: string;
     status: "Pending" | "Approved" | "Rejected";
+    forwardedBy: string;
 }
 
-interface LeaveRequestResponse {
-    data: LeaveRequest[];
+interface EarnedLeaveEncashmentResponse {
+    data: EarnedLeaveEncashmentRequest[];
     totalCount: number;
 }
 
-/*
- * --------------------------------------------------------------------------
+/* ==========================================================================
  * MOCK DATA
- * --------------------------------------------------------------------------
- *
- * 18 records are intentionally provided so server-side pagination can be
- * demonstrated with multiple pages.
- *
- * Replace fetchLeaveRequests() with your actual API call later.
- */
+ * ========================================================================== */
 
-const MOCK_LEAVE_REQUESTS: LeaveRequest[] = [
+const MOCK_ENCASHMENT_REQUESTS: EarnedLeaveEncashmentRequest[] = [
     {
-        id: "LR250515001",
-        employeeId: "10023",
-        employeeName: "Rokon Uddin",
-        department: "Weaving",
-        leaveType: "Casual Leave (CL)",
-        leaveFrom: "18-May-2025",
-        leaveTo: "20-May-2025",
-        appliedOn: "15-May-2025 08:15 AM",
-        reason: "Family function",
-        forwardedBy: "Time Officer",
-        status: "Pending",
-    },
-    {
-        id: "LR250515002",
-        employeeId: "10087",
-        employeeName: "Ripon Miah",
-        department: "Spinning",
-        leaveType: "Sick Leave (SL)",
-        leaveFrom: "22-May-2025",
-        leaveTo: "23-May-2025",
-        appliedOn: "15-May-2025 08:20 AM",
-        reason: "Fever & cold",
-        forwardedBy: "Time Officer",
-        status: "Pending",
-    },
-    {
-        id: "LR250515003",
-        employeeId: "10102",
-        employeeName: "Sabina Akter",
-        department: "Dyeing",
-        leaveType: "Annual Leave (AL)",
-        leaveFrom: "05-Jun-2025",
-        leaveTo: "11-Jun-2025",
-        appliedOn: "15-May-2025 08:25 AM",
-        reason: "Personal vacation",
-        forwardedBy: "Time Officer",
-        status: "Pending",
-    },
-    {
-        id: "LR250515004",
-        employeeId: "10145",
-        employeeName: "Nazma Akter",
-        department: "Finishing",
-        leaveType: "Maternity Leave (ML)",
-        leaveFrom: "30-Aug-2025",
-        leaveTo: "28-Nov-2025",
-        appliedOn: "15-May-2025 08:30 AM",
-        reason: "Maternity",
-        forwardedBy: "Time Officer",
-        status: "Pending",
-    },
-    {
-        id: "LR250515005",
+        id: "ELENC2505001",
         employeeId: "10211",
         employeeName: "Shakil Ahmed",
         department: "Maintenance",
-        leaveType: "Paternity Leave (PL)",
-        leaveFrom: "10-Jun-2025",
-        leaveTo: "14-Jun-2025",
-        appliedOn: "15-May-2025 08:32 AM",
-        reason: "Wife delivery",
-        forwardedBy: "Time Officer",
+        designation: "Technician",
+        appliedOn: "14-May-2025 09:15 AM",
         status: "Pending",
+        forwardedBy: "Production Floor",
     },
     {
-        id: "LR250515006",
+        id: "ELENC2505002",
+        employeeId: "10075",
+        employeeName: "Abul Kashem",
+        department: "Production",
+        designation: "Senior Operator",
+        appliedOn: "14-May-2025 09:20 AM",
+        status: "Pending",
+        forwardedBy: "Production Floor",
+    },
+    {
+        id: "ELENC2505003",
+        employeeId: "10102",
+        employeeName: "Mohammad Hasan",
+        department: "Spinning",
+        designation: "Supervisor",
+        appliedOn: "14-May-2025 09:25 AM",
+        status: "Pending",
+        forwardedBy: "Spinning Floor",
+    },
+    {
+        id: "ELENC2505004",
+        employeeId: "10145",
+        employeeName: "Nazma Akter",
+        department: "Finishing",
+        designation: "Senior Operator",
+        appliedOn: "14-May-2025 09:30 AM",
+        status: "Pending",
+        forwardedBy: "Finishing Floor",
+    },
+    {
+        id: "ELENC2505005",
         employeeId: "10234",
         employeeName: "Mizanur Rahman",
         department: "Production",
-        leaveType: "Casual Leave (CL)",
-        leaveFrom: "25-May-2025",
-        leaveTo: "26-May-2025",
-        appliedOn: "15-May-2025 08:40 AM",
-        reason: "Personal work",
-        forwardedBy: "Time Officer",
+        designation: "Operator",
+        appliedOn: "14-May-2025 09:35 AM",
         status: "Pending",
+        forwardedBy: "Production Floor",
     },
     {
-        id: "LR250515007",
+        id: "ELENC2505006",
         employeeId: "10278",
         employeeName: "Jannatul Ferdous",
         department: "HR",
-        leaveType: "Annual Leave (AL)",
-        leaveFrom: "01-Jun-2025",
-        leaveTo: "03-Jun-2025",
-        appliedOn: "15-May-2025 08:45 AM",
-        reason: "Travel",
-        forwardedBy: "Time Officer",
+        designation: "Executive",
+        appliedOn: "14-May-2025 09:40 AM",
         status: "Pending",
+        forwardedBy: "HR Department",
     },
     {
-        id: "LR250515008",
+        id: "ELENC2505007",
         employeeId: "10305",
         employeeName: "Masud Rana",
         department: "Knitting",
-        leaveType: "Sick Leave (SL)",
-        leaveFrom: "19-May-2025",
-        leaveTo: "19-May-2025",
-        appliedOn: "15-May-2025 08:50 AM",
-        reason: "Medical appointment",
-        forwardedBy: "Time Officer",
+        designation: "Operator",
+        appliedOn: "14-May-2025 09:45 AM",
         status: "Pending",
+        forwardedBy: "Knitting Floor",
     },
     {
-        id: "LR250515009",
+        id: "ELENC2505008",
         employeeId: "10342",
         employeeName: "Farzana Yasmin",
         department: "Accounts",
-        leaveType: "Casual Leave (CL)",
-        leaveFrom: "27-May-2025",
-        leaveTo: "28-May-2025",
-        appliedOn: "15-May-2025 09:00 AM",
-        reason: "Family matter",
-        forwardedBy: "Time Officer",
+        designation: "Senior Executive",
+        appliedOn: "14-May-2025 09:50 AM",
         status: "Pending",
+        forwardedBy: "Accounts Department",
     },
     {
-        id: "LR250515010",
+        id: "ELENC2505009",
         employeeId: "10381",
         employeeName: "Rashedul Islam",
         department: "Logistics",
-        leaveType: "Annual Leave (AL)",
-        leaveFrom: "15-Jun-2025",
-        leaveTo: "20-Jun-2025",
-        appliedOn: "15-May-2025 09:10 AM",
-        reason: "Vacation",
-        forwardedBy: "Time Officer",
+        designation: "Officer",
+        appliedOn: "14-May-2025 10:00 AM",
         status: "Pending",
+        forwardedBy: "Logistics Department",
     },
     {
-        id: "LR250515011",
+        id: "ELENC2505010",
         employeeId: "10413",
         employeeName: "Sumaiya Akter",
         department: "Quality",
-        leaveType: "Casual Leave (CL)",
-        leaveFrom: "03-Jun-2025",
-        leaveTo: "04-Jun-2025",
-        appliedOn: "15-May-2025 09:20 AM",
-        reason: "Personal work",
-        forwardedBy: "Time Officer",
+        designation: "Quality Officer",
+        appliedOn: "14-May-2025 10:05 AM",
         status: "Pending",
+        forwardedBy: "Quality Department",
     },
     {
-        id: "LR250515012",
+        id: "ELENC2505011",
         employeeId: "10456",
         employeeName: "Hasan Mahmud",
         department: "Warehouse",
-        leaveType: "Sick Leave (SL)",
-        leaveFrom: "21-May-2025",
-        leaveTo: "22-May-2025",
-        appliedOn: "15-May-2025 09:25 AM",
-        reason: "Fever",
-        forwardedBy: "Time Officer",
+        designation: "Warehouse Officer",
+        appliedOn: "14-May-2025 10:10 AM",
         status: "Pending",
+        forwardedBy: "Warehouse",
     },
     {
-        id: "LR250515013",
+        id: "ELENC2505012",
         employeeId: "10489",
         employeeName: "Nusrat Jahan",
         department: "Administration",
-        leaveType: "Annual Leave (AL)",
-        leaveFrom: "10-Jul-2025",
-        leaveTo: "14-Jul-2025",
-        appliedOn: "15-May-2025 09:30 AM",
-        reason: "Family vacation",
-        forwardedBy: "Time Officer",
+        designation: "Executive",
+        appliedOn: "14-May-2025 10:15 AM",
         status: "Pending",
+        forwardedBy: "Administration",
     },
     {
-        id: "LR250515014",
+        id: "ELENC2505013",
         employeeId: "10521",
         employeeName: "Tanvir Hossain",
         department: "Cutting",
-        leaveType: "Casual Leave (CL)",
-        leaveFrom: "29-May-2025",
-        leaveTo: "30-May-2025",
-        appliedOn: "15-May-2025 09:35 AM",
-        reason: "Urgent personal work",
-        forwardedBy: "Time Officer",
+        designation: "Operator",
+        appliedOn: "14-May-2025 10:20 AM",
         status: "Pending",
+        forwardedBy: "Cutting Floor",
     },
     {
-        id: "LR250515015",
+        id: "ELENC2505014",
         employeeId: "10567",
         employeeName: "Moumita Das",
         department: "Merchandising",
-        leaveType: "Sick Leave (SL)",
-        leaveFrom: "02-Jun-2025",
-        leaveTo: "02-Jun-2025",
-        appliedOn: "15-May-2025 09:40 AM",
-        reason: "Illness",
-        forwardedBy: "Time Officer",
+        designation: "Merchandiser",
+        appliedOn: "14-May-2025 10:25 AM",
         status: "Pending",
+        forwardedBy: "Merchandising",
     },
     {
-        id: "LR250515016",
+        id: "ELENC2505015",
         employeeId: "10602",
         employeeName: "Imran Khan",
         department: "Security",
-        leaveType: "Casual Leave (CL)",
-        leaveFrom: "06-Jun-2025",
-        leaveTo: "07-Jun-2025",
-        appliedOn: "15-May-2025 09:45 AM",
-        reason: "Family event",
-        forwardedBy: "Time Officer",
+        designation: "Security Officer",
+        appliedOn: "14-May-2025 10:30 AM",
         status: "Pending",
+        forwardedBy: "Security",
     },
     {
-        id: "LR250515017",
+        id: "ELENC2505016",
         employeeId: "10634",
         employeeName: "Shamim Ahmed",
         department: "Printing",
-        leaveType: "Annual Leave (AL)",
-        leaveFrom: "18-Jun-2025",
-        leaveTo: "22-Jun-2025",
-        appliedOn: "15-May-2025 09:50 AM",
-        reason: "Travel",
-        forwardedBy: "Time Officer",
+        designation: "Printer",
+        appliedOn: "14-May-2025 10:35 AM",
         status: "Pending",
+        forwardedBy: "Printing Floor",
     },
     {
-        id: "LR250515018",
+        id: "ELENC2505017",
         employeeId: "10678",
         employeeName: "Rumana Akter",
         department: "IT",
-        leaveType: "Casual Leave (CL)",
-        leaveFrom: "12-Jun-2025",
-        leaveTo: "13-Jun-2025",
-        appliedOn: "15-May-2025 10:00 AM",
-        reason: "Personal matter",
-        forwardedBy: "Time Officer",
+        designation: "IT Executive",
+        appliedOn: "14-May-2025 10:40 AM",
         status: "Pending",
+        forwardedBy: "IT Department",
+    },
+    {
+        id: "ELENC2505018",
+        employeeId: "10712",
+        employeeName: "Rakib Hasan",
+        department: "Dyeing",
+        designation: "Operator",
+        appliedOn: "14-May-2025 10:45 AM",
+        status: "Pending",
+        forwardedBy: "Dyeing Floor",
     },
 ];
 
-/*
- * --------------------------------------------------------------------------
- * SERVER-SIDE READY DATA FUNCTION
- * --------------------------------------------------------------------------
- *
- * Current implementation:
- *   - receives pageNumber/pageSize
- *   - simulates network delay
- *   - slices mock data
- *
- * Later replace the body with:
- *
- * const response = await api.get("/leave-requests", {
- *     params: {
- *         pageNumber,
- *         pageSize,
- *     },
- * });
- *
- * return response.data;
- */
+/* ==========================================================================
+ * DATA FUNCTION
+ * ========================================================================== */
 
-const fetchLeaveRequests = async (
+const fetchEncashmentRequests = async (
     pageNumber: number,
     pageSize: number,
-): Promise<LeaveRequestResponse> => {
+): Promise<EarnedLeaveEncashmentResponse> => {
     await new Promise((resolve) =>
         setTimeout(resolve, 500),
     );
@@ -318,20 +245,25 @@ const fetchLeaveRequests = async (
         startIndex + pageSize;
 
     return {
-        data: MOCK_LEAVE_REQUESTS.slice(
+        data: MOCK_ENCASHMENT_REQUESTS.slice(
             startIndex,
             endIndex,
         ),
-        totalCount: MOCK_LEAVE_REQUESTS.length,
+        totalCount:
+            MOCK_ENCASHMENT_REQUESTS.length,
     };
 };
 
-const LeaveRequestList: React.FC = () => {
+/* ==========================================================================
+ * PAGE
+ * ========================================================================== */
+
+const EarnedLeaveEncashmentList: React.FC = () => {
     const navigate = useNavigate();
 
-    const [data, setData] = useState<LeaveRequest[]>(
-        [],
-    );
+    const [data, setData] = useState<
+        EarnedLeaveEncashmentRequest[]
+    >([]);
 
     const [loading, setLoading] =
         useState<boolean>(false);
@@ -346,23 +278,21 @@ const LeaveRequestList: React.FC = () => {
         useState<number>(0);
 
     const [selectedRequest, setSelectedRequest] =
-        useState<LeaveRequest | null>(null);
+        useState<EarnedLeaveEncashmentRequest | null>(
+            null,
+        );
 
-    /*
-     * ----------------------------------------------------------------------
-     * FETCH DATA
-     * ----------------------------------------------------------------------
-     *
-     * This is the only place that needs to change when the real API
-     * is connected.
-     */
-    const loadLeaveRequests = useCallback(
-        async () => {
+    /* ==========================================================================
+     * FETCH
+     * ========================================================================== */
+
+    const loadEncashmentRequests =
+        useCallback(async () => {
             try {
                 setLoading(true);
 
                 const response =
-                    await fetchLeaveRequests(
+                    await fetchEncashmentRequests(
                         pageNumber,
                         pageSize,
                     );
@@ -372,34 +302,27 @@ const LeaveRequestList: React.FC = () => {
                     response.totalCount,
                 );
 
-                /*
-                 * Clear selected item if it isn't
-                 * available on the current page.
-                 */
                 setSelectedRequest(null);
             } catch (error) {
                 console.error(
-                    "Failed to load leave requests:",
+                    "Failed to load earned leave encashment requests:",
                     error,
                 );
+
                 setData([]);
                 setTotalCount(0);
             } finally {
                 setLoading(false);
             }
-        },
-        [pageNumber, pageSize],
-    );
+        }, [pageNumber, pageSize]);
 
     useEffect(() => {
-        loadLeaveRequests();
-    }, [loadLeaveRequests]);
+        loadEncashmentRequests();
+    }, [loadEncashmentRequests]);
 
-    /*
-     * ----------------------------------------------------------------------
+    /* ==========================================================================
      * PAGINATION
-     * ----------------------------------------------------------------------
-     */
+     * ========================================================================== */
 
     const handlePageChange = (
         newPage: number,
@@ -410,25 +333,19 @@ const LeaveRequestList: React.FC = () => {
     const handlePageSizeChange = (
         newPageSize: number,
     ) => {
-        /*
-         * When page size changes, always return
-         * to page 1.
-         */
         setPageSize(newPageSize);
         setPageNumber(1);
     };
 
-    /*
-     * ----------------------------------------------------------------------
+    /* ==========================================================================
      * ACTIONS
-     * ----------------------------------------------------------------------
-     */
+     * ========================================================================== */
 
-    const handleApprove = () => {
+    const handleForward = () => {
         if (!selectedRequest) return;
 
         console.log(
-            "Approve Leave:",
+            "Forward Earned Leave Encashment:",
             selectedRequest,
         );
 
@@ -436,10 +353,8 @@ const LeaveRequestList: React.FC = () => {
          * Real API example:
          *
          * await api.post(
-         *     `/leave-requests/${selectedRequest.id}/approve`
+         *     `/earned-leave-encashment/${selectedRequest.id}/forward`
          * );
-         *
-         * await loadLeaveRequests();
          */
     };
 
@@ -447,7 +362,7 @@ const LeaveRequestList: React.FC = () => {
         if (!selectedRequest) return;
 
         console.log(
-            "Reject Leave:",
+            "Reject Earned Leave Encashment:",
             selectedRequest,
         );
 
@@ -455,7 +370,7 @@ const LeaveRequestList: React.FC = () => {
          * Real API example:
          *
          * await api.post(
-         *     `/leave-requests/${selectedRequest.id}/reject`
+         *     `/earned-leave-encashment/${selectedRequest.id}/reject`
          * );
          */
     };
@@ -469,9 +384,17 @@ const LeaveRequestList: React.FC = () => {
         );
     };
 
-    const handleViewDetails = (request: LeaveRequest) => {
+    /* ==========================================================================
+     * VIEW DETAILS
+     * ========================================================================== */
+
+    const handleViewDetails = (
+        request: EarnedLeaveEncashmentRequest,
+    ) => {
+        setSelectedRequest(request);
+
         navigate(
-            `/payroll-and-workforce-movement/attendance-cell/leave-requests/${request.id}`,
+            `/payroll-and-workforce-movement/attendance-cell/earned-leave-encashment-requests/${request.id}`,
             {
                 state: {
                     request,
@@ -480,165 +403,148 @@ const LeaveRequestList: React.FC = () => {
         );
     };
 
-    /*
-     * ----------------------------------------------------------------------
+    /* ==========================================================================
      * TABLE COLUMNS
-     * ----------------------------------------------------------------------
-     */
+     * ========================================================================== */
 
-    const columns =
-        useMemo<ColumnDef<LeaveRequest>[]>(
-            () => [
-                {
-                    id: "serial",
-                    header: "#",
-                    cell: ({ row }) =>
-                        (pageNumber - 1) *
+    const columns = useMemo<
+        ColumnDef<EarnedLeaveEncashmentRequest>[]
+    >(
+        () => [
+            {
+                id: "serial",
+                header: "#",
+                cell: ({ row }) =>
+                    (pageNumber - 1) *
                         pageSize +
-                        row.index +
-                        1,
-                },
+                    row.index +
+                    1,
+            },
 
-                {
-                    accessorKey: "id",
-                    header: "Request ID",
-                },
+            {
+                accessorKey: "id",
+                header: "Request ID",
+            },
 
-                {
-                    accessorKey: "employeeId",
-                    header: "Employee ID",
-                },
+            {
+                accessorKey: "employeeId",
+                header: "Employee ID",
+            },
 
-                {
-                    accessorKey: "employeeName",
-                    header: "Employee Name",
-                    cell: ({ getValue }) => (
-                        <span className="font-semibold text-slate-800">
-                            {getValue<string>()}
-                        </span>
-                    ),
-                },
+            {
+                accessorKey: "employeeName",
+                header: "Employee Name",
+                cell: ({ getValue }) => (
+                    <span className="font-semibold text-slate-800">
+                        {getValue<string>()}
+                    </span>
+                ),
+            },
 
-                {
-                    accessorKey: "department",
-                    header: "Department",
-                },
+            {
+                accessorKey: "department",
+                header: "Department",
+            },
 
-                {
-                    accessorKey: "leaveType",
-                    header: "Leave Type",
-                    cell: ({ getValue }) => (
-                        <span className="font-medium text-blue-700">
-                            {getValue<string>()}
-                        </span>
-                    ),
-                },
+            {
+                accessorKey: "designation",
+                header: "Designation",
+            },
 
-                {
-                    accessorKey: "leaveFrom",
-                    header: "Leave From",
-                },
+            {
+                accessorKey: "appliedOn",
+                header: "Applied On",
+            },
 
-                {
-                    accessorKey: "leaveTo",
-                    header: "Leave To",
-                },
+            {
+                accessorKey: "status",
+                header: "Status",
+                cell: ({ getValue }) => {
+                    const status =
+                        getValue<
+                            EarnedLeaveEncashmentRequest["status"]
+                        >();
 
-                {
-                    accessorKey: "appliedOn",
-                    header: "Applied On",
-                },
-
-                {
-                    accessorKey: "reason",
-                    header: "Reason",
-                },
-
-                {
-                    accessorKey: "forwardedBy",
-                    header: "Forwarded By",
-                },
-
-                {
-                    accessorKey: "status",
-                    header: "Status",
-                    cell: ({ getValue }) => {
-                        const status =
-                            getValue<LeaveRequest["status"]>();
-
-                        return (
-                            <span
-                                className={`
-                                    inline-flex
-                                    rounded-md
-                                    px-2.5
-                                    py-1
-                                    text-xs
-                                    font-semibold
-                                    ${status ===
-                                        "Pending"
+                    return (
+                        <span
+                            className={`
+                                inline-flex
+                                rounded-md
+                                px-2.5
+                                py-1
+                                text-xs
+                                font-semibold
+                                ${
+                                    status ===
+                                    "Pending"
                                         ? "bg-orange-50 text-orange-600"
                                         : status ===
                                             "Approved"
-                                            ? "bg-green-50 text-green-600"
-                                            : "bg-red-50 text-red-600"
-                                    }
-                                `}
-                            >
-                                {status}
-                            </span>
-                        );
-                    },
-                },
-
-                {
-                    id: "action",
-                    header: "Action",
-                    cell: ({ row }) => (
-                        <button
-                            type="button"
-                            onClick={() =>
-                                handleViewDetails(
-                                    row.original,
-                                )
-                            }
-                            className="
-                                inline-flex
-                                items-center
-                                gap-1.5
-                                rounded-md
-                                border
-                                border-blue-200
-                                bg-white
-                                px-3
-                                py-1.5
-                                text-xs
-                                font-semibold
-                                text-blue-600
-                                transition
-                                hover:bg-blue-50
-                            "
+                                          ? "bg-green-50 text-green-600"
+                                          : "bg-red-50 text-red-600"
+                                }
+                            `}
                         >
-                            <Eye size={14} />
-                            View Details
-                        </button>
-                    ),
+                            {status}
+                        </span>
+                    );
                 },
-            ],
-            [pageNumber, pageSize],
-        );
+            },
+
+            {
+                accessorKey: "forwardedBy",
+                header: "Forwarded By",
+            },
+
+            {
+                id: "action",
+                header: "Action",
+                cell: ({ row }) => (
+                    <button
+                        type="button"
+                        onClick={() =>
+                            handleViewDetails(
+                                row.original,
+                            )
+                        }
+                        className="
+                            inline-flex
+                            items-center
+                            gap-1.5
+                            rounded-md
+                            border
+                            border-blue-200
+                            bg-white
+                            px-3
+                            py-1.5
+                            text-xs
+                            font-semibold
+                            text-blue-600
+                            transition
+                            hover:bg-blue-50
+                        "
+                    >
+                        <Eye size={14} />
+                        View Details
+                    </button>
+                ),
+            },
+        ],
+        [pageNumber, pageSize],
+    );
+
+    /* ==========================================================================
+     * UI
+     * ========================================================================== */
 
     return (
         <div className="min-h-screen bg-slate-50 p-4 md:p-6">
-
-            {/* --------------------------------------------------------------
-             * PAGE HEADER
-             * -------------------------------------------------------------- */}
+            {/* ==================================================================
+                PAGE HEADER
+            ================================================================== */}
 
             <div className="mb-4 rounded-xl border border-blue-100 bg-white px-5 py-4 shadow-sm">
-
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-
                     <div>
                         <div className="flex items-center gap-2">
                             <CalendarDays
@@ -647,20 +553,22 @@ const LeaveRequestList: React.FC = () => {
                             />
 
                             <h1 className="text-lg font-bold text-blue-800">
-                                Leave Requests
+                                Earned Leave Encashment Requests
                             </h1>
                         </div>
 
                         <p className="mt-1 text-sm text-slate-500">
-                            Showing leave requests
-                            forwarded by Time Office
-                            to Attendance Cell.
+                            Showing earned leave encashment
+                            requests forwarded to Attendance
+                            Cell.
                         </p>
                     </div>
 
                     <button
                         type="button"
-                        onClick={loadLeaveRequests}
+                        onClick={
+                            loadEncashmentRequests
+                        }
                         disabled={loading}
                         className="
                             inline-flex
@@ -693,17 +601,14 @@ const LeaveRequestList: React.FC = () => {
 
                         Refresh
                     </button>
-
                 </div>
-
             </div>
 
-            {/* --------------------------------------------------------------
-             * INFORMATION BAR
-             * -------------------------------------------------------------- */}
+            {/* ==================================================================
+                INFORMATION BAR
+            ================================================================== */}
 
             <div className="mb-4 flex items-start gap-3 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3">
-
                 <Info
                     size={18}
                     className="mt-0.5 shrink-0 text-blue-600"
@@ -711,29 +616,26 @@ const LeaveRequestList: React.FC = () => {
 
                 <div>
                     <p className="text-sm font-semibold text-blue-700">
-                        Leave Request List
+                        Earned Leave Encashment Request List
                     </p>
 
                     <p className="text-xs text-blue-600">
-                        Select a leave request from
+                        Select an encashment request from
                         the table to view details and
                         perform an action.
                     </p>
                 </div>
-
             </div>
 
-            {/* --------------------------------------------------------------
-             * TABLE + ACTION PANEL
-             * -------------------------------------------------------------- */}
+            {/* ==================================================================
+                TABLE + ACTION PANEL
+            ================================================================== */}
 
             <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_280px]">
-
                 {/* TABLE */}
 
                 <div className="min-w-0">
-
-                    <ReportTable<LeaveRequest>
+                    <ReportTable<EarnedLeaveEncashmentRequest>
                         data={data}
                         columns={columns}
                         loading={loading}
@@ -753,35 +655,32 @@ const LeaveRequestList: React.FC = () => {
                             50,
                         ]}
                     />
-
                 </div>
 
                 {/* ACTION PANEL */}
 
                 <div className="h-fit overflow-hidden rounded-xl border border-slate-200 bg-white">
-
                     <div className="border-b border-slate-200 bg-blue-50 px-4 py-3">
-
                         <h2 className="text-sm font-bold uppercase tracking-wide text-blue-800">
                             Actions
                         </h2>
 
                         <p className="mt-1 text-xs text-slate-500">
                             {selectedRequest
-                                ? "Selected leave request"
-                                : "Select a request to view full details and take action."}
+                                ? "Selected encashment request"
+                                : "Select a request to view details and take action."}
                         </p>
-
                     </div>
 
                     <div className="space-y-2 p-4">
+                        {/* Forward */}
 
                         <button
                             type="button"
                             disabled={
                                 !selectedRequest
                             }
-                            onClick={handleApprove}
+                            onClick={handleForward}
                             className="
                                 flex
                                 w-full
@@ -806,8 +705,10 @@ const LeaveRequestList: React.FC = () => {
                                 size={16}
                             />
 
-                            Approve Leave
+                            Forward to HR Manager
                         </button>
+
+                        {/* Reject */}
 
                         <button
                             type="button"
@@ -837,8 +738,10 @@ const LeaveRequestList: React.FC = () => {
                         >
                             <XCircle size={16} />
 
-                            Reject Leave
+                            Reject Request
                         </button>
+
+                        {/* Request More Information */}
 
                         <button
                             type="button"
@@ -874,20 +777,17 @@ const LeaveRequestList: React.FC = () => {
 
                             Request More Information
                         </button>
-
                     </div>
 
-                    {/* Selected request summary */}
+                    {/* Selected Request */}
 
                     {selectedRequest && (
                         <div className="border-t border-slate-200 bg-slate-50 p-4">
-
                             <p className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-500">
                                 Selected Request
                             </p>
 
                             <div className="space-y-2 text-xs">
-
                                 <div className="flex justify-between gap-3">
                                     <span className="text-slate-500">
                                         Request ID
@@ -914,63 +814,55 @@ const LeaveRequestList: React.FC = () => {
 
                                 <div className="flex justify-between gap-3">
                                     <span className="text-slate-500">
-                                        Leave Type
+                                        Department
                                     </span>
 
                                     <span className="font-semibold text-slate-700">
                                         {
-                                            selectedRequest.leaveType
+                                            selectedRequest.department
                                         }
                                     </span>
                                 </div>
 
                                 <div className="flex justify-between gap-3">
                                     <span className="text-slate-500">
-                                        Period
+                                        Status
                                     </span>
 
-                                    <span className="text-right font-semibold text-slate-700">
+                                    <span className="font-semibold text-slate-700">
                                         {
-                                            selectedRequest.leaveFrom
-                                        }
-                                        {" - "}
-                                        {
-                                            selectedRequest.leaveTo
+                                            selectedRequest.status
                                         }
                                     </span>
                                 </div>
-
                             </div>
-
                         </div>
                     )}
 
                     {/* Notes */}
 
                     <div className="border-t border-slate-200 p-4">
-
                         <p className="text-xs font-bold text-slate-700">
                             Note:
                         </p>
 
                         <ul className="mt-2 space-y-2 text-[11px] leading-4 text-slate-500">
-
                             <li>
                                 <strong className="text-slate-700">
-                                    Approve:
+                                    Forward:
                                 </strong>{" "}
-                                Leave will be granted
-                                and informed to
-                                employee.
+                                Encashment request will be
+                                forwarded to HR Manager for
+                                further processing.
                             </li>
 
                             <li>
                                 <strong className="text-slate-700">
                                     Reject:
                                 </strong>{" "}
-                                Leave will be rejected
-                                and employee will be
-                                informed.
+                                Encashment request will be
+                                rejected and employee will
+                                be informed.
                             </li>
 
                             <li>
@@ -978,26 +870,25 @@ const LeaveRequestList: React.FC = () => {
                                     Request More
                                     Information:
                                 </strong>{" "}
-                                Additional information
-                                will be requested from
-                                employee.
+                                Additional information will
+                                be requested from employee.
                             </li>
-
                         </ul>
-
                     </div>
-
                 </div>
-
             </div>
 
-            {/* --------------------------------------------------------------
-             * BACK BUTTON
-             * -------------------------------------------------------------- */}
+            {/* ==================================================================
+                BACK BUTTON
+            ================================================================== */}
 
             <button
                 type="button"
-                onClick={() => navigate("/payroll-and-workforce-movement/attendance-cell")}
+                onClick={() =>
+                    navigate(
+                        "/payroll-and-workforce-movement/attendance-cell",
+                    )
+                }
                 className="
                     mt-4
                     inline-flex
@@ -1017,11 +908,11 @@ const LeaveRequestList: React.FC = () => {
                 "
             >
                 <ArrowLeft size={16} />
+
                 Back to Dashboard
             </button>
-
         </div>
     );
 };
 
-export default LeaveRequestList;
+export default EarnedLeaveEncashmentList;
