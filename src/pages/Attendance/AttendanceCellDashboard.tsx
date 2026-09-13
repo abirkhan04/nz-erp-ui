@@ -22,9 +22,10 @@ import { useAuth } from "../../context/AuthContext";
 interface LeaveRequest {
     requestId: number;
     requestNo: string;
+    forwardedBy: string;
     employeeId: string;
     employeeName: string;
-    department: string;
+    departmentName: string;
     leaveType: string;
     fromDate: string;
     toDate: string;
@@ -139,7 +140,7 @@ const AttendanceCellDashboard: React.FC = () => {
         fromDate: request.fromDate,
         toDate: request.toDate,
         reason: request.reason,
-        forwardedBy: user?.userName,
+        forwardedBy: request.forwardedBy,
         forwardedDate: new Date().toISOString().split("T")[0],
         approvedBy: user?.userName,
     };
@@ -437,7 +438,7 @@ const AttendanceCellDashboard: React.FC = () => {
 
                                     return (
                                         <tr
-                                            key={request.id}
+                                            key={request.requestId}
                                             className="transition-colors hover:bg-[#f8fbff]"
                                         >
                                             <td className="border border-[#e1e7f0] px-2 py-2 text-center text-[8px]">
@@ -445,7 +446,7 @@ const AttendanceCellDashboard: React.FC = () => {
                                             </td>
 
                                             <td className="border border-[#e1e7f0] px-2 py-2 text-center text-[8px] font-semibold">
-                                                {request.requestNo}
+                                                {request.requestId}
                                             </td>
 
                                             <td className="border border-[#e1e7f0] px-2 py-2 text-center text-[8px]">
@@ -457,7 +458,7 @@ const AttendanceCellDashboard: React.FC = () => {
                                             </td>
 
                                             <td className="border border-[#e1e7f0] px-2 py-2 text-center text-[8px]">
-                                                {request.department}
+                                                {request.departmentName}
                                             </td>
 
                                             <td className="border border-[#e1e7f0] px-2 py-2 text-center text-[8px]">
