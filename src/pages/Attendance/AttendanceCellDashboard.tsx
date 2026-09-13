@@ -27,8 +27,8 @@ interface LeaveRequest {
     fromDate: string;
     toDate: string;
     days: number;
-    leaveAvailable: number;
-    requestedDays: number;
+    availableLeaves: any[];
+    totalDays: number;
     balanceAfter: number;
     reason: string;
     status: "Pending" | "Approved" | "Rejected";
@@ -393,7 +393,6 @@ const AttendanceCellDashboard: React.FC = () => {
                                         "Leave Type",
                                         "From Date",
                                         "To Date",
-                                        "Days",
                                         "Leave Available",
                                         "Requested Days",
                                         "Balance After Request",
@@ -413,8 +412,8 @@ const AttendanceCellDashboard: React.FC = () => {
 
                             <tbody>
                                 {leaveRequests.map((request: LeaveRequest, index: number) => {
-                                    const hasSufficientBalance =
-                                        request.leaveAvailable >= request.requestedDays;
+                                    // const hasSufficientBalance =
+                                    //     request.leaveAvailable >= request.requestedDays;
 
                                     return (
                                         <tr
@@ -453,16 +452,12 @@ const AttendanceCellDashboard: React.FC = () => {
                                                 {request.toDate}
                                             </td>
 
-                                            <td className="border border-[#e1e7f0] px-2 py-2 text-center text-[8px]">
-                                                {request.days?.toFixed(1)}
-                                            </td>
-
                                             <td className="border border-[#e1e7f0] px-2 py-2 text-center text-[8px] font-bold text-[#07994b]">
-                                                {request.leaveAvailable?.toFixed(1)}
+                                                {request.availableLeaves[0].closingBalance}
                                             </td>
 
                                             <td className="border border-[#e1e7f0] px-2 py-2 text-center text-[8px]">
-                                                {request.requestedDays?.toFixed(1)}
+                                                {request.totalDays?.toFixed(1)}
                                             </td>
 
                                             <td
@@ -470,8 +465,8 @@ const AttendanceCellDashboard: React.FC = () => {
                                                         ? "text-[#f28b00]"
                                                         : "text-[#07994b]"
                                                     }`}
-                                            >
-                                                {request.balanceAfter?.toFixed(1)}
+                                                >
+                                                {request.availableLeaves[0].closingBalance - request.totalDays}
                                             </td>
 
                                             <td className="border border-[#e1e7f0] px-2 py-2 text-center text-[8px]">
@@ -487,7 +482,7 @@ const AttendanceCellDashboard: React.FC = () => {
                                             <td className="border border-[#e1e7f0] px-2 py-2 text-center">
                                                 <button
                                                     type="button"
-                                                    disabled={!hasSufficientBalance}
+                                                    // disabled={!hasSufficientBalance}
                                                     onClick={() => handleForward(request)}
                                                     className={`inline-flex items-center gap-1 rounded px-2 py-1 text-[8px] font-bold text-white transition ${hasSufficientBalance
                                                             ? "bg-[#0757d6] hover:bg-[#0648b5]"
