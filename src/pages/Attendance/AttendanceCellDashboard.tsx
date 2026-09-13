@@ -484,9 +484,7 @@ const AttendanceCellDashboard: React.FC = () => {
                                                     type="button"
                                                     // disabled={!hasSufficientBalance}
                                                     onClick={() => handleForward(request)}
-                                                    className={`inline-flex items-center gap-1 rounded px-2 py-1 text-[8px] font-bold text-white transition ${hasSufficientBalance
-                                                            ? "bg-[#0757d6] hover:bg-[#0648b5]"
-                                                            : "cursor-not-allowed bg-gray-300"
+                                                    className={`inline-flex items-center gap-1 rounded px-2 py-1 text-[8px] font-bold text-white transition"
                                                         }`}
                                                 >
                                                     <Send size={10} />
