@@ -51,7 +51,8 @@ const LeaveRequestList = lazy(() => import("./pages/Payroll/LeaveRequestList"));
 const LeaveRequestDetails = lazy(() => import("./pages/Payroll/LeaveRequestDetail"));
 const EarnedLeaveEncashmentRequest = lazy(() => import("./pages/Payroll/EarnedLeaveEncashmentList"));
 const EarnedLeaveEncashmentDetails = lazy(() => import("./pages/Payroll/EarnedLeaveEncashmentDetaill"));
-
+const MaternityLeaveEncashmentRequests = lazy(() => import("./pages/Payroll/MaternityLeaveEncashmentList"));
+const MaternityLeaveEncashmentDetails = lazy(() => import("./pages/Payroll/MaternityLeaveEncashmentDetail"));
 /**
  * 🔐 Auth Check
  */
@@ -398,6 +399,20 @@ export default function App() {
             path="/payroll-and-workforce-movement/attendance-cell/earned-leave-encashment-requests/:requestId"
             element={<ProtectedRoute>
               <EarnedLeaveEncashmentDetails />
+            </ProtectedRoute>}
+          />
+
+          <Route
+            path="/payroll-and-workforce-movement/attendance-cell/maternity-leave-encashment-request"
+            element={<ProtectedRoute>
+              <MaternityLeaveEncashmentRequests />
+            </ProtectedRoute>}
+          />
+
+          <Route
+            path="/payroll-and-workforce-movement/attendance-cell/maternity-leave-encashment-requests/:requestId"
+            element={<ProtectedRoute>
+              <MaternityLeaveEncashmentDetails />
             </ProtectedRoute>}
           />
 
