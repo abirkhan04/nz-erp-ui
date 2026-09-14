@@ -128,7 +128,7 @@ const DashboardCard = ({
 
 const AttendanceCellDashboard: React.FC = () => {
 
-    const { data: { data: leaveRequests = [] } = {} } = useGet({ key: ["leaveRequests"], url: `${API_ROUTES.LEAVE}?status=FORWARDED` });
+    const { data: { data: leaveRequests = [] } = {} } = useGet({ key: ["leaveRequests"], url: `${API_ROUTES.LEAVE}?status=PENDING` });
 
     const {user} = useAuth()
     const handleForward = async (request: LeaveRequest) => {
@@ -143,6 +143,7 @@ const AttendanceCellDashboard: React.FC = () => {
         forwardedBy: request.forwardedBy,
         forwardedDate: new Date().toISOString().split("T")[0],
         approvedBy: user?.userName,
+        approvStatus: "FORWARDED",
     };
 
     await api.put(
