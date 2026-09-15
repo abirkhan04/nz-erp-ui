@@ -133,7 +133,7 @@ const mockRequests: EncashmentRequest[] = [
 const AttendanceCellEarnedLeaveEncashment: React.FC = () => {
   const [requests, setRequests] =
     useState<EncashmentRequest[]>(mockRequests);
-    const { data: { data: encashRequests = [] } = {} } = useGet({ key: ["leaveRequests"], url: `${API_ROUTES.LEAVE_ENCASHMENT_REQUESTS}?status=PENDING` });
+    const { data: { data: encashRequests = [] } = {} } = useGet({ key: ["encashRequests"], url: `${API_ROUTES.LEAVE_ENCASHMENT_REQUESTS}?status=PENDING&leaveType=EL` });
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 

@@ -17,6 +17,10 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
+import { API_ROUTES } from "../../api/routes";
+import { useGet } from "../../hooks/useGet";
+import { api } from "../../api/client";
+
 interface MaternityLeaveRequest {
   id: string;
   reqNo: string;
@@ -37,83 +41,84 @@ interface MaternityLeaveRequest {
 }
 
 const mockRequests: MaternityLeaveRequest[] = [
-  {
-    id: "1",
-    reqNo: "MLR250515001",
-    empId: "10045",
-    employeeName: "Jahid Hossain",
-    department: "Weaving",
-    installmentNo: "1st (64 Days)",
-    totalEntitlement: 128,
-    requestedDays: 64,
-    fromDate: "18-May-2025",
-    toDate: "19-Jul-2025",
-    childrenCount: 1,
-    doctorCertificate: true,
-    doctorRecommendation: true,
-    forwardedBy: "Prod. Manager",
-    forwardedDate: "15-May-2025 08:15 AM",
-    status: "Pending",
-  },
-  {
-    id: "2",
-    reqNo: "MLR250515002",
-    empId: "10087",
-    employeeName: "Nazma Akter",
-    department: "Finishing",
-    installmentNo: "2nd (64 Days)",
-    totalEntitlement: 128,
-    requestedDays: 64,
-    fromDate: "01-Aug-2025",
-    toDate: "02-Oct-2025",
-    childrenCount: 1,
-    doctorCertificate: true,
-    doctorRecommendation: true,
-    forwardedBy: "Prod. Manager",
-    forwardedDate: "15-May-2025 09:05 AM",
-    status: "Pending",
-  },
-  {
-    id: "3",
-    reqNo: "MLR250515003",
-    empId: "10123",
-    employeeName: "Ripa Sultana",
-    department: "Spinning",
-    installmentNo: "1st (64 Days)",
-    totalEntitlement: 128,
-    requestedDays: 64,
-    fromDate: "20-May-2025",
-    toDate: "20-Jul-2025",
-    childrenCount: 2,
-    doctorCertificate: true,
-    doctorRecommendation: true,
-    forwardedBy: "Prod. Manager",
-    forwardedDate: "15-May-2025 09:25 AM",
-    status: "Pending",
-  },
-  {
-    id: "4",
-    reqNo: "MLR250515004",
-    empId: "10189",
-    employeeName: "Shakila Parvin",
-    department: "Knitting",
-    installmentNo: "2nd (64 Days)",
-    totalEntitlement: 128,
-    requestedDays: 64,
-    fromDate: "05-Aug-2025",
-    toDate: "06-Oct-2025",
-    childrenCount: 2,
-    doctorCertificate: true,
-    doctorRecommendation: true,
-    forwardedBy: "Prod. Manager",
-    forwardedDate: "15-May-2025 11:00 AM",
-    status: "Pending",
-  },
+  // {
+  //   id: "1",
+  //   reqNo: "MLR250515001",
+  //   empId: "10045",
+  //   employeeName: "Jahid Hossain",
+  //   department: "Weaving",
+  //   installmentNo: "1st (64 Days)",
+  //   totalEntitlement: 128,
+  //   requestedDays: 64,
+  //   fromDate: "18-May-2025",
+  //   toDate: "19-Jul-2025",
+  //   childrenCount: 1,
+  //   doctorCertificate: true,
+  //   doctorRecommendation: true,
+  //   forwardedBy: "Prod. Manager",
+  //   forwardedDate: "15-May-2025 08:15 AM",
+  //   status: "Pending",
+  // },
+  // {
+  //   id: "2",
+  //   reqNo: "MLR250515002",
+  //   empId: "10087",
+  //   employeeName: "Nazma Akter",
+  //   department: "Finishing",
+  //   installmentNo: "2nd (64 Days)",
+  //   totalEntitlement: 128,
+  //   requestedDays: 64,
+  //   fromDate: "01-Aug-2025",
+  //   toDate: "02-Oct-2025",
+  //   childrenCount: 1,
+  //   doctorCertificate: true,
+  //   doctorRecommendation: true,
+  //   forwardedBy: "Prod. Manager",
+  //   forwardedDate: "15-May-2025 09:05 AM",
+  //   status: "Pending",
+  // },
+  // {
+  //   id: "3",
+  //   reqNo: "MLR250515003",
+  //   empId: "10123",
+  //   employeeName: "Ripa Sultana",
+  //   department: "Spinning",
+  //   installmentNo: "1st (64 Days)",
+  //   totalEntitlement: 128,
+  //   requestedDays: 64,
+  //   fromDate: "20-May-2025",
+  //   toDate: "20-Jul-2025",
+  //   childrenCount: 2,
+  //   doctorCertificate: true,
+  //   doctorRecommendation: true,
+  //   forwardedBy: "Prod. Manager",
+  //   forwardedDate: "15-May-2025 09:25 AM",
+  //   status: "Pending",
+  // },
+  // {
+  //   id: "4",
+  //   reqNo: "MLR250515004",
+  //   empId: "10189",
+  //   employeeName: "Shakila Parvin",
+  //   department: "Knitting",
+  //   installmentNo: "2nd (64 Days)",
+  //   totalEntitlement: 128,
+  //   requestedDays: 64,
+  //   fromDate: "05-Aug-2025",
+  //   toDate: "06-Oct-2025",
+  //   childrenCount: 2,
+  //   doctorCertificate: true,
+  //   doctorRecommendation: true,
+  //   forwardedBy: "Prod. Manager",
+  //   forwardedDate: "15-May-2025 11:00 AM",
+  //   status: "Pending",
+  // },
 ];
 
 const AttendanceCellMaternityLeaveEncashment: React.FC = () => {
   const [requests, setRequests] =
     useState<MaternityLeaveRequest[]>(mockRequests);
+    const { data: { data: encashRequests = [] } = {} } = useGet({ key: ["encashRequests"], url: `${API_ROUTES.LEAVE_ENCASHMENT_REQUESTS}?status=PENDING&leaveType=ML` });
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
@@ -573,7 +578,7 @@ const AttendanceCellMaternityLeaveEncashment: React.FC = () => {
               </thead>
 
               <tbody>
-                {requests.map((request) => {
+                {encashRequests.map((request : MaternityLeaveRequest) => {
                   const isEligible =
                     request.status === "Pending" &&
                     request.childrenCount <= 2 &&
