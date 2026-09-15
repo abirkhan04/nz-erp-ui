@@ -14,116 +14,126 @@ import {
   Users,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { API_ROUTES } from "../../api/routes";
+import { useGet } from "../../hooks/useGet";
+import { api } from "../../api/client";
 
 interface EncashmentRequest {
-  id: string;
+  leaveType: any;
+  requestId: string;
   reqNo: string;
-  empId: string;
+  employeeId: string;
   employeeName: string;
   department: string;
-  elBalance: number;
-  elAccrued: number;
-  maxEncashable: number;
-  requestedDays: number;
+  earnedLeaveBalance: number;
+  earnedLeaveAccruedThisYear: number;
+  maxEncashable : number;
+  encashDays: number;
   fromDate: string;
   toDate: string;
   reason: string;
   forwardedBy: string;
   forwardedDate: string;
-  status: "Pending" | "Forwarded";
+  status: "PENDING" | "FORWARDED";
 }
 
 const mockRequests: EncashmentRequest[] = [
   {
-    id: "1",
+    leaveType: "EL",
+    requestId: "1",
     reqNo: "ELR250515001",
-    empId: "10045",
+    employeeId: "10045",
     employeeName: "Jahid Hossain",
     department: "Weaving",
-    elBalance: 24,
-    elAccrued: 20,
+    earnedLeaveBalance: 24,
+    earnedLeaveAccruedThisYear: 20,
     maxEncashable: 10,
-    requestedDays: 5,
+    encashDays: 5,
     fromDate: "18-May-2025",
     toDate: "22-May-2025",
     reason: "Personal Need",
     forwardedBy: "Prod. Manager",
     forwardedDate: "15-May-2025 08:15 AM",
-    status: "Pending",
+    status: "PENDING",
   },
   {
-    id: "2",
+    leaveType: "EL",
+    requestId: "2",
     reqNo: "ELR250515002",
-    empId: "10087",
+    employeeId: "10087",
     employeeName: "Ripon Miah",
     department: "Spinning",
-    elBalance: 18.5,
-    elAccrued: 16,
+    earnedLeaveBalance: 18.5,
+    earnedLeaveAccruedThisYear: 16,
     maxEncashable: 8,
-    requestedDays: 6,
+    encashDays: 6,
     fromDate: "17-May-2025",
     toDate: "22-May-2025",
     reason: "Family Event",
     forwardedBy: "Prod. Manager",
     forwardedDate: "15-May-2025 09:05 AM",
-    status: "Pending",
+    status: "PENDING",
   },
   {
-    id: "3",
+    leaveType: "EL",
+    requestId: "3",
     reqNo: "ELR250515003",
-    empId: "10123",
+    employeeId: "10123",
     employeeName: "Sagor Ali",
     department: "Dyeing",
-    elBalance: 30,
-    elAccrued: 24,
+    earnedLeaveBalance: 30,
+    earnedLeaveAccruedThisYear: 24,
     maxEncashable: 12,
-    requestedDays: 10,
+    encashDays: 10,
     fromDate: "20-May-2025",
     toDate: "29-May-2025",
     reason: "Child Education",
     forwardedBy: "Prod. Manager",
     forwardedDate: "15-May-2025 09:25 AM",
-    status: "Pending",
+    status: "PENDING",
   },
   {
-    id: "4",
+    leaveType: "EL",
+    requestId: "4",
     reqNo: "ELR250515004",
-    empId: "10145",
+    employeeId: "10145",
     employeeName: "Nazma Akter",
     department: "Finishing",
-    elBalance: 12,
-    elAccrued: 10,
+    earnedLeaveBalance: 12,
+    earnedLeaveAccruedThisYear: 10,
     maxEncashable: 5,
-    requestedDays: 5,
+    encashDays: 5,
     fromDate: "25-May-2025",
     toDate: "29-May-2025",
     reason: "Medical Expense",
     forwardedBy: "Prod. Manager",
     forwardedDate: "15-May-2025 10:10 AM",
-    status: "Pending",
+    status: "PENDING",
   },
   {
-    id: "5",
+    leaveType: "EL",
+    requestId: "5",
     reqNo: "ELR250515005",
-    empId: "10166",
+    employeeId: "10166",
     employeeName: "Monir Hossain",
     department: "Maintenance",
-    elBalance: 9,
-    elAccrued: 8,
+    earnedLeaveBalance: 9,
+    earnedLeaveAccruedThisYear: 8,
     maxEncashable: 4,
-    requestedDays: 4,
+    encashDays: 4,
     fromDate: "21-May-2025",
     toDate: "24-May-2025",
     reason: "Home Renovation",
     forwardedBy: "Prod. Manager",
     forwardedDate: "15-May-2025 10:20 AM",
-    status: "Pending",
+    status: "PENDING",
   },
 ];
 
 const AttendanceCellEarnedLeaveEncashment: React.FC = () => {
   const [requests, setRequests] =
     useState<EncashmentRequest[]>(mockRequests);
+    const { data: { data: encashRequests = [] } = {} } = useGet({ key: ["leaveRequests"], url: `${API_ROUTES.LEAVE_ENCASHMENT_REQUESTS}?status=PENDING` });
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
@@ -145,17 +155,19 @@ const AttendanceCellEarnedLeaveEncashment: React.FC = () => {
   }, []);
 
   /* ================= ELIGIBLE REQUESTS ================= */
-
+  
   const eligibleRequests = requests.filter(
     (request) =>
-      request.requestedDays <= request.maxEncashable &&
-      request.status === "Pending",
+    {
+      request.maxEncashable = 10,
+      request.encashDays <= request.maxEncashable &&
+      request.status === "PENDING" }
   );
 
   const isAllSelected =
     eligibleRequests.length > 0 &&
     eligibleRequests.every((request) =>
-      selectedIds.includes(request.id),
+      selectedIds.includes(request.requestId),
     );
 
   const isSomeSelected =
@@ -163,11 +175,11 @@ const AttendanceCellEarnedLeaveEncashment: React.FC = () => {
 
   /* ================= SELECTION ================= */
 
-  const toggleRow = (id: string) => {
+  const toggleRow = (requestId: string) => {
     setSelectedIds((previous) =>
-      previous.includes(id)
-        ? previous.filter((item) => item !== id)
-        : [...previous, id],
+      previous.includes(requestId)
+        ? previous.filter((item) => item !== requestId)
+        : [...previous, requestId],
     );
   };
 
@@ -178,7 +190,7 @@ const AttendanceCellEarnedLeaveEncashment: React.FC = () => {
     }
 
     setSelectedIds(
-      eligibleRequests.map((request) => request.id),
+      eligibleRequests.map((request) => request.requestId),
     );
   };
 
@@ -189,10 +201,10 @@ const AttendanceCellEarnedLeaveEncashment: React.FC = () => {
 
     setRequests((previous) =>
       previous.map((request) =>
-        selectedIds.includes(request.id)
+        selectedIds.includes(request.requestId)
           ? {
               ...request,
-              status: "Forwarded",
+              status: "FORWARDED",
             }
           : request,
       ),
@@ -203,25 +215,49 @@ const AttendanceCellEarnedLeaveEncashment: React.FC = () => {
 
   /* ================= FORWARD ALL ================= */
 
-  const handleForwardAll = () => {
-    const eligibleIds = eligibleRequests.map(
-      (request) => request.id,
-    );
+  // const handleForwardAll = () => {
+  //   const eligibleIds = encashRequests.map(
+  //     (request: EncashmentRequest) => request.requestId,
+  //   );
 
-    if (eligibleIds.length === 0) return;
+  //   if (eligibleIds.length === 0) return;
 
-    setRequests((previous) =>
-      previous.map((request) =>
-        eligibleIds.includes(request.id)
-          ? {
-              ...request,
-              status: "Forwarded",
-            }
-          : request,
-      ),
-    );
+  //   setRequests((previous) =>
+  //     previous.map((request) =>
+  //       eligibleIds.includes(request.requestId)
+  //         ? {
+  //             ...request,
+  //             status: "FORWARDED",
+  //           }
+  //         : request,
+  //     ),
+  //   );
 
-    setSelectedIds([]);
+  //   setSelectedIds([]);
+  // };
+
+  const handleForwardAll = async (request: EncashmentRequest) => {
+      console.log("Forward leave request:", request);
+  
+      const payload = {
+          requestId: request.requestId,
+          leaveType: request.leaveType,
+          employeeId: request.employeeId,
+          employeeName: request.employeeName,
+          encashDays: request.encashDays,
+          encashDate: new Date().toISOString().split("T")[0],
+          fromDate: request.fromDate,
+          toDate: request.toDate,
+          reason: request.reason,
+          forwardedBy: request.forwardedBy,
+          forwardedDate: new Date().toISOString().split("T")[0],
+          status: "FORWARDED",
+      };
+  
+      await api.put(
+          `${API_ROUTES.LEAVE_ENCASHMENT_REQUESTS}/${request.requestId}`,
+          payload
+      );
   };
 
   const navigate = useNavigate();
@@ -515,19 +551,19 @@ const AttendanceCellEarnedLeaveEncashment: React.FC = () => {
               </thead>
 
               <tbody>
-                {requests.map((request) => {
+                {encashRequests.map((request: EncashmentRequest) => {
                   const isEligible =
-                    request.requestedDays <=
+                    request.encashDays <=
                       request.maxEncashable &&
-                    request.status === "Pending";
+                    request.status === "PENDING";
 
                   const isSelected = selectedIds.includes(
-                    request.id,
+                    request.requestId,
                   );
 
                   return (
                     <tr
-                      key={request.id}
+                      key={request.requestId}
                       className={`hover:bg-[#f8fbff] ${
                         isSelected ? "bg-blue-50/60" : ""
                       }`}
@@ -537,7 +573,7 @@ const AttendanceCellEarnedLeaveEncashment: React.FC = () => {
                       </td>
 
                       <td className="border border-[#e1e7f0] px-2 py-2 text-[9px]">
-                        {request.empId}
+                        {request.employeeId}
                       </td>
 
                       <td className="whitespace-nowrap border border-[#e1e7f0] px-2 py-2 text-[9px] font-medium">
@@ -549,26 +585,26 @@ const AttendanceCellEarnedLeaveEncashment: React.FC = () => {
                       </td>
 
                       <td className="border border-[#e1e7f0] px-2 py-2 text-[9px] font-bold text-green-600">
-                        {request.elBalance.toFixed(2)}
+                        {request.earnedLeaveBalance.toFixed(2)}
                       </td>
 
                       <td className="border border-[#e1e7f0] px-2 py-2 text-[9px] font-bold text-green-600">
-                        {request.elAccrued.toFixed(2)}
+                        {request.earnedLeaveAccruedThisYear.toFixed(2)}
                       </td>
 
                       <td className="border border-[#e1e7f0] px-2 py-2 text-[9px] font-bold text-green-600">
-                        {request.maxEncashable.toFixed(2)}
+                        {(request.earnedLeaveAccruedThisYear/2).toFixed(2)}
                       </td>
 
                       <td
                         className={`border border-[#e1e7f0] px-2 py-2 text-[9px] font-bold ${
-                          request.requestedDays >
-                          request.maxEncashable
+                          request.encashDays >
+                          (request.earnedLeaveAccruedThisYear/2)
                             ? "text-red-600"
                             : "text-[#172554]"
                         }`}
                       >
-                        {request.requestedDays.toFixed(2)}
+                        {request.encashDays.toFixed(2)}
                       </td>
 
                       <td className="whitespace-nowrap border border-[#e1e7f0] px-2 py-2 text-[9px]">
@@ -594,13 +630,13 @@ const AttendanceCellEarnedLeaveEncashment: React.FC = () => {
                       {/* STATUS */}
 
                       <td className="border border-[#e1e7f0] px-2 py-2">
-                        {request.status === "Forwarded" ? (
+                        {request.status === "FORWARDED" ? (
                           <span className="rounded bg-green-100 px-2 py-1 text-[10px] font-semibold text-green-700">
                             Forwarded
                           </span>
                         ) : (
                           <span className="rounded bg-orange-100 px-2 py-1 text-[10px] font-semibold text-orange-600">
-                            Pending
+                            PENDING
                           </span>
                         )}
                       </td>
@@ -608,18 +644,18 @@ const AttendanceCellEarnedLeaveEncashment: React.FC = () => {
                       {/* ACTION = CHECKBOX */}
 
                       <td className="border border-[#e1e7f0] px-2 py-2">
-                        {request.status === "Pending" &&
+                        {request.status === "PENDING" &&
                         isEligible ? (
                           <input
                             type="checkbox"
                             checked={isSelected}
                             onChange={() =>
-                              toggleRow(request.id)
+                              toggleRow(request.requestId)
                             }
                             className="h-4 w-4 cursor-pointer accent-[#0754c7]"
                             title="Select request"
                           />
-                        ) : request.status === "Pending" ? (
+                        ) : request.status === "PENDING" ? (
                           <span className="text-[9px] font-semibold text-red-500">
                             Not Eligible
                           </span>
@@ -748,8 +784,8 @@ const AttendanceCellEarnedLeaveEncashment: React.FC = () => {
 
             <button
               type="button"
-              disabled={eligibleRequests.length === 0}
-              onClick={handleForwardAll}
+              disabled={eligibleRequests.length === 110}
+              onClick={() => handleForwardAll(encashRequests[0])}
               className="flex items-center gap-2 rounded bg-green-600 px-5 py-2 text-[11px] font-semibold text-white shadow-sm transition hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-400"
             >
               <ArrowRight size={15} />
