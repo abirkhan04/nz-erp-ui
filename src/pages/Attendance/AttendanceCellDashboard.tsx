@@ -128,7 +128,7 @@ const DashboardCard = ({
 
 const AttendanceCellDashboard: React.FC = () => {
 
-    const { data: { data: leaveRequests = [] } = {} } = useGet({ key: ["leaveRequests"], url: `${API_ROUTES.LEAVE}?status=PENDING` });
+    const { data: { data: leaveRequests = [] } = {}, refetch: refetchLeaveRequests } = useGet({ key: ["leaveRequests"], url: `${API_ROUTES.LEAVE}?status=PENDING` });
 
     const {user} = useAuth()
     const handleForward = async (request: LeaveRequest) => {
@@ -150,6 +150,7 @@ const AttendanceCellDashboard: React.FC = () => {
         `${API_ROUTES.LEAVE}/${request.requestId}`,
         payload
     );
+    refetchLeaveRequests();
 };
 
     const currentDate = new Date();
