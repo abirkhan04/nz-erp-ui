@@ -22,7 +22,7 @@ import { useGet } from "../../hooks/useGet";
 import { api } from "../../api/client";
 
 interface MaternityLeaveRequest {
-  id: string;
+  requestId: string;
   reqNo: string;
   empId: string;
   employeeName: string;
@@ -118,7 +118,7 @@ const mockRequests: MaternityLeaveRequest[] = [
 const AttendanceCellMaternityLeaveEncashment: React.FC = () => {
   const [requests, setRequests] =
     useState<MaternityLeaveRequest[]>(mockRequests);
-    const { data: { data: encashRequests = [] } = {} } = useGet({ key: ["encashRequests"], url: `${API_ROUTES.LEAVE_ENCASHMENT_REQUESTS}?status=PENDING&leaveType=ML` });
+  const { data: { data: encashRequests = [] } = {} } = useGet({ key: ["encashRequests"], url: `${API_ROUTES.LEAVE_ENCASHMENT_REQUESTS}?status=PENDING&leaveType=ML` });
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
@@ -145,9 +145,9 @@ const AttendanceCellMaternityLeaveEncashment: React.FC = () => {
      ELIGIBLE REQUESTS
   ========================================================= */
 
-  const eligibleRequests = requests.filter(
-    (request) =>
-      request.status === "Pending" &&
+  const eligibleRequests = encashRequests.filter(
+    (request: MaternityLeaveRequest) =>
+      request.status?.toUpperCase() === "PENDING" &&
       request.childrenCount <= 2 &&
       request.doctorCertificate &&
       request.doctorRecommendation,
@@ -155,8 +155,8 @@ const AttendanceCellMaternityLeaveEncashment: React.FC = () => {
 
   const isAllSelected =
     eligibleRequests.length > 0 &&
-    eligibleRequests.every((request) =>
-      selectedIds.includes(request.id),
+    eligibleRequests.every((request: MaternityLeaveRequest) =>
+      selectedIds.includes(request.requestId),
     );
 
   const isSomeSelected =
@@ -167,6 +167,7 @@ const AttendanceCellMaternityLeaveEncashment: React.FC = () => {
   ========================================================= */
 
   const toggleRow = (id: string) => {
+    console.log("Selected Ids", selectedIds);
     setSelectedIds((previous) =>
       previous.includes(id)
         ? previous.filter((item) => item !== id)
@@ -194,11 +195,11 @@ const AttendanceCellMaternityLeaveEncashment: React.FC = () => {
 
     setRequests((previous) =>
       previous.map((request) =>
-        selectedIds.includes(request.id)
+        selectedIds.includes(request.requestId)
           ? {
-              ...request,
-              status: "Forwarded",
-            }
+            ...request,
+            status: "Forwarded",
+          }
           : request,
       ),
     );
@@ -221,9 +222,9 @@ const AttendanceCellMaternityLeaveEncashment: React.FC = () => {
       previous.map((request) =>
         eligibleIds.includes(request.id)
           ? {
-              ...request,
-              status: "Forwarded",
-            }
+            ...request,
+            status: "Forwarded",
+          }
           : request,
       ),
     );
@@ -522,7 +523,7 @@ const AttendanceCellMaternityLeaveEncashment: React.FC = () => {
             <div className="text-[9px] font-bold">
               Total Requests:{" "}
               <span className="text-blue-600">
-                {requests.length}
+                {encashRequests.length}
               </span>
             </div>
           </div>
@@ -578,23 +579,21 @@ const AttendanceCellMaternityLeaveEncashment: React.FC = () => {
               </thead>
 
               <tbody>
-                {encashRequests.map((request : MaternityLeaveRequest) => {
-                  const isEligible =
-                    request.status === "Pending" &&
-                    request.childrenCount <= 2 &&
-                    request.doctorCertificate &&
-                    request.doctorRecommendation;
+                {encashRequests.map((request: MaternityLeaveRequest) => {
+                  const isEligible = true;
+                    // request.childrenCount <= 2 &&
+                    // request.doctorCertificate &&
+                    // request.doctorRecommendation;
 
                   const isSelected = selectedIds.includes(
-                    request.id,
+                    request.requestId,
                   );
 
                   return (
                     <tr
-                      key={request.id}
-                      className={`hover:bg-[#f8fbff] ${
-                        isSelected ? "bg-blue-50/60" : ""
-                      }`}
+                      key={request.requestId}
+                      className={`hover:bg-[#f8fbff] ${isSelected ? "bg-blue-50/60" : ""
+                        }`}
                     >
                       <td className="border border-[#e1e7f0] px-2 py-2 text-[8px]">
                         {request.reqNo}
@@ -687,18 +686,17 @@ const AttendanceCellMaternityLeaveEncashment: React.FC = () => {
                       {/* ACTION / CHECKBOX */}
 
                       <td className="border border-[#e1e7f0] px-2 py-2">
-                        {request.status === "Pending" &&
-                        isEligible ? (
+                        {request.status?.toUpperCase() === "PENDING" && isEligible ? (
                           <input
                             type="checkbox"
                             checked={isSelected}
                             onChange={() =>
-                              toggleRow(request.id)
+                              toggleRow(request.requestId)
                             }
                             className="h-4 w-4 cursor-pointer accent-[#0754c7]"
                             title="Select request"
                           />
-                        ) : request.status === "Pending" ? (
+                        ) : request.status?.toUpperCase() === "PENDING" ? (
                           <span className="text-[8px] font-semibold text-red-500">
                             Not Eligible
                           </span>
@@ -802,7 +800,7 @@ const AttendanceCellMaternityLeaveEncashment: React.FC = () => {
           <button
             type="button"
             className="flex items-center gap-2 rounded border border-blue-500 bg-white px-4 py-2 text-[10px] font-semibold text-blue-600 hover:bg-blue-50"
-             onClick={()=> navigate("/attendance-cell")}
+            onClick={() => navigate("/attendance-cell")}
           >
             <ArrowLeft size={14} />
             Back to Dashboard
@@ -924,17 +922,16 @@ const SummaryCard: React.FC<SummaryCardProps> = ({
 
         <button
           type="button"
-          className={`mt-1 flex items-center justify-between rounded px-3 py-1 text-[8px] font-semibold text-white ${
-            color === "blue"
-              ? "bg-blue-600"
-              : color === "green"
-                ? "bg-green-600"
-                : color === "purple"
-                  ? "bg-purple-600"
-                  : color === "orange"
-                    ? "bg-orange-500"
-                    : "bg-cyan-600"
-          }`}
+          className={`mt-1 flex items-center justify-between rounded px-3 py-1 text-[8px] font-semibold text-white ${color === "blue"
+            ? "bg-blue-600"
+            : color === "green"
+              ? "bg-green-600"
+              : color === "purple"
+                ? "bg-purple-600"
+                : color === "orange"
+                  ? "bg-orange-500"
+                  : "bg-cyan-600"
+            }`}
         >
           View List
           <ArrowRight size={11} />
