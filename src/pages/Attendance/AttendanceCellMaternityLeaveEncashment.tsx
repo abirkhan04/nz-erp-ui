@@ -20,16 +20,17 @@ import { useNavigate } from "react-router-dom";
 import { API_ROUTES } from "../../api/routes";
 import { useGet } from "../../hooks/useGet";
 import { api } from "../../api/client";
+import { useAuth } from "../../context/AuthContext";
 
 interface MaternityLeaveRequest {
   requestId: string;
   reqNo: string;
-  empId: string;
+  employeeId: string;
   employeeName: string;
   department: string;
   installmentNo: string;
   totalEntitlement: number;
-  requestedDays: number;
+  encashDays: number;
   fromDate: string;
   toDate: string;
   childrenCount: number;
@@ -40,85 +41,10 @@ interface MaternityLeaveRequest {
   status: "Pending" | "Forwarded";
 }
 
-const mockRequests: MaternityLeaveRequest[] = [
-  // {
-  //   id: "1",
-  //   reqNo: "MLR250515001",
-  //   empId: "10045",
-  //   employeeName: "Jahid Hossain",
-  //   department: "Weaving",
-  //   installmentNo: "1st (64 Days)",
-  //   totalEntitlement: 128,
-  //   requestedDays: 64,
-  //   fromDate: "18-May-2025",
-  //   toDate: "19-Jul-2025",
-  //   childrenCount: 1,
-  //   doctorCertificate: true,
-  //   doctorRecommendation: true,
-  //   forwardedBy: "Prod. Manager",
-  //   forwardedDate: "15-May-2025 08:15 AM",
-  //   status: "Pending",
-  // },
-  // {
-  //   id: "2",
-  //   reqNo: "MLR250515002",
-  //   empId: "10087",
-  //   employeeName: "Nazma Akter",
-  //   department: "Finishing",
-  //   installmentNo: "2nd (64 Days)",
-  //   totalEntitlement: 128,
-  //   requestedDays: 64,
-  //   fromDate: "01-Aug-2025",
-  //   toDate: "02-Oct-2025",
-  //   childrenCount: 1,
-  //   doctorCertificate: true,
-  //   doctorRecommendation: true,
-  //   forwardedBy: "Prod. Manager",
-  //   forwardedDate: "15-May-2025 09:05 AM",
-  //   status: "Pending",
-  // },
-  // {
-  //   id: "3",
-  //   reqNo: "MLR250515003",
-  //   empId: "10123",
-  //   employeeName: "Ripa Sultana",
-  //   department: "Spinning",
-  //   installmentNo: "1st (64 Days)",
-  //   totalEntitlement: 128,
-  //   requestedDays: 64,
-  //   fromDate: "20-May-2025",
-  //   toDate: "20-Jul-2025",
-  //   childrenCount: 2,
-  //   doctorCertificate: true,
-  //   doctorRecommendation: true,
-  //   forwardedBy: "Prod. Manager",
-  //   forwardedDate: "15-May-2025 09:25 AM",
-  //   status: "Pending",
-  // },
-  // {
-  //   id: "4",
-  //   reqNo: "MLR250515004",
-  //   empId: "10189",
-  //   employeeName: "Shakila Parvin",
-  //   department: "Knitting",
-  //   installmentNo: "2nd (64 Days)",
-  //   totalEntitlement: 128,
-  //   requestedDays: 64,
-  //   fromDate: "05-Aug-2025",
-  //   toDate: "06-Oct-2025",
-  //   childrenCount: 2,
-  //   doctorCertificate: true,
-  //   doctorRecommendation: true,
-  //   forwardedBy: "Prod. Manager",
-  //   forwardedDate: "15-May-2025 11:00 AM",
-  //   status: "Pending",
-  // },
-];
 
 const AttendanceCellMaternityLeaveEncashment: React.FC = () => {
-  const [requests, setRequests] =
-    useState<MaternityLeaveRequest[]>(mockRequests);
-  const { data: { data: encashRequests = [] } = {} } = useGet({ key: ["encashRequests"], url: `${API_ROUTES.LEAVE_ENCASHMENT_REQUESTS}?status=PENDING&leaveType=ML` });
+  const { data: { data: encashRequests = [] } = {}, refetch: refetchEncashRequests } = useGet({ key: ["encashRequests"], url: `${API_ROUTES.LEAVE_ENCASHMENT_REQUESTS}?status=PENDING&leaveType=ML` });
+  const {user} = useAuth();
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
@@ -182,7 +108,7 @@ const AttendanceCellMaternityLeaveEncashment: React.FC = () => {
     }
 
     setSelectedIds(
-      eligibleRequests.map((request) => request.id),
+      eligibleRequests.map((request: MaternityLeaveRequest) => request.requestId),
     );
   };
 
@@ -190,46 +116,66 @@ const AttendanceCellMaternityLeaveEncashment: React.FC = () => {
      FORWARD SELECTED
   ========================================================= */
 
-  const handleForwardSelected = () => {
+  const handleForwardSelected = async () => {
     if (selectedIds.length === 0) return;
 
-    setRequests((previous) =>
-      previous.map((request) =>
+    const selectedRequests = encashRequests.filter(
+      (request: MaternityLeaveRequest) =>
         selectedIds.includes(request.requestId)
-          ? {
-            ...request,
-            status: "Forwarded",
-          }
-          : request,
-      ),
     );
 
-    setSelectedIds([]);
+    console.log("selectedRequests", selectedRequests);
+
+    const payload = selectedRequests.map((request: MaternityLeaveRequest) => ({
+      requestId: request.requestId,
+      leaveType: "ML",
+      employeeId: request.employeeId,
+      employeeName: request.employeeName,
+      encashDate: new Date().toISOString().split("T")[0],
+      encashDays: request.encashDays,
+      reason: "test",
+      forwardedBy: user?.userName,
+      forwardedDate: new Date().toISOString().split("T")[0],
+      modifiedBy: user?.userName,
+      status: "FORWARDED",
+    }));
+
+    try {
+      await api.put(API_ROUTES.LEAVE_ENCASHMENT_REQUESTS, payload);
+      refetchEncashRequests();
+      setSelectedIds([]);
+    } catch (error) {
+      console.error("Failed to forward selected requests:", error);
+    }
   };
 
   /* =========================================================
      FORWARD ALL
   ========================================================= */
 
-  const handleForwardAll = () => {
+  const handleForwardAll =async () => {
     if (eligibleRequests.length === 0) return;
 
-    const eligibleIds = eligibleRequests.map(
-      (request) => request.id,
-    );
-
-    setRequests((previous) =>
-      previous.map((request) =>
-        eligibleIds.includes(request.id)
-          ? {
-            ...request,
-            status: "Forwarded",
-          }
-          : request,
-      ),
-    );
-
-    setSelectedIds([]);
+    const payload = eligibleRequests.map((request: MaternityLeaveRequest) => ({
+      requestId: request.requestId,
+      leaveType: "ML",
+      employeeId: request.employeeId,
+      employeeName: request.employeeName,
+      encashDate: new Date().toISOString().split("T")[0],
+      encashDays: request.encashDays,
+      reason: "",
+      forwardedBy: user?.userName,
+      forwardedDate: new Date().toISOString().split("T")[0],
+      modifiedBy: user?.userName,
+      status: "FORWARDED",
+    }));
+    try {
+      await api.put(API_ROUTES.LEAVE_ENCASHMENT_REQUESTS, payload);
+      refetchEncashRequests();
+      setSelectedIds([]);
+      } catch (error) {
+      console.error("Failed to forward selected requests:", error);
+    }
   };
 
   const navigate = useNavigate();
@@ -581,9 +527,9 @@ const AttendanceCellMaternityLeaveEncashment: React.FC = () => {
               <tbody>
                 {encashRequests.map((request: MaternityLeaveRequest) => {
                   const isEligible = true;
-                    // request.childrenCount <= 2 &&
-                    // request.doctorCertificate &&
-                    // request.doctorRecommendation;
+                  // request.childrenCount <= 2 &&
+                  // request.doctorCertificate &&
+                  // request.doctorRecommendation;
 
                   const isSelected = selectedIds.includes(
                     request.requestId,
@@ -620,7 +566,7 @@ const AttendanceCellMaternityLeaveEncashment: React.FC = () => {
                       </td>
 
                       <td className="border border-[#e1e7f0] px-2 py-2 text-[8px] font-bold">
-                        {request.requestedDays}
+                        {request.encashDays}
                       </td>
 
                       <td className="whitespace-nowrap border border-[#e1e7f0] px-2 py-2 text-[8px]">
@@ -719,8 +665,8 @@ const AttendanceCellMaternityLeaveEncashment: React.FC = () => {
 
           <div className="flex items-center justify-between px-5 py-2">
             <span className="text-[9px] font-semibold text-gray-700">
-              Showing 1 to {requests.length} of{" "}
-              {requests.length} entries
+              Showing 1 to {encashRequests.length} of{" "}
+              {encashRequests.length} entries
             </span>
 
             <div className="flex items-center gap-3">

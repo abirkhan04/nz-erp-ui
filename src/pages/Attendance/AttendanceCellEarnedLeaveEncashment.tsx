@@ -17,6 +17,7 @@ import { useNavigate } from "react-router-dom";
 import { API_ROUTES } from "../../api/routes";
 import { useGet } from "../../hooks/useGet";
 import { api } from "../../api/client";
+import { useAuth } from "../../context/AuthContext";
 
 interface EncashmentRequest {
   leaveType: any;
@@ -27,7 +28,7 @@ interface EncashmentRequest {
   department: string;
   earnedLeaveBalance: number;
   earnedLeaveAccruedThisYear: number;
-  maxEncashable : number;
+  maxEncashable: number;
   encashDays: number;
   fromDate: string;
   toDate: string;
@@ -131,9 +132,9 @@ const mockRequests: EncashmentRequest[] = [
 ];
 
 const AttendanceCellEarnedLeaveEncashment: React.FC = () => {
-  const [requests, setRequests] =
-    useState<EncashmentRequest[]>(mockRequests);
-    const { data: { data: encashRequests = [] } = {} } = useGet({ key: ["encashRequests"], url: `${API_ROUTES.LEAVE_ENCASHMENT_REQUESTS}?status=PENDING&leaveType=EL` });
+
+  const { user } = useAuth();
+  const { data: { data: encashRequests = [] } = {} } = useGet({ key: ["encashRequests"], url: `${API_ROUTES.LEAVE_ENCASHMENT_REQUESTS}?status=PENDING&leaveType=EL` });
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
@@ -155,18 +156,18 @@ const AttendanceCellEarnedLeaveEncashment: React.FC = () => {
   }, []);
 
   /* ================= ELIGIBLE REQUESTS ================= */
-  
-  const eligibleRequests = requests.filter(
-    (request) =>
-    {
+
+  const eligibleRequests = encashRequests.filter(
+    (request) => {
       request.maxEncashable = 10,
-      request.encashDays <= request.maxEncashable &&
-      request.status === "PENDING" }
+        request.encashDays <= request.maxEncashable &&
+        request.status === "PENDING"
+    }
   );
 
   const isAllSelected =
     eligibleRequests.length > 0 &&
-    eligibleRequests.every((request) =>
+    eligibleRequests.every((request: EncashmentRequest) =>
       selectedIds.includes(request.requestId),
     );
 
@@ -190,27 +191,50 @@ const AttendanceCellEarnedLeaveEncashment: React.FC = () => {
     }
 
     setSelectedIds(
-      eligibleRequests.map((request) => request.requestId),
+      eligibleRequests.map((request: EncashmentRequest) => request.requestId),
     );
   };
 
   /* ================= FORWARD SELECTED ================= */
 
-  const handleForwardSelected = () => {
+  const handleForwardSelected = async () => {
     if (selectedIds.length === 0) return;
 
-    setRequests((previous) =>
-      previous.map((request) =>
+    const selectedRequests = encashRequests.filter(
+      (request: EncashmentRequest) =>
         selectedIds.includes(request.requestId)
-          ? {
-              ...request,
-              status: "FORWARDED",
-            }
-          : request,
-      ),
     );
 
-    setSelectedIds([]);
+    try {
+      await Promise.all(
+        selectedRequests.map((request: EncashmentRequest) => {
+          const payload = {
+            requestId: request.requestId,
+            leaveType: request.leaveType,
+            employeeId: request.employeeId,
+            employeeName: request.employeeName,
+            encashDays: request.encashDays,
+            encashDate: new Date().toISOString().split("T")[0],
+            fromDate: request.fromDate,
+            toDate: request.toDate,
+            reason: request.reason,
+            forwardedBy: user?.userName,
+            forwardedDate: new Date().toISOString().split("T")[0],
+            modifiedBy: user?.userName,
+            status: "FORWARDED",
+          };
+
+          return api.put(
+            `${API_ROUTES.LEAVE_ENCASHMENT_REQUESTS}/${request.requestId}`,
+            payload
+          );
+        })
+      );
+
+      setSelectedIds([]);
+    } catch (error) {
+      console.error("Failed to forward selected requests:", error);
+    }
   };
 
   /* ================= FORWARD ALL ================= */
@@ -237,27 +261,27 @@ const AttendanceCellEarnedLeaveEncashment: React.FC = () => {
   // };
 
   const handleForwardAll = async (request: EncashmentRequest) => {
-      console.log("Forward leave request:", request);
-  
-      const payload = {
-          requestId: request.requestId,
-          leaveType: request.leaveType,
-          employeeId: request.employeeId,
-          employeeName: request.employeeName,
-          encashDays: request.encashDays,
-          encashDate: new Date().toISOString().split("T")[0],
-          fromDate: request.fromDate,
-          toDate: request.toDate,
-          reason: request.reason,
-          forwardedBy: request.forwardedBy,
-          forwardedDate: new Date().toISOString().split("T")[0],
-          status: "FORWARDED",
-      };
-  
-      await api.put(
-          `${API_ROUTES.LEAVE_ENCASHMENT_REQUESTS}/${request.requestId}`,
-          payload
-      );
+    console.log("Forward leave request:", request);
+
+    const payload = {
+      requestId: request.requestId,
+      leaveType: request.leaveType,
+      employeeId: request.employeeId,
+      employeeName: request.employeeName,
+      encashDays: request.encashDays,
+      encashDate: new Date().toISOString().split("T")[0],
+      fromDate: request.fromDate,
+      toDate: request.toDate,
+      reason: request.reason,
+      forwardedBy: request.forwardedBy,
+      forwardedDate: new Date().toISOString().split("T")[0],
+      status: "FORWARDED",
+    };
+
+    await api.put(
+      `${API_ROUTES.LEAVE_ENCASHMENT_REQUESTS}/${request.requestId}`,
+      payload
+    );
   };
 
   const navigate = useNavigate();
@@ -494,7 +518,7 @@ const AttendanceCellEarnedLeaveEncashment: React.FC = () => {
             <div className="text-[10px] font-bold">
               Total Requests:{" "}
               <span className="text-blue-600">
-                {requests.length}
+                {encashRequests.length}
               </span>
             </div>
           </div>
@@ -554,7 +578,7 @@ const AttendanceCellEarnedLeaveEncashment: React.FC = () => {
                 {encashRequests.map((request: EncashmentRequest) => {
                   const isEligible =
                     request.encashDays <=
-                      request.maxEncashable &&
+                    request.maxEncashable &&
                     request.status === "PENDING";
 
                   const isSelected = selectedIds.includes(
@@ -564,9 +588,8 @@ const AttendanceCellEarnedLeaveEncashment: React.FC = () => {
                   return (
                     <tr
                       key={request.requestId}
-                      className={`hover:bg-[#f8fbff] ${
-                        isSelected ? "bg-blue-50/60" : ""
-                      }`}
+                      className={`hover:bg-[#f8fbff] ${isSelected ? "bg-blue-50/60" : ""
+                        }`}
                     >
                       <td className="border border-[#e1e7f0] px-2 py-2 text-[9px]">
                         {request.reqNo}
@@ -593,16 +616,15 @@ const AttendanceCellEarnedLeaveEncashment: React.FC = () => {
                       </td>
 
                       <td className="border border-[#e1e7f0] px-2 py-2 text-[9px] font-bold text-green-600">
-                        {(request.earnedLeaveAccruedThisYear/2).toFixed(2)}
+                        {(request.earnedLeaveAccruedThisYear / 2).toFixed(2)}
                       </td>
 
                       <td
-                        className={`border border-[#e1e7f0] px-2 py-2 text-[9px] font-bold ${
-                          request.encashDays >
-                          (request.earnedLeaveAccruedThisYear/2)
+                        className={`border border-[#e1e7f0] px-2 py-2 text-[9px] font-bold ${request.encashDays >
+                            (request.earnedLeaveAccruedThisYear / 2)
                             ? "text-red-600"
                             : "text-[#172554]"
-                        }`}
+                          }`}
                       >
                         {request.encashDays.toFixed(2)}
                       </td>
@@ -645,7 +667,7 @@ const AttendanceCellEarnedLeaveEncashment: React.FC = () => {
 
                       <td className="border border-[#e1e7f0] px-2 py-2">
                         {request.status === "PENDING" &&
-                        isEligible ? (
+                          isEligible ? (
                           <input
                             type="checkbox"
                             checked={isSelected}
@@ -678,8 +700,8 @@ const AttendanceCellEarnedLeaveEncashment: React.FC = () => {
 
           <div className="flex items-center justify-between px-5 py-3">
             <span className="text-[10px] font-semibold text-gray-700">
-              Showing 1 to {requests.length} of{" "}
-              {requests.length} entries
+              Showing 1 to {encashRequests.length} of{" "}
+              {encashRequests.length} entries
             </span>
 
             <div className="flex items-center gap-3">
@@ -754,7 +776,7 @@ const AttendanceCellEarnedLeaveEncashment: React.FC = () => {
           <button
             type="button"
             className="flex items-center gap-2 rounded border border-blue-500 bg-white px-4 py-2 text-[11px] font-semibold text-blue-600 hover:bg-blue-50"
-            onClick={()=> navigate("/attendance-cell")}
+            onClick={() => navigate("/attendance-cell")}
           >
             <ArrowLeft size={15} />
             Back to Dashboard
