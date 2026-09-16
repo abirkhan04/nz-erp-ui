@@ -546,7 +546,7 @@ const AttendanceCellMaternityLeaveEncashment: React.FC = () => {
                       </td>
 
                       <td className="border border-[#e1e7f0] px-2 py-2 text-[8px]">
-                        {request.empId}
+                        {request.employeeId}
                       </td>
 
                       <td className="whitespace-nowrap border border-[#e1e7f0] px-2 py-2 text-[8px] font-medium">

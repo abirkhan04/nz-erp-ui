@@ -38,98 +38,6 @@ interface EncashmentRequest {
   status: "PENDING" | "FORWARDED";
 }
 
-const mockRequests: EncashmentRequest[] = [
-  {
-    leaveType: "EL",
-    requestId: "1",
-    reqNo: "ELR250515001",
-    employeeId: "10045",
-    employeeName: "Jahid Hossain",
-    department: "Weaving",
-    earnedLeaveBalance: 24,
-    earnedLeaveAccruedThisYear: 20,
-    maxEncashable: 10,
-    encashDays: 5,
-    fromDate: "18-May-2025",
-    toDate: "22-May-2025",
-    reason: "Personal Need",
-    forwardedBy: "Prod. Manager",
-    forwardedDate: "15-May-2025 08:15 AM",
-    status: "PENDING",
-  },
-  {
-    leaveType: "EL",
-    requestId: "2",
-    reqNo: "ELR250515002",
-    employeeId: "10087",
-    employeeName: "Ripon Miah",
-    department: "Spinning",
-    earnedLeaveBalance: 18.5,
-    earnedLeaveAccruedThisYear: 16,
-    maxEncashable: 8,
-    encashDays: 6,
-    fromDate: "17-May-2025",
-    toDate: "22-May-2025",
-    reason: "Family Event",
-    forwardedBy: "Prod. Manager",
-    forwardedDate: "15-May-2025 09:05 AM",
-    status: "PENDING",
-  },
-  {
-    leaveType: "EL",
-    requestId: "3",
-    reqNo: "ELR250515003",
-    employeeId: "10123",
-    employeeName: "Sagor Ali",
-    department: "Dyeing",
-    earnedLeaveBalance: 30,
-    earnedLeaveAccruedThisYear: 24,
-    maxEncashable: 12,
-    encashDays: 10,
-    fromDate: "20-May-2025",
-    toDate: "29-May-2025",
-    reason: "Child Education",
-    forwardedBy: "Prod. Manager",
-    forwardedDate: "15-May-2025 09:25 AM",
-    status: "PENDING",
-  },
-  {
-    leaveType: "EL",
-    requestId: "4",
-    reqNo: "ELR250515004",
-    employeeId: "10145",
-    employeeName: "Nazma Akter",
-    department: "Finishing",
-    earnedLeaveBalance: 12,
-    earnedLeaveAccruedThisYear: 10,
-    maxEncashable: 5,
-    encashDays: 5,
-    fromDate: "25-May-2025",
-    toDate: "29-May-2025",
-    reason: "Medical Expense",
-    forwardedBy: "Prod. Manager",
-    forwardedDate: "15-May-2025 10:10 AM",
-    status: "PENDING",
-  },
-  {
-    leaveType: "EL",
-    requestId: "5",
-    reqNo: "ELR250515005",
-    employeeId: "10166",
-    employeeName: "Monir Hossain",
-    department: "Maintenance",
-    earnedLeaveBalance: 9,
-    earnedLeaveAccruedThisYear: 8,
-    maxEncashable: 4,
-    encashDays: 4,
-    fromDate: "21-May-2025",
-    toDate: "24-May-2025",
-    reason: "Home Renovation",
-    forwardedBy: "Prod. Manager",
-    forwardedDate: "15-May-2025 10:20 AM",
-    status: "PENDING",
-  },
-];
 
 const AttendanceCellEarnedLeaveEncashment: React.FC = () => {
 
@@ -158,7 +66,7 @@ const AttendanceCellEarnedLeaveEncashment: React.FC = () => {
   /* ================= ELIGIBLE REQUESTS ================= */
 
   const eligibleRequests = encashRequests.filter(
-    (request) => {
+    (request: EncashmentRequest) => {
       request.maxEncashable = 10,
         request.encashDays <= request.maxEncashable &&
         request.status === "PENDING"
