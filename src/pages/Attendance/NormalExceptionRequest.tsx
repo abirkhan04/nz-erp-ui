@@ -19,7 +19,6 @@ import {
 import { useNavigate } from "react-router-dom";
 import { API_ROUTES } from "../../api/routes";
 import { useGet } from "../../hooks/useGet";
-import { api } from "../../api/client";
 
 interface ExceptionRequest {
   id: string;
@@ -196,7 +195,7 @@ const mockRequests: ExceptionRequest[] = [
 const NormalExceptionRequest: React.FC = () => {
   const navigate = useNavigate();
 
-  const [requests, setRequests] =
+  const [, setRequests] =
     useState<ExceptionRequest[]>(mockRequests);
     const { data: rawExceptionResponse } = useGet<any>({ key: ["exceptionRequests"], url: `${API_ROUTES.ATTENDANCE_EXCEPTIONS}?status=Submitted` });
     const exceptionRequests: ExceptionRequest[] = Array.isArray(rawExceptionResponse)
@@ -1011,39 +1010,5 @@ const SummaryCard: React.FC<SummaryCardProps> = ({
 /* =============================================================
    PUNCH BADGE
 ============================================================= */
-
-interface PunchBadgeProps {
-  type:
-    | "OUT PUNCH MISSING"
-    | "IN PUNCH MISSING"
-    | "BOTH PUNCH MISSING";
-}
-
-const PunchBadge: React.FC<PunchBadgeProps> = ({ type }) => {
-  if (type === "OUT PUNCH MISSING") {
-    return (
-      <span className="flex items-center justify-center gap-1 rounded border border-orange-200 bg-orange-50 px-2 py-1 text-[7px] font-semibold text-orange-600">
-        <LogOut size={10} />
-        OUT PUNCH MISSING
-      </span>
-    );
-  }
-
-  if (type === "IN PUNCH MISSING") {
-    return (
-      <span className="flex items-center justify-center gap-1 rounded border border-blue-200 bg-blue-50 px-2 py-1 text-[7px] font-semibold text-blue-600">
-        <LogIn size={10} />
-        IN PUNCH MISSING
-      </span>
-    );
-  }
-
-  return (
-    <span className="flex items-center justify-center gap-1 rounded border border-green-200 bg-green-50 px-2 py-1 text-[7px] font-semibold text-green-600">
-      <Users size={10} />
-      BOTH PUNCH MISSING
-    </span>
-  );
-};
 
 export default NormalExceptionRequest;
