@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from "react";
 import {
   ArrowLeft,
-  ArrowRight,
   CalendarDays,
   CheckCircle2,
   ChevronLeft,
@@ -12,7 +11,6 @@ import {
   FileImage,
   MessageSquare,
   Paperclip,
-  Send,
   Users,
   UserRound,
   Clock3,
@@ -20,8 +18,8 @@ import {
 } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
-import { API_ROUTES } from "../../api/routes";
-import {useGet, usePost} from ""; // adjust imports above to your project's actual hook location
+import {useGet} from "../../hooks/useGet";
+import {usePost} from  "../../hooks/usePost"; // adjust imports above to your project's actual hook location
 // adjust imports above to your project's actual hook location
 
 interface Attachment {
@@ -98,7 +96,7 @@ const ExceptionRequestDetails: React.FC = () => {
     refetch,
   } = useGet({
     key: ["normal-exception-requests"],
-    url: API_ROUTES.NORMAL_EXCEPTION_REQUESTS,
+    url: "",
   });
 
   /*
@@ -188,7 +186,7 @@ const ExceptionRequestDetails: React.FC = () => {
    * ------------------------------------------------------------
    */
 
-  const { mutate: submitAction, isPending: actionPending } = usePost();
+  const { mutate: submitAction, isPending: actionPending } = usePost('');
 
   const handleForward = () => {
     if (!currentRequest) {
@@ -201,13 +199,7 @@ const ExceptionRequestDetails: React.FC = () => {
       remarks,
     };
 
-    submitAction({
-      url: `${API_ROUTES.NORMAL_EXCEPTION_REQUESTS}/${currentRequest.requestId}/forward`,
-      data: payload,
-      onSuccess: () => {
-        refetch();
-      },
-    });
+    submitAction(payload);
   };
 
   const handleReject = () => {
@@ -221,13 +213,7 @@ const ExceptionRequestDetails: React.FC = () => {
       remarks,
     };
 
-    submitAction({
-      url: `${API_ROUTES.NORMAL_EXCEPTION_REQUESTS}/${currentRequest.requestId}/reject`,
-      data: payload,
-      onSuccess: () => {
-        refetch();
-      },
-    });
+    submitAction(payload);
   };
 
   const handleMoreInformation = () => {
@@ -240,14 +226,7 @@ const ExceptionRequestDetails: React.FC = () => {
       status: "MORE_INFORMATION",
       remarks,
     };
-
-    submitAction({
-      url: `${API_ROUTES.NORMAL_EXCEPTION_REQUESTS}/${currentRequest.requestId}/more-information`,
-      data: payload,
-      onSuccess: () => {
-        refetch();
-      },
-    });
+    submitAction(payload);
   };
 
   /*
@@ -255,7 +234,6 @@ const ExceptionRequestDetails: React.FC = () => {
    * LOADING
    * ------------------------------------------------------------
    */
-
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-white">
@@ -861,7 +839,7 @@ const DetailCard: React.FC<{
 
 /* ================================================================
    DETAIL ROW
-================================================================ */
+  ================================================================== */
 
 const DetailRow: React.FC<{
   label: string;

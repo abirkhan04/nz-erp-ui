@@ -55,6 +55,7 @@ const MaternityLeaveEncashmentRequests = lazy(() => import("./pages/Payroll/Mate
 const MaternityLeaveEncashmentDetails = lazy(() => import("./pages/Payroll/MaternityLeaveEncashmentDetail"));
 const AttendanceExceptionRequestPayroll = lazy(() => import("./pages/Payroll/AttendanceExceptionRequest"));
 const NormalExceptionRequestPayroll = lazy(() => import("./pages/Payroll/NormalExceptionRequest"));
+const NormalExceptionRequestDetails = lazy(() => import("./pages/Payroll/NormalExceptionRequestDetails"));
 /**
  * 🔐 Auth Check
  */
@@ -435,7 +436,7 @@ export default function App() {
          <Route
             path="/payroll-and-workforce-movement/attendance-cell/exception-request/normal/:requestId"
             element={<ProtectedRoute>
-              <NormalExceptionRequestPayroll />
+              <NormalExceptionRequestDetails />
             </ProtectedRoute>}
           />
 
