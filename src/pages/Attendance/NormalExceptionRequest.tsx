@@ -19,6 +19,9 @@ import {
 import { useNavigate } from "react-router-dom";
 import { API_ROUTES } from "../../api/routes";
 import { useGet } from "../../hooks/useGet";
+import { usePost } from "../../hooks/usePost";
+import toast from "react-hot-toast";
+import { useAuth } from "../../context/AuthContext";
 
 interface ExceptionRequest {
   id: string;
@@ -35,173 +38,26 @@ interface ExceptionRequest {
   status: "Pending" | "Forwarded" | "Submitted";
 }
 
-const mockRequests: ExceptionRequest[] = [
-  // {
-  //   id: "1",
-  //   reqNo: "EXR250515001",
-  //   empId: "10023",
-  //   employeeName: "Rokon Uddin",
-  //   department: "Weaving",
-  //   exceptionDate: "15-May-2025",
-  //   punchCorrection: "OUT PUNCH MISSING",
-  //   reason: "Official work outside factory",
-  //   requestedBy: "Prod. Manager",
-  //   requestDateTime: "15-May-2025 08:20 AM",
-  //   documents: true,
-  //   status: "Pending",
-  // },
-  // {
-  //   id: "2",
-  //   reqNo: "EXR250515002",
-  //   empId: "10087",
-  //   employeeName: "Ripon Miah",
-  //   department: "Spinning",
-  //   exceptionDate: "14-May-2025",
-  //   punchCorrection: "IN PUNCH MISSING",
-  //   reason: "Power outage affected operations",
-  //   requestedBy: "Prod. Manager",
-  //   requestDateTime: "15-May-2025 08:35 AM",
-  //   documents: true,
-  //   status: "Pending",
-  // },
-  // {
-  //   id: "3",
-  //   reqNo: "EXR250515003",
-  //   empId: "10102",
-  //   employeeName: "Sabina Akter",
-  //   department: "Dyeing",
-  //   exceptionDate: "15-May-2025",
-  //   punchCorrection: "BOTH PUNCH MISSING",
-  //   reason: "Machine breakdown",
-  //   requestedBy: "Prod. Manager",
-  //   requestDateTime: "15-May-2025 09:05 AM",
-  //   documents: true,
-  //   status: "Pending",
-  // },
-  // {
-  //   id: "4",
-  //   reqNo: "EXR250515004",
-  //   empId: "10145",
-  //   employeeName: "Nazma Akter",
-  //   department: "Finishing",
-  //   exceptionDate: "14-May-2025",
-  //   punchCorrection: "OUT PUNCH MISSING",
-  //   reason: "Sudden illness, went to hospital",
-  //   requestedBy: "Prod. Manager",
-  //   requestDateTime: "15-May-2025 09:15 AM",
-  //   documents: true,
-  //   status: "Pending",
-  // },
-  // {
-  //   id: "5",
-  //   reqNo: "EXR250515005",
-  //   empId: "10211",
-  //   employeeName: "Shakil Ahmed",
-  //   department: "Maintenance",
-  //   exceptionDate: "13-May-2025",
-  //   punchCorrection: "BOTH PUNCH MISSING",
-  //   reason: "Vendor meeting outside",
-  //   requestedBy: "Prod. Manager",
-  //   requestDateTime: "15-May-2025 09:40 AM",
-  //   documents: true,
-  //   status: "Pending",
-  // },
-  // {
-  //   id: "6",
-  //   reqNo: "EXR250515006",
-  //   empId: "10237",
-  //   employeeName: "Monir Hossain",
-  //   department: "Electric",
-  //   exceptionDate: "14-May-2025",
-  //   punchCorrection: "IN PUNCH MISSING",
-  //   reason: "Area wide power cut",
-  //   requestedBy: "Prod. Manager",
-  //   requestDateTime: "15-May-2025 10:00 AM",
-  //   documents: true,
-  //   status: "Pending",
-  // },
-  // {
-  //   id: "7",
-  //   reqNo: "EXR250515007",
-  //   empId: "10248",
-  //   employeeName: "Arif Hossain",
-  //   department: "Weaving",
-  //   exceptionDate: "15-May-2025",
-  //   punchCorrection: "OUT PUNCH MISSING",
-  //   reason: "Emergency maintenance work",
-  //   requestedBy: "Prod. Manager",
-  //   requestDateTime: "15-May-2025 10:20 AM",
-  //   documents: true,
-  //   status: "Pending",
-  // },
-  // {
-  //   id: "8",
-  //   reqNo: "EXR250515008",
-  //   empId: "10266",
-  //   employeeName: "Mizanur Rahman",
-  //   department: "Spinning",
-  //   exceptionDate: "14-May-2025",
-  //   punchCorrection: "IN PUNCH MISSING",
-  //   reason: "Transport disruption",
-  //   requestedBy: "Prod. Manager",
-  //   requestDateTime: "15-May-2025 10:35 AM",
-  //   documents: true,
-  //   status: "Pending",
-  // },
-  // {
-  //   id: "9",
-  //   reqNo: "EXR250515009",
-  //   empId: "10291",
-  //   employeeName: "Rashed Mia",
-  //   department: "Dyeing",
-  //   exceptionDate: "15-May-2025",
-  //   punchCorrection: "BOTH PUNCH MISSING",
-  //   reason: "Production floor assignment",
-  //   requestedBy: "Prod. Manager",
-  //   requestDateTime: "15-May-2025 10:45 AM",
-  //   documents: true,
-  //   status: "Pending",
-  // },
-  // {
-  //   id: "10",
-  //   reqNo: "EXR250515010",
-  //   empId: "10305",
-  //   employeeName: "Sakib Khan",
-  //   department: "Finishing",
-  //   exceptionDate: "14-May-2025",
-  //   punchCorrection: "OUT PUNCH MISSING",
-  //   reason: "Official factory assignment",
-  //   requestedBy: "Prod. Manager",
-  //   requestDateTime: "15-May-2025 11:00 AM",
-  //   documents: true,
-  //   status: "Pending",
-  // },
-  // {
-  //   id: "11",
-  //   reqNo: "EXR250515011",
-  //   empId: "10319",
-  //   employeeName: "Hasan Ali",
-  //   department: "Maintenance",
-  //   exceptionDate: "15-May-2025",
-  //   punchCorrection: "IN PUNCH MISSING",
-  //   reason: "Emergency equipment repair",
-  //   requestedBy: "Prod. Manager",
-  //   requestDateTime: "15-May-2025 11:15 AM",
-  //   documents: true,
-  //   status: "Pending",
-  // },
-];
-
 const NormalExceptionRequest: React.FC = () => {
   const navigate = useNavigate();
 
-  const [, setRequests] =
-    useState<ExceptionRequest[]>(mockRequests);
-    const { data: rawExceptionResponse } = useGet<any>({ key: ["exceptionRequests"], url: `${API_ROUTES.ATTENDANCE_EXCEPTIONS}?status=Submitted` });
-    const exceptionRequests: ExceptionRequest[] = Array.isArray(rawExceptionResponse)
-      ? rawExceptionResponse
-     : rawExceptionResponse?.data ?? [];
+  const { mutate: forwardExceptionRequests } = usePost<any>(`${API_ROUTES.ATTENDANCE_EXCEPTIONS}/forward`);
+
+  const { data: rawExceptionResponse, refetch: refetchExceptionRequests } = useGet<any>({ key: ["exceptionRequests"], url: `${API_ROUTES.ATTENDANCE_EXCEPTIONS}?status=Submitted` });
+  const exceptionRequests: ExceptionRequest[] = Array.isArray(rawExceptionResponse)
+    ? rawExceptionResponse
+    : rawExceptionResponse?.items ?? [];
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const pageSize = 6;
+
+  const totalPages = Math.ceil(exceptionRequests.length / pageSize);
+
+  const paginatedRequests = exceptionRequests.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
 
   const currentDate = useMemo(() => {
     const date = new Date();
@@ -219,12 +75,12 @@ const NormalExceptionRequest: React.FC = () => {
   }, []);
 
   const pendingRequests = exceptionRequests.filter(
-    (request : ExceptionRequest) => request.status === "Pending",
+    (request: ExceptionRequest) => request.status === "Pending",
   );
 
   const allSelected =
     pendingRequests.length > 0 &&
-    pendingRequests.every((request : ExceptionRequest) =>
+    pendingRequests.every((request: ExceptionRequest) =>
       selectedIds.includes(request.id),
     );
 
@@ -244,41 +100,71 @@ const NormalExceptionRequest: React.FC = () => {
       setSelectedIds([]);
     } else {
       setSelectedIds(
-        pendingRequests.map((request : ExceptionRequest) => request.id),
+        pendingRequests.map((request: ExceptionRequest) => request.id),
       );
     }
   };
 
+  const { user } = useAuth();
+
   const handleForwardSelected = () => {
-    if (selectedIds.length === 0) return;
+    if (selectedIds.length === 0 || !user?.userId) return;
 
-    setRequests((previous) =>
-      previous.map((request) =>
-        selectedIds.includes(request.id)
-          ? {
-              ...request,
-              status: "Forwarded",
-            }
-          : request,
-      ),
-    );
+    const payload = selectedIds.map((id) => {
+      const request = exceptionRequests.find(
+        (item: ExceptionRequest) => item.id === id
+      );
 
-    setSelectedIds([]);
+      return {
+        id,
+        userId: user.userId,
+        comments: request?.remarks ?? "",
+      };
+    });
+
+    forwardExceptionRequests(payload, {
+      onSuccess: (response) => {
+        toast.success(
+          response.message || "Exception requests forwarded successfully!"
+        );
+
+        setSelectedIds([]);
+        refetchExceptionRequests();
+      },
+
+      onError: (error) => {
+        toast.error(
+          error.message || "Failed to forward exception requests."
+        );
+      },
+    });
   };
 
   const handleForwardAll = () => {
-    setRequests((previous) =>
-      previous.map((request) =>
-        request.status === "Pending"
-          ? {
-              ...request,
-              status: "Forwarded",
-            }
-          : request,
-      ),
-    );
+    if (pendingRequests.length === 0 || !user?.userId) return;
 
-    setSelectedIds([]);
+    const payload = pendingRequests.map((request) => ({
+      id: request.id,
+      userId: user.userId,
+      comments: request.remarks ?? "",
+    }));
+
+    forwardExceptionRequests(payload, {
+      onSuccess: (response) => {
+        toast.success(
+          response.message || "Exception requests forwarded successfully!"
+        );
+
+        setSelectedIds([]);
+        refetchExceptionRequests();
+      },
+
+      onError: (error) => {
+        toast.error(
+          error.message || "Failed to forward exception requests."
+        );
+      },
+    });
   };
 
   const handleBack = () => {
@@ -625,7 +511,7 @@ const NormalExceptionRequest: React.FC = () => {
               </thead>
 
               <tbody>
-                {exceptionRequests.slice(0, 6).map((request: ExceptionRequest, index : number) => {
+                {paginatedRequests.map((request: ExceptionRequest, index: number) => {
                   const isSelected = selectedIds.includes(
                     request.id,
                   );
@@ -633,9 +519,8 @@ const NormalExceptionRequest: React.FC = () => {
                   return (
                     <tr
                       key={request.id}
-                      className={`hover:bg-[#f8fbff] ${
-                        isSelected ? "bg-blue-50" : ""
-                      }`}
+                      className={`hover:bg-[#f8fbff] ${isSelected ? "bg-blue-50" : ""
+                        }`}
                     >
                       <td className="border border-[#dfe5ef] px-2 py-2 text-[7px]">
                         {index + 1}
@@ -665,7 +550,7 @@ const NormalExceptionRequest: React.FC = () => {
 
                       <td className="border border-[#dfe5ef] px-2 py-2">
                         {
-                        request.exceptionType
+                          request.exceptionType
                         /* <PunchBadge
                           type={request.punchCorrection}
                         /> */}
@@ -713,7 +598,7 @@ const NormalExceptionRequest: React.FC = () => {
                       {/* ACTION CHECKBOX */}
 
                       <td className="border border-[#dfe5ef] px-2 py-2">
-                        {request.status === "Pending" ? (
+                        {request.status === "Submitted" || request.status === "Pending" ? (
                           <input
                             type="checkbox"
                             checked={isSelected}
@@ -742,35 +627,52 @@ const NormalExceptionRequest: React.FC = () => {
 
           <div className="flex items-center justify-between px-4 py-2">
             <span className="text-[8px] font-semibold">
-              Showing 1 to 6 of {exceptionRequests.length} entries
+              Showing{" "}
+              {exceptionRequests.length === 0
+                ? 0
+                : (currentPage - 1) * pageSize + 1}{" "}
+              to{" "}
+              {Math.min(currentPage * pageSize, exceptionRequests.length)}{" "}
+              of {exceptionRequests.length} entries
             </span>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <button
                 type="button"
-                className="text-gray-400"
-                disabled
+                onClick={() =>
+                  setCurrentPage((page) => Math.max(1, page - 1))
+                }
+                disabled={currentPage === 1}
+                className="text-gray-500 disabled:text-gray-300"
               >
                 <ChevronLeft size={13} />
               </button>
 
-              <button
-                type="button"
-                className="flex h-5 w-5 items-center justify-center rounded bg-blue-600 text-[8px] font-bold text-white"
-              >
-                1
-              </button>
+              {Array.from({ length: totalPages }, (_, index) => index + 1).map(
+                (page) => (
+                  <button
+                    key={page}
+                    type="button"
+                    onClick={() => setCurrentPage(page)}
+                    className={`flex h-5 w-5 items-center justify-center rounded text-[8px] font-bold ${currentPage === page
+                        ? "bg-blue-600 text-white"
+                        : "border border-[#dce4f0] text-[#172554]"
+                      }`}
+                  >
+                    {page}
+                  </button>
+                )
+              )}
 
               <button
                 type="button"
-                className="flex h-5 w-5 items-center justify-center rounded border border-[#dce4f0] text-[8px]"
-              >
-                2
-              </button>
-
-              <button
-                type="button"
-                className="text-gray-500"
+                onClick={() =>
+                  setCurrentPage((page) =>
+                    Math.min(totalPages, page + 1)
+                  )
+                }
+                disabled={currentPage === totalPages || totalPages === 0}
+                className="text-gray-500 disabled:text-gray-300"
               >
                 <ChevronRight size={13} />
               </button>
@@ -892,9 +794,8 @@ const ShiftMetric: React.FC<ShiftMetricProps> = ({
 }) => {
   return (
     <div
-      className={`flex items-center justify-center gap-3 ${
-        border ? "border-r border-[#e5eaf2]" : ""
-      }`}
+      className={`flex items-center justify-center gap-3 ${border ? "border-r border-[#e5eaf2]" : ""
+        }`}
     >
       <div className={iconClass}>{icon}</div>
 

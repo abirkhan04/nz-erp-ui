@@ -18,6 +18,7 @@ import { API_ROUTES } from "../../api/routes";
 import { useGet } from "../../hooks/useGet";
 import { api } from "../../api/client";
 import { useAuth } from "../../context/AuthContext";
+import toast from "react-hot-toast";
 
 interface EncashmentRequest {
   leaveType: any;
@@ -42,7 +43,7 @@ interface EncashmentRequest {
 const AttendanceCellEarnedLeaveEncashment: React.FC = () => {
 
   const { user } = useAuth();
-  const { data: { data: encashRequests = [] } = {} } = useGet({ key: ["encashRequests"], url: `${API_ROUTES.LEAVE_ENCASHMENT_REQUESTS}?status=PENDING&leaveType=EL` });
+  const { data: { data: encashRequests = [] } = {}, refetch: refetchEncashRequests } = useGet({ key: ["encashRequests"], url: `${API_ROUTES.LEAVE_ENCASHMENT_REQUESTS}?status=PENDING&leaveType=EL` });
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
@@ -114,64 +115,7 @@ const AttendanceCellEarnedLeaveEncashment: React.FC = () => {
     );
 
     try {
-      await Promise.all(
-        selectedRequests.map((request: EncashmentRequest) => {
-          const payload = {
-            requestId: request.requestId,
-            leaveType: request.leaveType,
-            employeeId: request.employeeId,
-            employeeName: request.employeeName,
-            encashDays: request.encashDays,
-            encashDate: new Date().toISOString().split("T")[0],
-            fromDate: request.fromDate,
-            toDate: request.toDate,
-            reason: request.reason,
-            forwardedBy: user?.userName,
-            forwardedDate: new Date().toISOString().split("T")[0],
-            modifiedBy: user?.userName,
-            status: "FORWARDED",
-          };
-
-          return api.put(
-            `${API_ROUTES.LEAVE_ENCASHMENT_REQUESTS}/${request.requestId}`,
-            payload
-          );
-        })
-      );
-
-      setSelectedIds([]);
-    } catch (error) {
-      console.error("Failed to forward selected requests:", error);
-    }
-  };
-
-  /* ================= FORWARD ALL ================= */
-
-  // const handleForwardAll = () => {
-  //   const eligibleIds = encashRequests.map(
-  //     (request: EncashmentRequest) => request.requestId,
-  //   );
-
-  //   if (eligibleIds.length === 0) return;
-
-  //   setRequests((previous) =>
-  //     previous.map((request) =>
-  //       eligibleIds.includes(request.requestId)
-  //         ? {
-  //             ...request,
-  //             status: "FORWARDED",
-  //           }
-  //         : request,
-  //     ),
-  //   );
-
-  //   setSelectedIds([]);
-  // };
-
-  const handleForwardAll = async (requests: EncashmentRequest[]) => {
-    console.log("Forward leave request:", requests);
-    
-    const payloads = requests.map(request => ({      
+      const payloads = selectedRequests.map((request) => ({
         requestId: request.requestId,
         leaveType: request.leaveType,
         employeeId: request.employeeId,
@@ -183,8 +127,40 @@ const AttendanceCellEarnedLeaveEncashment: React.FC = () => {
         reason: request.reason,
         forwardedBy: request.forwardedBy,
         forwardedDate: new Date().toISOString().split("T")[0],
-        status: "FORWARDED"
-     }));
+        status: "FORWARDED",
+      }));
+
+      await api.put(
+        `${API_ROUTES.LEAVE_ENCASHMENT_REQUESTS}`,
+        payloads
+      );
+
+      refetchEncashRequests();
+      toast.success("Selected requests forwarded successfully.");
+      setSelectedIds([]);
+    } catch (error) {
+      console.error("Failed to forward selected requests:", error);
+    }
+  };
+  /* ================= FORWARD ALL ================= */
+
+  const handleForwardAll = async (requests: EncashmentRequest[]) => {
+    console.log("Forward leave request:", requests);
+
+    const payloads = requests.map(request => ({
+      requestId: request.requestId,
+      leaveType: request.leaveType,
+      employeeId: request.employeeId,
+      employeeName: request.employeeName,
+      encashDays: request.encashDays,
+      encashDate: new Date().toISOString().split("T")[0],
+      fromDate: request.fromDate,
+      toDate: request.toDate,
+      reason: request.reason,
+      forwardedBy: request.forwardedBy,
+      forwardedDate: new Date().toISOString().split("T")[0],
+      status: "FORWARDED"
+    }));
     await api.put(
       `${API_ROUTES.LEAVE_ENCASHMENT_REQUESTS}`,
       payloads
@@ -528,9 +504,9 @@ const AttendanceCellEarnedLeaveEncashment: React.FC = () => {
 
                       <td
                         className={`border border-[#e1e7f0] px-2 py-2 text-[9px] font-bold ${request.encashDays >
-                            (request.leaveAccruedThisYear / 2)
-                            ? "text-red-600"
-                            : "text-[#172554]"
+                          (request.leaveAccruedThisYear / 2)
+                          ? "text-red-600"
+                          : "text-[#172554]"
                           }`}
                       >
                         {request.encashDays.toFixed(2)}
