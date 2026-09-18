@@ -53,6 +53,8 @@ const EarnedLeaveEncashmentRequest = lazy(() => import("./pages/Payroll/EarnedLe
 const EarnedLeaveEncashmentDetails = lazy(() => import("./pages/Payroll/EarnedLeaveEncashmentDetaill"));
 const MaternityLeaveEncashmentRequests = lazy(() => import("./pages/Payroll/MaternityLeaveEncashmentList"));
 const MaternityLeaveEncashmentDetails = lazy(() => import("./pages/Payroll/MaternityLeaveEncashmentDetail"));
+const AttendanceExceptionRequestPayroll = lazy(() => import("./pages/Payroll/AttendanceExceptionRequest"));
+const NormalExceptionRequestPayroll = lazy(() => import("./pages/Payroll/NormalExceptionRequest"));
 /**
  * 🔐 Auth Check
  */
@@ -413,6 +415,27 @@ export default function App() {
             path="/payroll-and-workforce-movement/attendance-cell/maternity-leave-encashment-requests/:requestId"
             element={<ProtectedRoute>
               <MaternityLeaveEncashmentDetails />
+            </ProtectedRoute>}
+          />
+
+          <Route
+            path="/payroll-and-workforce-movement/attendance-cell/exception-request"
+            element={<ProtectedRoute>
+              <AttendanceExceptionRequestPayroll />
+            </ProtectedRoute>}
+          />
+
+          <Route
+            path="/payroll-and-workforce-movement/attendance-cell/exception-request/normal"
+            element={<ProtectedRoute>
+              <NormalExceptionRequestPayroll />
+            </ProtectedRoute>}
+          />
+
+         <Route
+            path="/payroll-and-workforce-movement/attendance-cell/exception-request/normal/:requestId"
+            element={<ProtectedRoute>
+              <NormalExceptionRequestPayroll />
             </ProtectedRoute>}
           />
 
