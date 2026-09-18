@@ -26,8 +26,8 @@ interface EncashmentRequest {
   employeeId: string;
   employeeName: string;
   department: string;
-  earnedLeaveBalance: number;
-  earnedLeaveAccruedThisYear: number;
+  leaveBalance: number;
+  leaveAccruedThisYear: number;
   maxEncashable: number;
   encashDays: number;
   fromDate: string;
@@ -168,27 +168,26 @@ const AttendanceCellEarnedLeaveEncashment: React.FC = () => {
   //   setSelectedIds([]);
   // };
 
-  const handleForwardAll = async (request: EncashmentRequest) => {
-    console.log("Forward leave request:", request);
-
-    const payload = {
-      requestId: request.requestId,
-      leaveType: request.leaveType,
-      employeeId: request.employeeId,
-      employeeName: request.employeeName,
-      encashDays: request.encashDays,
-      encashDate: new Date().toISOString().split("T")[0],
-      fromDate: request.fromDate,
-      toDate: request.toDate,
-      reason: request.reason,
-      forwardedBy: request.forwardedBy,
-      forwardedDate: new Date().toISOString().split("T")[0],
-      status: "FORWARDED",
-    };
-
+  const handleForwardAll = async (requests: EncashmentRequest[]) => {
+    console.log("Forward leave request:", requests);
+    
+    const payloads = requests.map(request => ({      
+        requestId: request.requestId,
+        leaveType: request.leaveType,
+        employeeId: request.employeeId,
+        employeeName: request.employeeName,
+        encashDays: request.encashDays,
+        encashDate: new Date().toISOString().split("T")[0],
+        fromDate: request.fromDate,
+        toDate: request.toDate,
+        reason: request.reason,
+        forwardedBy: request.forwardedBy,
+        forwardedDate: new Date().toISOString().split("T")[0],
+        status: "FORWARDED"
+     }));
     await api.put(
-      `${API_ROUTES.LEAVE_ENCASHMENT_REQUESTS}/${request.requestId}`,
-      payload
+      `${API_ROUTES.LEAVE_ENCASHMENT_REQUESTS}`,
+      payloads
     );
   };
 
@@ -516,20 +515,20 @@ const AttendanceCellEarnedLeaveEncashment: React.FC = () => {
                       </td>
 
                       <td className="border border-[#e1e7f0] px-2 py-2 text-[9px] font-bold text-green-600">
-                        {request.earnedLeaveBalance.toFixed(2)}
+                        {request.leaveBalance.toFixed(2)}
                       </td>
 
                       <td className="border border-[#e1e7f0] px-2 py-2 text-[9px] font-bold text-green-600">
-                        {request.earnedLeaveAccruedThisYear.toFixed(2)}
+                        {request.leaveAccruedThisYear.toFixed(2)}
                       </td>
 
                       <td className="border border-[#e1e7f0] px-2 py-2 text-[9px] font-bold text-green-600">
-                        {(request.earnedLeaveAccruedThisYear / 2).toFixed(2)}
+                        {(request.leaveAccruedThisYear / 2).toFixed(2)}
                       </td>
 
                       <td
                         className={`border border-[#e1e7f0] px-2 py-2 text-[9px] font-bold ${request.encashDays >
-                            (request.earnedLeaveAccruedThisYear / 2)
+                            (request.leaveAccruedThisYear / 2)
                             ? "text-red-600"
                             : "text-[#172554]"
                           }`}
@@ -715,7 +714,7 @@ const AttendanceCellEarnedLeaveEncashment: React.FC = () => {
             <button
               type="button"
               disabled={eligibleRequests.length === 110}
-              onClick={() => handleForwardAll(encashRequests[0])}
+              onClick={() => handleForwardAll(encashRequests)}
               className="flex items-center gap-2 rounded bg-green-600 px-5 py-2 text-[11px] font-semibold text-white shadow-sm transition hover:bg-green-700 disabled:cursor-not-allowed disabled:bg-gray-400"
             >
               <ArrowRight size={15} />

@@ -17,177 +17,180 @@ import {
   Clock3,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { API_ROUTES } from "../../api/routes";
+import { useGet } from "../../hooks/useGet";
+import { api } from "../../api/client";
 
 interface ExceptionRequest {
   id: string;
   reqNo: string;
-  empId: string;
+  employeeCode: string;
   employeeName: string;
   department: string;
-  exceptionDate: string;
+  forwardedOn: string;
   punchCorrection: "OUT PUNCH MISSING" | "IN PUNCH MISSING" | "BOTH PUNCH MISSING";
-  reason: string;
-  requestedBy: string;
-  requestDateTime: string;
+  exceptionType: string;
+  remarks: string;
+  forwardedBy: string;
   documents: boolean;
-  status: "Pending" | "Forwarded";
+  status: "Pending" | "Forwarded" | "Submitted";
 }
 
 const mockRequests: ExceptionRequest[] = [
-  {
-    id: "1",
-    reqNo: "EXR250515001",
-    empId: "10023",
-    employeeName: "Rokon Uddin",
-    department: "Weaving",
-    exceptionDate: "15-May-2025",
-    punchCorrection: "OUT PUNCH MISSING",
-    reason: "Official work outside factory",
-    requestedBy: "Prod. Manager",
-    requestDateTime: "15-May-2025 08:20 AM",
-    documents: true,
-    status: "Pending",
-  },
-  {
-    id: "2",
-    reqNo: "EXR250515002",
-    empId: "10087",
-    employeeName: "Ripon Miah",
-    department: "Spinning",
-    exceptionDate: "14-May-2025",
-    punchCorrection: "IN PUNCH MISSING",
-    reason: "Power outage affected operations",
-    requestedBy: "Prod. Manager",
-    requestDateTime: "15-May-2025 08:35 AM",
-    documents: true,
-    status: "Pending",
-  },
-  {
-    id: "3",
-    reqNo: "EXR250515003",
-    empId: "10102",
-    employeeName: "Sabina Akter",
-    department: "Dyeing",
-    exceptionDate: "15-May-2025",
-    punchCorrection: "BOTH PUNCH MISSING",
-    reason: "Machine breakdown",
-    requestedBy: "Prod. Manager",
-    requestDateTime: "15-May-2025 09:05 AM",
-    documents: true,
-    status: "Pending",
-  },
-  {
-    id: "4",
-    reqNo: "EXR250515004",
-    empId: "10145",
-    employeeName: "Nazma Akter",
-    department: "Finishing",
-    exceptionDate: "14-May-2025",
-    punchCorrection: "OUT PUNCH MISSING",
-    reason: "Sudden illness, went to hospital",
-    requestedBy: "Prod. Manager",
-    requestDateTime: "15-May-2025 09:15 AM",
-    documents: true,
-    status: "Pending",
-  },
-  {
-    id: "5",
-    reqNo: "EXR250515005",
-    empId: "10211",
-    employeeName: "Shakil Ahmed",
-    department: "Maintenance",
-    exceptionDate: "13-May-2025",
-    punchCorrection: "BOTH PUNCH MISSING",
-    reason: "Vendor meeting outside",
-    requestedBy: "Prod. Manager",
-    requestDateTime: "15-May-2025 09:40 AM",
-    documents: true,
-    status: "Pending",
-  },
-  {
-    id: "6",
-    reqNo: "EXR250515006",
-    empId: "10237",
-    employeeName: "Monir Hossain",
-    department: "Electric",
-    exceptionDate: "14-May-2025",
-    punchCorrection: "IN PUNCH MISSING",
-    reason: "Area wide power cut",
-    requestedBy: "Prod. Manager",
-    requestDateTime: "15-May-2025 10:00 AM",
-    documents: true,
-    status: "Pending",
-  },
-  {
-    id: "7",
-    reqNo: "EXR250515007",
-    empId: "10248",
-    employeeName: "Arif Hossain",
-    department: "Weaving",
-    exceptionDate: "15-May-2025",
-    punchCorrection: "OUT PUNCH MISSING",
-    reason: "Emergency maintenance work",
-    requestedBy: "Prod. Manager",
-    requestDateTime: "15-May-2025 10:20 AM",
-    documents: true,
-    status: "Pending",
-  },
-  {
-    id: "8",
-    reqNo: "EXR250515008",
-    empId: "10266",
-    employeeName: "Mizanur Rahman",
-    department: "Spinning",
-    exceptionDate: "14-May-2025",
-    punchCorrection: "IN PUNCH MISSING",
-    reason: "Transport disruption",
-    requestedBy: "Prod. Manager",
-    requestDateTime: "15-May-2025 10:35 AM",
-    documents: true,
-    status: "Pending",
-  },
-  {
-    id: "9",
-    reqNo: "EXR250515009",
-    empId: "10291",
-    employeeName: "Rashed Mia",
-    department: "Dyeing",
-    exceptionDate: "15-May-2025",
-    punchCorrection: "BOTH PUNCH MISSING",
-    reason: "Production floor assignment",
-    requestedBy: "Prod. Manager",
-    requestDateTime: "15-May-2025 10:45 AM",
-    documents: true,
-    status: "Pending",
-  },
-  {
-    id: "10",
-    reqNo: "EXR250515010",
-    empId: "10305",
-    employeeName: "Sakib Khan",
-    department: "Finishing",
-    exceptionDate: "14-May-2025",
-    punchCorrection: "OUT PUNCH MISSING",
-    reason: "Official factory assignment",
-    requestedBy: "Prod. Manager",
-    requestDateTime: "15-May-2025 11:00 AM",
-    documents: true,
-    status: "Pending",
-  },
-  {
-    id: "11",
-    reqNo: "EXR250515011",
-    empId: "10319",
-    employeeName: "Hasan Ali",
-    department: "Maintenance",
-    exceptionDate: "15-May-2025",
-    punchCorrection: "IN PUNCH MISSING",
-    reason: "Emergency equipment repair",
-    requestedBy: "Prod. Manager",
-    requestDateTime: "15-May-2025 11:15 AM",
-    documents: true,
-    status: "Pending",
-  },
+  // {
+  //   id: "1",
+  //   reqNo: "EXR250515001",
+  //   empId: "10023",
+  //   employeeName: "Rokon Uddin",
+  //   department: "Weaving",
+  //   exceptionDate: "15-May-2025",
+  //   punchCorrection: "OUT PUNCH MISSING",
+  //   reason: "Official work outside factory",
+  //   requestedBy: "Prod. Manager",
+  //   requestDateTime: "15-May-2025 08:20 AM",
+  //   documents: true,
+  //   status: "Pending",
+  // },
+  // {
+  //   id: "2",
+  //   reqNo: "EXR250515002",
+  //   empId: "10087",
+  //   employeeName: "Ripon Miah",
+  //   department: "Spinning",
+  //   exceptionDate: "14-May-2025",
+  //   punchCorrection: "IN PUNCH MISSING",
+  //   reason: "Power outage affected operations",
+  //   requestedBy: "Prod. Manager",
+  //   requestDateTime: "15-May-2025 08:35 AM",
+  //   documents: true,
+  //   status: "Pending",
+  // },
+  // {
+  //   id: "3",
+  //   reqNo: "EXR250515003",
+  //   empId: "10102",
+  //   employeeName: "Sabina Akter",
+  //   department: "Dyeing",
+  //   exceptionDate: "15-May-2025",
+  //   punchCorrection: "BOTH PUNCH MISSING",
+  //   reason: "Machine breakdown",
+  //   requestedBy: "Prod. Manager",
+  //   requestDateTime: "15-May-2025 09:05 AM",
+  //   documents: true,
+  //   status: "Pending",
+  // },
+  // {
+  //   id: "4",
+  //   reqNo: "EXR250515004",
+  //   empId: "10145",
+  //   employeeName: "Nazma Akter",
+  //   department: "Finishing",
+  //   exceptionDate: "14-May-2025",
+  //   punchCorrection: "OUT PUNCH MISSING",
+  //   reason: "Sudden illness, went to hospital",
+  //   requestedBy: "Prod. Manager",
+  //   requestDateTime: "15-May-2025 09:15 AM",
+  //   documents: true,
+  //   status: "Pending",
+  // },
+  // {
+  //   id: "5",
+  //   reqNo: "EXR250515005",
+  //   empId: "10211",
+  //   employeeName: "Shakil Ahmed",
+  //   department: "Maintenance",
+  //   exceptionDate: "13-May-2025",
+  //   punchCorrection: "BOTH PUNCH MISSING",
+  //   reason: "Vendor meeting outside",
+  //   requestedBy: "Prod. Manager",
+  //   requestDateTime: "15-May-2025 09:40 AM",
+  //   documents: true,
+  //   status: "Pending",
+  // },
+  // {
+  //   id: "6",
+  //   reqNo: "EXR250515006",
+  //   empId: "10237",
+  //   employeeName: "Monir Hossain",
+  //   department: "Electric",
+  //   exceptionDate: "14-May-2025",
+  //   punchCorrection: "IN PUNCH MISSING",
+  //   reason: "Area wide power cut",
+  //   requestedBy: "Prod. Manager",
+  //   requestDateTime: "15-May-2025 10:00 AM",
+  //   documents: true,
+  //   status: "Pending",
+  // },
+  // {
+  //   id: "7",
+  //   reqNo: "EXR250515007",
+  //   empId: "10248",
+  //   employeeName: "Arif Hossain",
+  //   department: "Weaving",
+  //   exceptionDate: "15-May-2025",
+  //   punchCorrection: "OUT PUNCH MISSING",
+  //   reason: "Emergency maintenance work",
+  //   requestedBy: "Prod. Manager",
+  //   requestDateTime: "15-May-2025 10:20 AM",
+  //   documents: true,
+  //   status: "Pending",
+  // },
+  // {
+  //   id: "8",
+  //   reqNo: "EXR250515008",
+  //   empId: "10266",
+  //   employeeName: "Mizanur Rahman",
+  //   department: "Spinning",
+  //   exceptionDate: "14-May-2025",
+  //   punchCorrection: "IN PUNCH MISSING",
+  //   reason: "Transport disruption",
+  //   requestedBy: "Prod. Manager",
+  //   requestDateTime: "15-May-2025 10:35 AM",
+  //   documents: true,
+  //   status: "Pending",
+  // },
+  // {
+  //   id: "9",
+  //   reqNo: "EXR250515009",
+  //   empId: "10291",
+  //   employeeName: "Rashed Mia",
+  //   department: "Dyeing",
+  //   exceptionDate: "15-May-2025",
+  //   punchCorrection: "BOTH PUNCH MISSING",
+  //   reason: "Production floor assignment",
+  //   requestedBy: "Prod. Manager",
+  //   requestDateTime: "15-May-2025 10:45 AM",
+  //   documents: true,
+  //   status: "Pending",
+  // },
+  // {
+  //   id: "10",
+  //   reqNo: "EXR250515010",
+  //   empId: "10305",
+  //   employeeName: "Sakib Khan",
+  //   department: "Finishing",
+  //   exceptionDate: "14-May-2025",
+  //   punchCorrection: "OUT PUNCH MISSING",
+  //   reason: "Official factory assignment",
+  //   requestedBy: "Prod. Manager",
+  //   requestDateTime: "15-May-2025 11:00 AM",
+  //   documents: true,
+  //   status: "Pending",
+  // },
+  // {
+  //   id: "11",
+  //   reqNo: "EXR250515011",
+  //   empId: "10319",
+  //   employeeName: "Hasan Ali",
+  //   department: "Maintenance",
+  //   exceptionDate: "15-May-2025",
+  //   punchCorrection: "IN PUNCH MISSING",
+  //   reason: "Emergency equipment repair",
+  //   requestedBy: "Prod. Manager",
+  //   requestDateTime: "15-May-2025 11:15 AM",
+  //   documents: true,
+  //   status: "Pending",
+  // },
 ];
 
 const NormalExceptionRequest: React.FC = () => {
@@ -195,7 +198,10 @@ const NormalExceptionRequest: React.FC = () => {
 
   const [requests, setRequests] =
     useState<ExceptionRequest[]>(mockRequests);
-
+    const { data: rawExceptionResponse } = useGet<any>({ key: ["exceptionRequests"], url: `${API_ROUTES.ATTENDANCE_EXCEPTIONS}?status=Submitted` });
+    const exceptionRequests: ExceptionRequest[] = Array.isArray(rawExceptionResponse)
+      ? rawExceptionResponse
+     : rawExceptionResponse?.data ?? [];
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const currentDate = useMemo(() => {
@@ -213,13 +219,13 @@ const NormalExceptionRequest: React.FC = () => {
     };
   }, []);
 
-  const pendingRequests = requests.filter(
-    (request) => request.status === "Pending",
+  const pendingRequests = exceptionRequests.filter(
+    (request : ExceptionRequest) => request.status === "Pending",
   );
 
   const allSelected =
     pendingRequests.length > 0 &&
-    pendingRequests.every((request) =>
+    pendingRequests.every((request : ExceptionRequest) =>
       selectedIds.includes(request.id),
     );
 
@@ -239,7 +245,7 @@ const NormalExceptionRequest: React.FC = () => {
       setSelectedIds([]);
     } else {
       setSelectedIds(
-        pendingRequests.map((request) => request.id),
+        pendingRequests.map((request : ExceptionRequest) => request.id),
       );
     }
   };
@@ -534,7 +540,7 @@ const NormalExceptionRequest: React.FC = () => {
             <div className="text-[8px] font-bold">
               Total Requests:{" "}
               <span className="text-blue-600">
-                {requests.length}
+                {exceptionRequests.length}
               </span>
             </div>
           </div>
@@ -620,7 +626,7 @@ const NormalExceptionRequest: React.FC = () => {
               </thead>
 
               <tbody>
-                {requests.slice(0, 6).map((request, index) => {
+                {exceptionRequests.slice(0, 6).map((request: ExceptionRequest, index : number) => {
                   const isSelected = selectedIds.includes(
                     request.id,
                   );
@@ -641,7 +647,7 @@ const NormalExceptionRequest: React.FC = () => {
                       </td>
 
                       <td className="border border-[#dfe5ef] px-2 py-2 text-[7px]">
-                        {request.empId}
+                        {request.employeeCode}
                       </td>
 
                       <td className="whitespace-nowrap border border-[#dfe5ef] px-2 py-2 text-[7px] font-medium">
@@ -653,27 +659,29 @@ const NormalExceptionRequest: React.FC = () => {
                       </td>
 
                       <td className="whitespace-nowrap border border-[#dfe5ef] px-2 py-2 text-[7px]">
-                        {request.exceptionDate}
+                        {request.forwardedOn}
                       </td>
 
                       {/* PUNCH CORRECTION */}
 
                       <td className="border border-[#dfe5ef] px-2 py-2">
-                        <PunchBadge
+                        {
+                        request.exceptionType
+                        /* <PunchBadge
                           type={request.punchCorrection}
-                        />
+                        /> */}
                       </td>
 
                       <td className="border border-[#dfe5ef] px-2 py-2 text-[7px]">
-                        {request.reason}
+                        {request.remarks}
                       </td>
 
                       <td className="whitespace-nowrap border border-[#dfe5ef] px-2 py-2 text-[7px]">
-                        {request.requestedBy}
+                        {request.forwardedBy}
                       </td>
 
                       <td className="whitespace-nowrap border border-[#dfe5ef] px-2 py-2 text-[7px]">
-                        {request.requestDateTime}
+                        {request.forwardedOn}
                       </td>
 
                       {/* DOCUMENT */}
@@ -692,7 +700,7 @@ const NormalExceptionRequest: React.FC = () => {
                       {/* STATUS */}
 
                       <td className="border border-[#dfe5ef] px-2 py-2">
-                        {request.status === "Pending" ? (
+                        {request.status === "Submitted" || request.status === "Pending" ? (
                           <span className="rounded bg-orange-100 px-2 py-1 text-[7px] font-semibold text-orange-600">
                             Pending
                           </span>
@@ -735,7 +743,7 @@ const NormalExceptionRequest: React.FC = () => {
 
           <div className="flex items-center justify-between px-4 py-2">
             <span className="text-[8px] font-semibold">
-              Showing 1 to 6 of {requests.length} entries
+              Showing 1 to 6 of {exceptionRequests.length} entries
             </span>
 
             <div className="flex items-center gap-3">
