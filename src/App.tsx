@@ -56,6 +56,10 @@ const MaternityLeaveEncashmentDetails = lazy(() => import("./pages/Payroll/Mater
 const AttendanceExceptionRequestPayroll = lazy(() => import("./pages/Payroll/AttendanceExceptionRequest"));
 const NormalExceptionRequestPayroll = lazy(() => import("./pages/Payroll/NormalExceptionRequest"));
 const NormalExceptionRequestDetails = lazy(() => import("./pages/Payroll/NormalExceptionRequestDetails"));
+const PayrollExceptionRequestPostLock = lazy(() => import("./pages/Payroll/PayrollExceptionRequestPostLock"));
+const PayrollExceptionRequestPostLockDetails = lazy(() => import("./pages/Payroll/PayrollExceptionRequestDetailsPostLock"));
+const LeaveWithoutPayRequests = lazy(() => import("./pages/Payroll/LeaveWithoutPayRequest"));
+const LeaveWithoutPayRequestsDetails = lazy(() => import("./pages/Payroll/LeaveWithoutPayRequestDetails"));
 /**
  * 🔐 Auth Check
  */
@@ -439,6 +443,35 @@ export default function App() {
               <NormalExceptionRequestDetails />
             </ProtectedRoute>}
           />
+
+          <Route
+            path="/payroll-and-workforce-movement/attendance-cell/exception-request/payroll-adjustment"
+            element={<ProtectedRoute>
+              <PayrollExceptionRequestPostLock />
+            </ProtectedRoute>}
+          />
+
+          <Route
+            path="/payroll-and-workforce-movement/attendance-cell/exception-request/payroll-adjustment/:requestId"
+            element={<ProtectedRoute>
+              <PayrollExceptionRequestPostLockDetails />
+            </ProtectedRoute>}
+          />
+
+          <Route
+            path="/payroll-and-workforce-movement/attendance-cell/leave-without-pay-request"
+            element={<ProtectedRoute>
+              <LeaveWithoutPayRequests />
+            </ProtectedRoute>}
+          />
+
+          <Route
+            path="/payroll-and-workforce-movement/attendance-cell/leave-without-pay-request/:requestId"
+            element={<ProtectedRoute>
+              <LeaveWithoutPayRequestsDetails />
+            </ProtectedRoute>}
+          />
+
 
           {/* Protected Application Routes (With Topbar) */}
           <Route
