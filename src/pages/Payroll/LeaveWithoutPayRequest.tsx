@@ -265,7 +265,7 @@ const LeaveWithoutPayRequestList: React.FC = () => {
 
     const [remarks, setRemarks] = useState("");
 
-    const [searched, setSearched] = useState(false);
+    const [, setSearched] = useState(false);
 
     /* ------------------------------------------------------------------------ */
     /* FILTER VALUES                                                            */

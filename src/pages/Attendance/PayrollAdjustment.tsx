@@ -94,16 +94,6 @@ const INITIAL_FORM: PayrollAdjustmentPayload = {
     remarks: "",
 };
 
-/* ============================================================
-   SMALL ICON COMPONENT
-============================================================ */
-
-const Icon: React.FC<{
-    children: React.ReactNode;
-    className?: string;
-}> = ({ children, className = "" }) => (
-    <div className={className}>{children}</div>
-);
 
 /* ============================================================
    MAIN COMPONENT
@@ -148,9 +138,7 @@ const AttendanceCellDashboard: React.FC<
             register,
             control,
             handleSubmit,
-            reset,
             setValue,
-            watch,
             formState: {
                 errors,
             },
@@ -161,7 +149,7 @@ const AttendanceCellDashboard: React.FC<
         const [employees, setEmployees] =
             useState<Employee[]>([]);
 
-        const [employeeSearchLoading, setEmployeeSearchLoading] =
+        const [, setEmployeeSearchLoading] =
             useState(false);
 
         /* ==========================================================
@@ -388,32 +376,32 @@ const AttendanceCellDashboard: React.FC<
            FORM CHANGE
         ========================================================== */
 
-        const handleChange = (
-            event: React.ChangeEvent<
-                HTMLInputElement |
-                HTMLSelectElement |
-                HTMLTextAreaElement
-            >
-        ) => {
-            const {
-                name,
-                value,
-            } = event.target;
+        // const handleChange = (
+        //     event: React.ChangeEvent<
+        //         HTMLInputElement |
+        //         HTMLSelectElement |
+        //         HTMLTextAreaElement
+        //     >
+        // ) => {
+        //     const {
+        //         name,
+        //         value,
+        //     } = event.target;
 
-            const numericFields = [
-                "basicSalaryImpact",
-                "otImpact",
-                "nightAllowanceImpact",
-                "deductionImpact",
-            ];
+        //     const numericFields = [
+        //         "basicSalaryImpact",
+        //         "otImpact",
+        //         "nightAllowanceImpact",
+        //         "deductionImpact",
+        //     ];
 
-            setForm((previous) => ({
-                ...previous,
-                [name]: numericFields.includes(name)
-                    ? Number(value)
-                    : value,
-            }));
-        };
+        //     setForm((previous) => ({
+        //         ...previous,
+        //         [name]: numericFields.includes(name)
+        //             ? Number(value)
+        //             : value,
+        //     }));
+        // };
 
         /* ==========================================================
            CREATE / UPDATE

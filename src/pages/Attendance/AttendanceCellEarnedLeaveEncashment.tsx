@@ -42,7 +42,7 @@ interface EncashmentRequest {
 
 const AttendanceCellEarnedLeaveEncashment: React.FC = () => {
 
-  const { user } = useAuth();
+  // const { user } = useAuth();
   const { data: { data: encashRequests = [] } = {}, refetch: refetchEncashRequests } = useGet({ key: ["encashRequests"], url: `${API_ROUTES.LEAVE_ENCASHMENT_REQUESTS}?status=PENDING&leaveType=EL` });
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -115,7 +115,7 @@ const AttendanceCellEarnedLeaveEncashment: React.FC = () => {
     );
 
     try {
-      const payloads = selectedRequests.map((request) => ({
+      const payloads = selectedRequests.map((request:EncashmentRequest) => ({
         requestId: request.requestId,
         leaveType: request.leaveType,
         employeeId: request.employeeId,
