@@ -60,6 +60,7 @@ const PayrollExceptionRequestPostLock = lazy(() => import("./pages/Payroll/Payro
 const PayrollExceptionRequestPostLockDetails = lazy(() => import("./pages/Payroll/PayrollExceptionRequestDetailsPostLock"));
 const LeaveWithoutPayRequests = lazy(() => import("./pages/Payroll/LeaveWithoutPayRequest"));
 const LeaveWithoutPayRequestsDetails = lazy(() => import("./pages/Payroll/LeaveWithoutPayRequestDetails"));
+const PayrollAdjustmentPostLock = lazy(() => import("./pages/Attendance/PayrollAdjustment"));
 /**
  * 🔐 Auth Check
  */
@@ -367,6 +368,13 @@ export default function App() {
             </ProtectedRoute>
             }
           />
+
+          <Route 
+             path="/attendance-cell/exception-request/payroll-adjustment-requests"
+             element={<ProtectedRoute>
+              <PayrollAdjustmentPostLock/>
+             </ProtectedRoute>}
+           />  
 
           <Route
             path="/payroll-and-workforce-movement"
