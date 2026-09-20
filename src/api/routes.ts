@@ -52,9 +52,13 @@ export const API_ROUTES = {
   LEAVE: "Leave",
   EMPLOYEE_MASTERS: "EmployeeMasters",
   LEAVE_ENCASHMENT_REQUESTS: "v1/leave-encashment-requests",
+  NORMAL_EXCEPTION_REQUESTS_FORWARD: "",
 
   // Payroll
   PAYROLL: "payroll",
   LEARNERS: "Learners",
   ATTENDANCE_EXCEPTIONS: "AttendanceExceptions",
+  
+
+
 };

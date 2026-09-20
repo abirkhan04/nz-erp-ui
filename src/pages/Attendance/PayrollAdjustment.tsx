@@ -456,36 +456,36 @@ const AttendanceCellDashboard: React.FC<
            DELETE
         ========================================================== */
 
-        const handleDelete = async (
-            requestId: string
-        ) => {
-            const confirmed = window.confirm(
-                "Are you sure you want to delete this payroll adjustment request?"
-            );
+        // const handleDelete = async (
+        //     requestId: string
+        // ) => {
+        //     const confirmed = window.confirm(
+        //         "Are you sure you want to delete this payroll adjustment request?"
+        //     );
 
-            if (!confirmed) {
-                return;
-            }
+        //     if (!confirmed) {
+        //         return;
+        //     }
 
-            try {
-                setLoading(true);
-                setError("");
+        //     try {
+        //         setLoading(true);
+        //         setError("");
 
-                await axios.delete(
-                    `${PAYROLL_ADJUSTMENT_API}/${requestId}`
-                );
+        //         await axios.delete(
+        //             `${PAYROLL_ADJUSTMENT_API}/${requestId}`
+        //         );
 
-                await loadPayrollAdjustments();
-            } catch (err) {
-                console.error(err);
+        //         await loadPayrollAdjustments();
+        //     } catch (err) {
+        //         console.error(err);
 
-                setError(
-                    "Unable to delete payroll adjustment."
-                );
-            } finally {
-                setLoading(false);
-            }
-        };
+        //         setError(
+        //             "Unable to delete payroll adjustment."
+        //         );
+        //     } finally {
+        //         setLoading(false);
+        //     }
+        // };
 
         /* ==========================================================
            CALCULATIONS

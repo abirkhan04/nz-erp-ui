@@ -478,7 +478,7 @@ const NormalExceptionRequests: React.FC = () => {
      FORWARD SELECTED
   ========================================================== */
 
-  // const { mutate: forwardSelected, isPending: isForwarding } = usePost();
+  const { mutate: forwardSelected, isPending: isForwarding } = usePost("dummy url");
 
   const handleForwardSelected = () => {
     if (!selectedRequestIds.length) {
@@ -499,15 +499,15 @@ const NormalExceptionRequests: React.FC = () => {
       })
     );
 
-    // forwardSelected({
-    //   url: API_ROUTES.NORMAL_EXCEPTION_REQUESTS_FORWARD,
-    //   data: payload,
-    //   onSuccess: () => {
-    //     setSelectedRequestIds([]);
-    //     setRemarks("");
-    //     refetch();
-    //   },
-    // });
+    forwardSelected({
+      url: API_ROUTES.NORMAL_EXCEPTION_REQUESTS_FORWARD,
+      data: payload,
+      onSuccess: () => {
+        setSelectedRequestIds([]);
+        setRemarks("");
+        refetch();
+      },
+    });
   };
 
   /* ==========================================================

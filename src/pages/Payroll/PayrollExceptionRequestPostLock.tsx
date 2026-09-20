@@ -14,7 +14,6 @@ import {
   Search,
   Send,
   Users,
-  X,
 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";

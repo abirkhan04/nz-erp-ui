@@ -93,7 +93,6 @@ const ExceptionRequestDetails: React.FC = () => {
   const {
     data: response,
     isLoading,
-    refetch,
   } = useGet({
     key: ["normal-exception-requests"],
     url: "",
