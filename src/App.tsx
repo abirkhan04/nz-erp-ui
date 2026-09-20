@@ -41,6 +41,7 @@ const AttendanceCellEarnedLeaveEncashment = lazy(() => import("./pages/Attendanc
 const AttendanceCellMaternityLeaveEncashment = lazy(() => import("./pages/Attendance/AttendanceCellMaternityLeaveEncashment"));
 const AttendanceExceptionRequest = lazy(() => import("./pages/Attendance/AttendanceExceptionRequest"));
 const NormalExceptionRequest = lazy(() => import("./pages/Attendance/NormalExceptionRequest"));
+const LeaveWithoutPayRequestAttendance = lazy(() => import("./pages/Attendance/LeaveWithoutPayRequest"));
 
 /**
  * Payroll and workforce movement
@@ -369,12 +370,19 @@ export default function App() {
             }
           />
 
-          <Route 
-             path="/attendance-cell/exception-request/payroll-adjustment-requests"
-             element={<ProtectedRoute>
-              <PayrollAdjustmentPostLock/>
-             </ProtectedRoute>}
-           />  
+          <Route
+            path="/attendance-cell/exception-request/payroll-adjustment-requests"
+            element={<ProtectedRoute>
+              <PayrollAdjustmentPostLock />
+            </ProtectedRoute>}
+          />
+
+          <Route
+            path="/attendance-cell/leave-without-pay-request"
+            element={<ProtectedRoute>
+              <LeaveWithoutPayRequestAttendance />
+            </ProtectedRoute>}
+          />
 
           <Route
             path="/payroll-and-workforce-movement"
@@ -445,7 +453,7 @@ export default function App() {
             </ProtectedRoute>}
           />
 
-         <Route
+          <Route
             path="/payroll-and-workforce-movement/attendance-cell/exception-request/normal/:requestId"
             element={<ProtectedRoute>
               <NormalExceptionRequestDetails />

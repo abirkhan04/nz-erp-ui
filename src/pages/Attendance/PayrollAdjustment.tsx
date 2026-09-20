@@ -3,6 +3,7 @@ import axios from "axios";
 import CommonInputField, { type Option } from "../../components/CommonInputFields";
 import { useForm } from "react-hook-form";
 import { api } from "../../api/client";
+import { useNavigate } from "react-router-dom";
 
 /* ============================================================
    TYPES
@@ -100,7 +101,7 @@ const INITIAL_FORM: PayrollAdjustmentPayload = {
    MAIN COMPONENT
 ============================================================ */
 
-const AttendanceCellDashboard: React.FC<
+const PayrollAdjustmentRequests: React.FC<
     AttendanceCellDashboardProps
 > = ({
     pendingPayrollAdjustments = 11,
@@ -302,7 +303,11 @@ const AttendanceCellDashboard: React.FC<
 
             await loadPayrollAdjustments();
         };
+         const navigate = useNavigate();
 
+        const navigateToLeaveWithoutPayRequest =  async () => {
+           navigate("/attendance-cell/leave-without-pay-request");
+        }
         /* ==========================================================
            CREATE
         ========================================================== */
@@ -884,6 +889,7 @@ const AttendanceCellDashboard: React.FC<
                                                 ◎
                                             </span>
                                         }
+                                        onClick={navigateToLeaveWithoutPayRequest}
                                     />
                                 </div>
                             </section>
@@ -1819,4 +1825,4 @@ const AttendanceCellDashboard: React.FC<
         );
     };
 
-export default AttendanceCellDashboard;
+export default PayrollAdjustmentRequests;
