@@ -42,6 +42,8 @@ type CommonInputFieldProps<T extends FieldValues> = {
   | "searchable-dropdown"
   | "radio";
 
+  datePickerMode?: "date" | "month";
+
   options?: Option[];
 
   rules?: RegisterOptions<T>;
@@ -68,6 +70,7 @@ const CommonInputField = <T extends FieldValues>({
   errors,
   control,
   type = "text",
+  datePickerMode = "date",
   options = [],
   rules,
   placeholder,
@@ -258,22 +261,46 @@ const CommonInputField = <T extends FieldValues>({
             render={({ field }) => {
               const selectedDate =
                 field.value && typeof field.value === "string"
-                  ? parse(field.value, "yyyy-MM-dd", new Date())
+                  ? parse(
+                    field.value,
+                    datePickerMode === "month"
+                      ? "yyyy-MM"
+                      : "yyyy-MM-dd",
+                    new Date()
+                  )
                   : null;
 
               return (
                 <DatePicker
                   selected={isValid(selectedDate) ? selectedDate : null}
-                  onChange={(date: Date | null) =>
-                    field.onChange(date ? format(date, "yyyy-MM-dd") : "")
+                  onChange={(date: Date | null) => {
+                    if (!date) {
+                      field.onChange("");
+                      return;
+                    }
+
+                    field.onChange(
+                      datePickerMode === "month"
+                        ? format(date, "yyyy-MM")
+                        : format(date, "yyyy-MM-dd")
+                    );
+                  }}
+                  dateFormat={
+                    datePickerMode === "month"
+                      ? "MM/yyyy"
+                      : "dd/MM/yyyy"
                   }
-                  dateFormat="dd/MM/yyyy"
-                  placeholderText="dd/MM/yyyy"
+                  placeholderText={
+                    datePickerMode === "month"
+                      ? "MM/yyyy"
+                      : "dd/MM/yyyy"
+                  }
                   className={inputClass}
                   disabled={disabled}
                   showYearDropdown
                   scrollableYearDropdown
                   yearDropdownItemNumber={100}
+                  showMonthYearPicker={datePickerMode === "month"}
                 />
               );
             }}

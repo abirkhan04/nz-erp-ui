@@ -9,6 +9,7 @@ import { api } from "../../api/client";
 ============================================================ */
 
 interface Employee {
+    id: string;
     employeeCode: string;
     employeeName: string;
     company: string;
@@ -42,20 +43,20 @@ interface PayrollAdjustmentRequest {
 }
 
 interface PayrollAdjustmentPayload {
-  employeeId: string;
-  company: string;
-  employeeName: string;
-  attendanceMonth: string;
-  department: string | null;
-  designation: string | null;
-  correctionType: string;
-  reason: string;
-  basicSalaryImpact: number;
-  otImpact: number;
-  nightAllowanceImpact: number;
-  deductionImpact: number;
-  supportingDocument: string;
-  remarks: string;
+    employeeId: string;
+    company: string;
+    employeeName: string;
+    attendanceMonth: string;
+    department: string | null;
+    designation: string | null;
+    correctionType: string;
+    reason: string;
+    basicSalaryImpact: number;
+    otImpact: number;
+    nightAllowanceImpact: number;
+    deductionImpact: number;
+    supportingDocument: string;
+    remarks: string;
 }
 
 interface AttendanceCellDashboardProps {
@@ -214,7 +215,7 @@ const AttendanceCellDashboard: React.FC<
         const employeeOptions: Option[] =
             employees.map((employee) => ({
                 label: `${employee.employeeCode} - ${employee.employeeName}`,
-                value: employee.employeeCode,
+                value: employee.id,
             }));
 
 
@@ -223,7 +224,7 @@ const AttendanceCellDashboard: React.FC<
         ) => {
             const employee = employees.find(
                 (item) =>
-                    item.employeeCode ===
+                    item.id ===
                     String(option.value)
             );
 
@@ -233,7 +234,7 @@ const AttendanceCellDashboard: React.FC<
 
             setValue(
                 "employeeId",
-                employee.employeeCode,
+                employee.id,
                 {
                     shouldValidate: true,
                     shouldDirty: true,
@@ -274,7 +275,7 @@ const AttendanceCellDashboard: React.FC<
                 );
 
                 const data =
-                    response.data?.data ??
+                    response.data?.items ??
                     response.data ??
                     [];
 
@@ -413,7 +414,7 @@ const AttendanceCellDashboard: React.FC<
             try {
                 setSaving(true);
                 setError("");
-                data.attendanceMonth = data.attendanceMonth.substring(0,7);
+                data.attendanceMonth = data.attendanceMonth.substring(0, 7);
                 let response;
 
                 if (editingRequest) {
@@ -1382,10 +1383,10 @@ const AttendanceCellDashboard: React.FC<
                                                 errors={errors}
                                                 control={control}
                                                 disabled
-                                                // rules={{
-                                                //     required:
-                                                //         "Company is required",
-                                                // }}
+                                            // rules={{
+                                            //     required:
+                                            //         "Company is required",
+                                            // }}
                                             />
 
                                             {/* Department */}
@@ -1412,17 +1413,14 @@ const AttendanceCellDashboard: React.FC<
 
                                             {/* Attendance Month */}
 
-                                            <CommonInputField<PayrollAdjustmentPayload>
+                                            <CommonInputField
+                                                type="date"
+                                                datePickerMode="month"
                                                 label="Attendance Month"
                                                 name="attendanceMonth"
                                                 register={register}
-                                                errors={errors}
                                                 control={control}
-                                                type="date"
-                                                rules={{
-                                                    required:
-                                                        "Attendance month is required",
-                                                }}
+                                                errors={errors}
                                             />
 
                                             {/* Correction Type */}
