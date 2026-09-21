@@ -177,8 +177,8 @@ const LeaveWithoutPayRequest: React.FC = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const pageSize = 5;
 
-    const [forwardingId, setForwardingId] =
-        useState<string | null>(null);
+    const [selectedIds, setSelectedIds] = useState<string[]>([]);
+    const [forwardingAll, setForwardingAll] = useState(false);
 
     /* ============================================================
        FILTER
@@ -285,43 +285,134 @@ const LeaveWithoutPayRequest: React.FC = () => {
        FORWARD
     ============================================================ */
 
-    const handleForward = async (
-        request: LeaveWithoutPayRequest
-    ) => {
+    const handleForwardSelected = async () => {
+        const selectedRequests = requests.filter(
+            (request) =>
+                selectedIds.includes(request.requestId) &&
+                request.status === "Pending"
+        );
+
+        if (selectedRequests.length === 0) {
+            alert("Please select at least one pending request.");
+            return;
+        }
+
         try {
-            setForwardingId(request.requestId);
+            setForwardingAll(true);
 
-            // Replace this with your actual API call.
-            console.log("Forward LWP request:", {
-                requestId: request.requestId,
-                employeeId: request.employeeId,
-                status: "FORWARDED",
-            });
+            console.log(
+                "Forward selected LWP requests:",
+                selectedRequests.map((request) => ({
+                    requestId: request.requestId,
+                    employeeId: request.employeeId,
+                    status: "FORWARDED",
+                }))
+            );
 
-            await new Promise((resolve) =>
-                setTimeout(resolve, 500)
+            await new Promise((resolve) => setTimeout(resolve, 500));
+
+            const selectedRequestIds = selectedRequests.map(
+                (request) => request.requestId
             );
 
             setRequests((previous) =>
                 previous.map((item) =>
-                    item.requestId === request.requestId
+                    selectedRequestIds.includes(item.requestId)
                         ? {
-                              ...item,
-                              status: "Forwarded",
-                          }
+                            ...item,
+                            status: "Forwarded",
+                        }
                         : item
                 )
             );
 
+            setSelectedIds([]);
+
             alert(
-                `Leave Without Pay request ${request.requestId} forwarded successfully.`
+                `${selectedRequests.length} Leave Without Pay request(s) forwarded successfully.`
             );
         } catch (error) {
             console.error(error);
-            alert("Unable to forward request.");
+            alert("Unable to forward selected requests.");
         } finally {
-            setForwardingId(null);
+            setForwardingAll(false);
         }
+    };
+
+    const handleForwardAll = async () => {
+        const pendingRequests = requests.filter(
+            (request) => request.status === "Pending"
+        );
+
+        if (pendingRequests.length === 0) {
+            alert("There are no pending requests to forward.");
+            return;
+        }
+
+        try {
+            setForwardingAll(true);
+
+            console.log(
+                "Forward all LWP requests:",
+                pendingRequests.map((request) => ({
+                    requestId: request.requestId,
+                    employeeId: request.employeeId,
+                    status: "FORWARDED",
+                }))
+            );
+
+            await new Promise((resolve) => setTimeout(resolve, 500));
+
+            setRequests((previous) =>
+                previous.map((item) =>
+                    item.status === "Pending"
+                        ? {
+                            ...item,
+                            status: "Forwarded",
+                        }
+                        : item
+                )
+            );
+
+            setSelectedIds([]);
+
+            alert(
+                `${pendingRequests.length} Leave Without Pay request(s) forwarded successfully.`
+            );
+        } catch (error) {
+            console.error(error);
+            alert("Unable to forward all requests.");
+        } finally {
+            setForwardingAll(false);
+        }
+    };
+
+    const handleSelectAll = () => {
+        const pendingIds = paginatedRequests
+            .filter((request) => request.status === "Pending")
+            .map((request) => request.requestId);
+
+        const allSelected = pendingIds.every((id) =>
+            selectedIds.includes(id)
+        );
+
+        if (allSelected) {
+            setSelectedIds((previous) =>
+                previous.filter((id) => !pendingIds.includes(id))
+            );
+        } else {
+            setSelectedIds((previous) => [
+                ...new Set([...previous, ...pendingIds]),
+            ]);
+        }
+    };
+
+    const handleSelectRow = (requestId: string) => {
+        setSelectedIds((previous) =>
+            previous.includes(requestId)
+                ? previous.filter((id) => id !== requestId)
+                : [...previous, requestId]
+        );
     };
 
     /* ============================================================
@@ -990,76 +1081,90 @@ const LeaveWithoutPayRequest: React.FC = () => {
                             <thead>
                                 <tr className="bg-gray-50">
 
-                                    <th className="border px-3 py-3 text-left text-[9px] font-bold text-gray-600">
+                                    <th className="px-3 py-3 text-left text-[9px] font-bold text-gray-600">
                                         #
                                     </th>
 
-                                    <th className="border px-3 py-3 text-left text-[9px] font-bold text-gray-600">
+                                    <th className="px-3 py-3 text-left text-[9px] font-bold text-gray-600">
                                         Req. No.
                                     </th>
 
-                                    <th className="border px-3 py-3 text-left text-[9px] font-bold text-gray-600">
+                                    <th className="px-3 py-3 text-left text-[9px] font-bold text-gray-600">
                                         Emp ID
                                     </th>
 
-                                    <th className="border px-3 py-3 text-left text-[9px] font-bold text-gray-600">
+                                    <th className="px-3 py-3 text-left text-[9px] font-bold text-gray-600">
                                         Employee Name
                                     </th>
 
-                                    <th className="border px-3 py-3 text-left text-[9px] font-bold text-gray-600">
+                                    <th className="px-3 py-3 text-left text-[9px] font-bold text-gray-600">
                                         Department
                                     </th>
 
-                                    <th className="border px-3 py-3 text-left text-[9px] font-bold text-gray-600">
+                                    <th className="px-3 py-3 text-left text-[9px] font-bold text-gray-600">
                                         Leave From
                                     </th>
 
-                                    <th className="border px-3 py-3 text-left text-[9px] font-bold text-gray-600">
+                                    <th className="px-3 py-3 text-left text-[9px] font-bold text-gray-600">
                                         Leave To
                                     </th>
 
-                                    <th className="border px-3 py-3 text-center text-[9px] font-bold text-gray-600">
+                                    <th className="px-3 py-3 text-center text-[9px] font-bold text-gray-600">
                                         Total Days
                                     </th>
 
-                                    <th className="border px-3 py-3 text-left text-[9px] font-bold text-gray-600">
+                                    <th className="px-3 py-3 text-left text-[9px] font-bold text-gray-600">
                                         LWP Reason
                                     </th>
 
-                                    <th className="border px-3 py-3 text-center text-[9px] font-bold text-gray-600">
+                                    <th className="px-3 py-3 text-center text-[9px] font-bold text-gray-600">
                                         Leave Balance
                                         <br />
                                         (EL + CL + SL)
                                     </th>
 
-                                    <th className="border px-3 py-3 text-center text-[9px] font-bold text-gray-600">
+                                    <th className="px-3 py-3 text-center text-[9px] font-bold text-gray-600">
                                         LWP Days
                                         <br />
                                         Requested
                                     </th>
 
-                                    <th className="border px-3 py-3 text-left text-[9px] font-bold text-gray-600">
+                                    <th className="px-3 py-3 text-left text-[9px] font-bold text-gray-600">
                                         Remarks
                                     </th>
 
-                                    <th className="border px-3 py-3 text-left text-[9px] font-bold text-gray-600">
+                                    <th className="px-3 py-3 text-left text-[9px] font-bold text-gray-600">
                                         Forwarded By
                                         <br />
                                         (Production)
                                     </th>
 
-                                    <th className="border px-3 py-3 text-center text-[9px] font-bold text-gray-600">
+                                    <th className="px-3 py-3 text-center text-[9px] font-bold text-gray-600">
                                         Forwarded Date
                                         <br />
                                         & Time
                                     </th>
 
-                                    <th className="border px-3 py-3 text-center text-[9px] font-bold text-gray-600">
+                                    <th className="px-3 py-3 text-center text-[9px] font-bold text-gray-600">
                                         Status
                                     </th>
 
-                                    <th className="border px-3 py-3 text-center text-[9px] font-bold text-gray-600">
-                                        Action
+                                    <th className="px-3 py-3 text-center text-[9px] font-bold text-gray-600">
+                                        <input
+                                            type="checkbox"
+                                            checked={
+                                                paginatedRequests.filter(
+                                                    (request) => request.status === "Pending"
+                                                ).length > 0 &&
+                                                paginatedRequests
+                                                    .filter((request) => request.status === "Pending")
+                                                    .every((request) =>
+                                                        selectedIds.includes(request.requestId)
+                                                    )
+                                            }
+                                            onChange={handleSelectAll}
+                                            className="h-3.5 w-3.5"
+                                        />
                                     </th>
                                 </tr>
                             </thead>
@@ -1091,7 +1196,7 @@ const LeaveWithoutPayRequest: React.FC = () => {
                                                 className="hover:bg-blue-50"
                                             >
 
-                                                <td className="border px-3 py-3 text-center text-[9px]">
+                                                <td className="px-3 py-3 text-center text-[9px]">
                                                     {(safeCurrentPage -
                                                         1) *
                                                         pageSize +
@@ -1099,81 +1204,81 @@ const LeaveWithoutPayRequest: React.FC = () => {
                                                         1}
                                                 </td>
 
-                                                <td className="border px-3 py-3 text-[9px] font-semibold text-blue-700">
+                                                <td className="px-3 py-3 text-[9px] font-semibold text-blue-700">
                                                     {
                                                         request.requestId
                                                     }
                                                 </td>
 
-                                                <td className="border px-3 py-3 text-[9px]">
+                                                <td className="px-3 py-3 text-[9px]">
                                                     {
                                                         request.employeeId
                                                     }
                                                 </td>
 
-                                                <td className="border px-3 py-3 text-[9px] font-semibold">
+                                                <td className="px-3 py-3 text-[9px] font-semibold">
                                                     {
                                                         request.employeeName
                                                     }
                                                 </td>
 
-                                                <td className="border px-3 py-3 text-[9px]">
+                                                <td className="px-3 py-3 text-[9px]">
                                                     {
                                                         request.department
                                                     }
                                                 </td>
 
-                                                <td className="border px-3 py-3 text-[9px]">
+                                                <td className="px-3 py-3 text-[9px]">
                                                     {
                                                         request.leaveFrom
                                                     }
                                                 </td>
 
-                                                <td className="border px-3 py-3 text-[9px]">
+                                                <td className="px-3 py-3 text-[9px]">
                                                     {
                                                         request.leaveTo
                                                     }
                                                 </td>
 
-                                                <td className="border px-3 py-3 text-center text-[9px]">
+                                                <td className="px-3 py-3 text-center text-[9px]">
                                                     {
                                                         request.totalDays
                                                     }
                                                     .0
                                                 </td>
 
-                                                <td className="border px-3 py-3 text-[9px]">
+                                                <td className="px-3 py-3 text-[9px]">
                                                     {
                                                         request.lwpReason
                                                     }
                                                 </td>
 
-                                                <td className="border px-3 py-3 text-center text-[9px] font-bold text-red-500">
+                                                <td className="px-3 py-3 text-center text-[9px] font-bold text-red-500">
                                                     {request.leaveBalance.toFixed(
                                                         1
                                                     )}
                                                 </td>
 
-                                                <td className="border px-3 py-3 text-center text-[9px]">
+                                                <td className="px-3 py-3 text-center text-[9px]">
                                                     {
                                                         request.lwpDaysRequested
                                                     }
                                                     .0
                                                 </td>
 
-                                                <td className="border px-3 py-3 text-[9px]">
+                                                <td className="px-3 py-3 text-[9px]">
                                                     {
                                                         request.remarks
                                                     }
                                                 </td>
 
-                                                <td className="border px-3 py-3 text-[9px]">
+                                                <td className="px-3 py-3 text-[9px]">
                                                     {
                                                         request.forwardedBy
                                                     }
                                                 </td>
 
-                                                <td className="border px-3 py-3 text-center text-[9px]">
+                                                <td className="px-3 py-3 text-center text-[9px]">
                                                     {request.forwardedDate
                                                         .split(" ")
                                                         .map(
@@ -1188,8 +1293,8 @@ const LeaveWithoutPayRequest: React.FC = () => {
                                                                 >
                                                                     {i >
                                                                         0 && (
-                                                                        <br />
-                                                                    )}
+                                                                            <br />
+                                                                        )}
                                                                     {
                                                                         value
                                                                     }
@@ -1198,7 +1303,7 @@ const LeaveWithoutPayRequest: React.FC = () => {
                                                         )}
                                                 </td>
 
-                                                <td className="border px-3 py-3 text-center">
+                                                <td className="px-3 py-3 text-center">
                                                     <span
                                                         className={`
                                                             inline-flex
@@ -1207,17 +1312,16 @@ const LeaveWithoutPayRequest: React.FC = () => {
                                                             py-1
                                                             text-[9px]
                                                             font-semibold
-                                                            ${
-                                                                request.status ===
+                                                            ${request.status ===
                                                                 "Pending"
-                                                                    ? "bg-orange-100 text-orange-600"
-                                                                    : request.status ===
-                                                                      "Forwarded"
+                                                                ? "bg-orange-100 text-orange-600"
+                                                                : request.status ===
+                                                                    "Forwarded"
                                                                     ? "bg-blue-100 text-blue-600"
                                                                     : request.status ===
-                                                                      "Approved"
-                                                                    ? "bg-green-100 text-green-600"
-                                                                    : "bg-red-100 text-red-600"
+                                                                        "Approved"
+                                                                        ? "bg-green-100 text-green-600"
+                                                                        : "bg-red-100 text-red-600"
                                                             }
                                                         `}
                                                     >
@@ -1227,40 +1331,16 @@ const LeaveWithoutPayRequest: React.FC = () => {
                                                     </span>
                                                 </td>
 
-                                                <td className="border px-3 py-3 text-center">
-
-                                                    {request.status ===
-                                                    "Pending" ? (
-                                                        <button
-                                                            type="button"
-                                                            disabled={
-                                                                forwardingId ===
-                                                                request.requestId
+                                                <td className="px-3 py-3 text-center">
+                                                    {request.status === "Pending" ? (
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={selectedIds.includes(request.requestId)}
+                                                            onChange={() =>
+                                                                handleSelectRow(request.requestId)
                                                             }
-                                                            onClick={() =>
-                                                                handleForward(
-                                                                    request
-                                                                )
-                                                            }
-                                                            className="
-                                                                whitespace-nowrap
-                                                                rounded-md
-                                                                bg-blue-600
-                                                                px-3
-                                                                py-1.5
-                                                                text-[9px]
-                                                                font-semibold
-                                                                text-white
-                                                                hover:bg-blue-700
-                                                                disabled:cursor-not-allowed
-                                                                disabled:opacity-50
-                                                            "
-                                                        >
-                                                            {forwardingId ===
-                                                            request.requestId
-                                                                ? "Forwarding..."
-                                                                : "✈ Forward"}
-                                                        </button>
+                                                            className="h-3.5 w-3.5"
+                                                        />
                                                     ) : (
                                                         <span className="text-[9px] text-gray-400">
                                                             —
@@ -1362,11 +1442,10 @@ const LeaveWithoutPayRequest: React.FC = () => {
                                         px-2
                                         text-[10px]
                                         font-semibold
-                                        ${
-                                            page ===
+                                        ${page ===
                                             safeCurrentPage
-                                                ? "bg-blue-600 text-white"
-                                                : "text-blue-600 hover:bg-blue-50"
+                                            ? "bg-blue-600 text-white"
+                                            : "text-blue-600 hover:bg-blue-50"
                                         }
                                     `}
                                 >
@@ -1410,6 +1489,55 @@ const LeaveWithoutPayRequest: React.FC = () => {
                         </div>
                     </div>
                 </section>
+                <div className="flex justify-end gap-2">
+                    <button
+                        type="button"
+                        onClick={handleForwardSelected}
+                        disabled={selectedIds.length === 0 || forwardingAll}
+                        className="
+                        rounded-md
+                        bg-blue-600
+                        px-4
+                        py-2
+                        text-[10px]
+                        font-semibold
+                        text-white
+                        hover:bg-blue-700
+                        disabled:cursor-not-allowed
+                        disabled:opacity-50"
+                    >
+                        {forwardingAll ? "Forwarding..." : "✈ Forward Selected"}
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={handleForwardAll}
+                        disabled={
+                            forwardingAll ||
+                            !requests.some((request) => request.status === "Pending")
+                        }
+                        className="
+                        rounded-md
+                        bg-green-600
+                        px-4
+                        py-2
+                        text-[10px]
+                        font-semibold
+                        text-white
+                        hover:bg-green-700
+                        disabled:cursor-not-allowed
+                        disabled:opacity-50"
+                    >
+                        ✈ Forward All
+                    </button>
+
+                    <div className="ml-2 text-xs font-semibold text-gray-600">
+                        Total Requests:{" "}
+                        <span className="text-green-600">
+                            {filteredRequests.length}
+                        </span>
+                    </div>
+                </div>
 
                 {/* =================================================
                     BACK BUTTON
@@ -1435,6 +1563,7 @@ const LeaveWithoutPayRequest: React.FC = () => {
                     ← &nbsp; Back to Section Dashboard
                 </button>
             </main>
+
         </div>
     );
 };
