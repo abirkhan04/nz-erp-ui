@@ -1,7 +1,12 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useGet } from "../../hooks/useGet";
+import { API_ROUTES } from "../../api/routes";
+import { useForm } from "react-hook-form";
+import { format, subYears } from "date-fns";
+import CommonInputField from "../../components/CommonInputFields";
 
-interface LeaveWithoutPayRequest {
+interface ILeaveWithoutPayRequest {
     requestId: string;
     employeeId: string;
     employeeName: string;
@@ -18,7 +23,7 @@ interface LeaveWithoutPayRequest {
     status: "Pending" | "Forwarded" | "Approved" | "Rejected";
 }
 
-const mockRequests: LeaveWithoutPayRequest[] = [
+const mockRequests: ILeaveWithoutPayRequest[] = [
     {
         requestId: "LWP250515001",
         employeeId: "10045",
@@ -165,14 +170,36 @@ const mockRequests: LeaveWithoutPayRequest[] = [
     },
 ];
 
+type FilterForm = {
+    fromDate: string;
+    toDate: string;
+}
+
+
+
 const LeaveWithoutPayRequest: React.FC = () => {
     const navigate = useNavigate();
+    const today = new Date();
 
+    const {
+        register,
+        control,
+        watch,
+        formState: { errors },
+    } = useForm<FilterForm>({
+        defaultValues: {
+            fromDate: format(subYears(today, 1), "yyyy-MM-dd"),
+            toDate: format(today, "yyyy-MM-dd"),
+        },
+    });
+
+    const fromDate = watch("fromDate");
+    const toDate = watch("toDate");
+
+    const { data:{ data: leaveWithoutPayRequest=[] } = {} } = useGet({ key: ["leaveWithoutPayRequest", fromDate, toDate], url: `${API_ROUTES.LEAVE}?leaveType=LWP&fromDate=${fromDate}&toDate=${toDate}` });
+    console.log("Leave without pay request", leaveWithoutPayRequest);
     const [requests, setRequests] =
-        useState<LeaveWithoutPayRequest[]>(mockRequests);
-
-    const [fromDate, setFromDate] = useState("2025-05-01");
-    const [toDate, setToDate] = useState("2025-05-31");
+        useState<ILeaveWithoutPayRequest[]>(mockRequests);
 
     const [currentPage, setCurrentPage] = useState(1);
     const pageSize = 5;
@@ -184,59 +211,7 @@ const LeaveWithoutPayRequest: React.FC = () => {
        FILTER
     ============================================================ */
 
-    const filteredRequests = useMemo(() => {
-        return requests.filter((request) => {
-            if (!fromDate && !toDate) {
-                return true;
-            }
-
-            const parseDate = (value: string) => {
-                const [day, monthText, year] = value.split("-");
-
-                const months: Record<string, number> = {
-                    Jan: 0,
-                    Feb: 1,
-                    Mar: 2,
-                    Apr: 3,
-                    May: 4,
-                    Jun: 5,
-                    Jul: 6,
-                    Aug: 7,
-                    Sep: 8,
-                    Oct: 9,
-                    Nov: 10,
-                    Dec: 11,
-                };
-
-                return new Date(
-                    Number(year),
-                    months[monthText],
-                    Number(day)
-                );
-            };
-
-            const requestFrom = parseDate(request.leaveFrom);
-            const requestTo = parseDate(request.leaveTo);
-
-            const filterFrom = fromDate
-                ? new Date(`${fromDate}T00:00:00`)
-                : null;
-
-            const filterTo = toDate
-                ? new Date(`${toDate}T23:59:59`)
-                : null;
-
-            if (filterFrom && requestTo < filterFrom) {
-                return false;
-            }
-
-            if (filterTo && requestFrom > filterTo) {
-                return false;
-            }
-
-            return true;
-        });
-    }, [requests, fromDate, toDate]);
+    const filteredRequests = leaveWithoutPayRequest;
 
     /* ============================================================
        PAGINATION
@@ -276,8 +251,6 @@ const LeaveWithoutPayRequest: React.FC = () => {
     };
 
     const handleReset = () => {
-        setFromDate("");
-        setToDate("");
         setCurrentPage(1);
     };
 
@@ -414,6 +387,10 @@ const LeaveWithoutPayRequest: React.FC = () => {
                 : [...previous, requestId]
         );
     };
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [fromDate, toDate]);
 
     /* ============================================================
        REQUEST CARD
@@ -973,28 +950,14 @@ const LeaveWithoutPayRequest: React.FC = () => {
                             <label className="mb-1 block text-[10px] font-semibold text-blue-900">
                                 From Date
                             </label>
-
-                            <input
+                            <CommonInputField
+                                label="From Date"
+                                name="fromDate"
                                 type="date"
-                                value={fromDate}
-                                onChange={(event) => {
-                                    setFromDate(event.target.value);
-                                    setCurrentPage(1);
-                                }}
-                                className="
-                                    h-9
-                                    w-full
-                                    rounded-md
-                                    border
-                                    border-gray-300
-                                    px-3
-                                    text-xs
-                                    text-gray-700
-                                    outline-none
-                                    focus:border-blue-500
-                                    focus:ring-1
-                                    focus:ring-blue-500
-                                "
+                                register={register}
+                                errors={errors}
+                                control={control}
+                                datePickerMode="date"
                             />
                         </div>
 
@@ -1005,27 +968,14 @@ const LeaveWithoutPayRequest: React.FC = () => {
                                 To Date
                             </label>
 
-                            <input
+                            <CommonInputField
+                                label="To Date"
+                                name="toDate"
                                 type="date"
-                                value={toDate}
-                                onChange={(event) => {
-                                    setToDate(event.target.value);
-                                    setCurrentPage(1);
-                                }}
-                                className="
-                                    h-9
-                                    w-full
-                                    rounded-md
-                                    border
-                                    border-gray-300
-                                    px-3
-                                    text-xs
-                                    text-gray-700
-                                    outline-none
-                                    focus:border-blue-500
-                                    focus:ring-1
-                                    focus:ring-blue-500
-                                "
+                                register={register}
+                                errors={errors}
+                                control={control}
+                                datePickerMode="date"
                             />
                         </div>
 
@@ -1212,7 +1162,7 @@ const LeaveWithoutPayRequest: React.FC = () => {
 
                                                 <td className="px-3 py-3 text-[9px]">
                                                     {
-                                                        request.employeeId
+                                                        request.employeeCode
                                                     }
                                                 </td>
 
@@ -1254,7 +1204,7 @@ const LeaveWithoutPayRequest: React.FC = () => {
                                                 </td>
 
                                                 <td className="px-3 py-3 text-center text-[9px] font-bold text-red-500">
-                                                    {request.leaveBalance.toFixed(
+                                                    {request.leaveBalance?.toFixed(
                                                         1
                                                     )}
                                                 </td>
@@ -1279,7 +1229,7 @@ const LeaveWithoutPayRequest: React.FC = () => {
                                                 </td>
 
                                                 <td className="px-3 py-3 text-center text-[9px]">
-                                                    {request.forwardedDate
+                                                    {request.forwardedDate && request.forwardedDate
                                                         .split(" ")
                                                         .map(
                                                             (
@@ -1332,7 +1282,7 @@ const LeaveWithoutPayRequest: React.FC = () => {
                                                 </td>
 
                                                 <td className="px-3 py-3 text-center">
-                                                    {request.status === "Pending" ? (
+                                                    {request.status === "PENDING" ? (
                                                         <input
                                                             type="checkbox"
                                                             checked={selectedIds.includes(request.requestId)}
