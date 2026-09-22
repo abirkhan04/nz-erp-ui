@@ -1,20 +1,25 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useGet } from "../../hooks/useGet";
 import { API_ROUTES } from "../../api/routes";
 import { useForm } from "react-hook-form";
 import { format, subYears } from "date-fns";
 import CommonInputField from "../../components/CommonInputFields";
+import { usePost } from "../../hooks/usePost";
+import toast from "react-hot-toast";
+import { useAuth } from "../../context/AuthContext";
 
 interface ILeaveWithoutPayRequest {
     requestId: string;
     employeeId: string;
+    employeeCode: string;
     employeeName: string;
-    department: string;
-    leaveFrom: string;
-    leaveTo: string;
+    departmentName: string;
+    fromDate: string;
+    toDate: string;
     totalDays: number;
-    lwpReason: string;
+    leaveType: string;
+    reason: string;
     leaveBalance: number;
     lwpDaysRequested: number;
     remarks: string;
@@ -23,152 +28,6 @@ interface ILeaveWithoutPayRequest {
     status: "Pending" | "Forwarded" | "Approved" | "Rejected";
 }
 
-const mockRequests: ILeaveWithoutPayRequest[] = [
-    {
-        requestId: "LWP250515001",
-        employeeId: "10045",
-        employeeName: "Rokon Uddin",
-        department: "Weaving",
-        leaveFrom: "18-May-2025",
-        leaveTo: "20-May-2025",
-        totalDays: 3,
-        lwpReason: "Personal Work",
-        leaveBalance: 0,
-        lwpDaysRequested: 3,
-        remarks: "No leave balance available",
-        forwardedBy: "Prod. Manager",
-        forwardedDate: "15-May-2025 08:20 AM",
-        status: "Pending",
-    },
-    {
-        requestId: "LWP250515002",
-        employeeId: "10087",
-        employeeName: "Ripon Miah",
-        department: "Spinning",
-        leaveFrom: "22-May-2025",
-        leaveTo: "25-May-2025",
-        totalDays: 4,
-        lwpReason: "Family Function",
-        leaveBalance: 0,
-        lwpDaysRequested: 4,
-        remarks: "All leave exhausted",
-        forwardedBy: "Prod. Manager",
-        forwardedDate: "15-May-2025 08:35 AM",
-        status: "Pending",
-    },
-    {
-        requestId: "LWP250515003",
-        employeeId: "10123",
-        employeeName: "Sabina Akter",
-        department: "Dyeing",
-        leaveFrom: "16-May-2025",
-        leaveTo: "18-May-2025",
-        totalDays: 3,
-        lwpReason: "Personal Reason",
-        leaveBalance: 0,
-        lwpDaysRequested: 3,
-        remarks: "No available leave",
-        forwardedBy: "Prod. Manager",
-        forwardedDate: "15-May-2025 09:05 AM",
-        status: "Pending",
-    },
-    {
-        requestId: "LWP250515004",
-        employeeId: "10145",
-        employeeName: "Nazma Akter",
-        department: "Finishing",
-        leaveFrom: "26-May-2025",
-        leaveTo: "30-May-2025",
-        totalDays: 5,
-        lwpReason: "Medical Treatment",
-        leaveBalance: 0,
-        lwpDaysRequested: 5,
-        remarks: "Leave balance nil",
-        forwardedBy: "Prod. Manager",
-        forwardedDate: "15-May-2025 09:15 AM",
-        status: "Pending",
-    },
-    {
-        requestId: "LWP250515005",
-        employeeId: "10166",
-        employeeName: "Monir Hossain",
-        department: "Maintenance",
-        leaveFrom: "21-May-2025",
-        leaveTo: "21-May-2025",
-        totalDays: 1,
-        lwpReason: "Urgent Personal Work",
-        leaveBalance: 0,
-        lwpDaysRequested: 1,
-        remarks: "No leave balance",
-        forwardedBy: "Prod. Manager",
-        forwardedDate: "15-May-2025 09:40 AM",
-        status: "Pending",
-    },
-    {
-        requestId: "LWP250515006",
-        employeeId: "10178",
-        employeeName: "Jannatul Ferdous",
-        department: "Quality",
-        leaveFrom: "19-May-2025",
-        leaveTo: "20-May-2025",
-        totalDays: 2,
-        lwpReason: "Personal Work",
-        leaveBalance: 0,
-        lwpDaysRequested: 2,
-        remarks: "No leave balance",
-        forwardedBy: "Prod. Manager",
-        forwardedDate: "15-May-2025 10:00 AM",
-        status: "Pending",
-    },
-    {
-        requestId: "LWP250515007",
-        employeeId: "10201",
-        employeeName: "Shahidul Islam",
-        department: "Knitting",
-        leaveFrom: "23-May-2025",
-        leaveTo: "24-May-2025",
-        totalDays: 2,
-        lwpReason: "Family Emergency",
-        leaveBalance: 0,
-        lwpDaysRequested: 2,
-        remarks: "Leave exhausted",
-        forwardedBy: "Prod. Manager",
-        forwardedDate: "15-May-2025 10:20 AM",
-        status: "Pending",
-    },
-    {
-        requestId: "LWP250515008",
-        employeeId: "10219",
-        employeeName: "Morshed Alam",
-        department: "Cutting",
-        leaveFrom: "27-May-2025",
-        leaveTo: "29-May-2025",
-        totalDays: 3,
-        lwpReason: "Personal Reason",
-        leaveBalance: 0,
-        lwpDaysRequested: 3,
-        remarks: "No available leave",
-        forwardedBy: "Prod. Manager",
-        forwardedDate: "15-May-2025 10:45 AM",
-        status: "Pending",
-    },
-    {
-        requestId: "LWP250515009",
-        employeeId: "10244",
-        employeeName: "Nasrin Sultana",
-        department: "Printing",
-        leaveFrom: "30-May-2025",
-        leaveTo: "31-May-2025",
-        totalDays: 2,
-        lwpReason: "Personal Work",
-        leaveBalance: 0,
-        lwpDaysRequested: 2,
-        remarks: "No leave balance",
-        forwardedBy: "Prod. Manager",
-        forwardedDate: "15-May-2025 11:00 AM",
-        status: "Pending",
-    },
-];
 
 type FilterForm = {
     fromDate: string;
@@ -196,10 +55,8 @@ const LeaveWithoutPayRequest: React.FC = () => {
     const fromDate = watch("fromDate");
     const toDate = watch("toDate");
 
-    const { data:{ data: leaveWithoutPayRequest=[] } = {} } = useGet({ key: ["leaveWithoutPayRequest", fromDate, toDate], url: `${API_ROUTES.LEAVE}?leaveType=LWP&fromDate=${fromDate}&toDate=${toDate}` });
-    console.log("Leave without pay request", leaveWithoutPayRequest);
-    const [requests, setRequests] =
-        useState<ILeaveWithoutPayRequest[]>(mockRequests);
+    const { data: { data: leaveWithoutPayRequest = [] } = {}, refetch: refetchLWPRequests } = useGet({ key: ["leaveWithoutPayRequest", fromDate, toDate], url: `${API_ROUTES.LEAVE}?leaveType=LWP&fromDate=${fromDate}&toDate=${toDate}` });
+    const { mutate: ForwardRequest } = usePost(API_ROUTES.LEAVE);
 
     const [currentPage, setCurrentPage] = useState(1);
     const pageSize = 5;
@@ -211,7 +68,7 @@ const LeaveWithoutPayRequest: React.FC = () => {
        FILTER
     ============================================================ */
 
-    const filteredRequests = leaveWithoutPayRequest;
+    const filteredRequests = leaveWithoutPayRequest.filter((request: ILeaveWithoutPayRequest) => request.leaveType === "Leave Without Pay");
 
     /* ============================================================
        PAGINATION
@@ -257,12 +114,13 @@ const LeaveWithoutPayRequest: React.FC = () => {
     /* ============================================================
        FORWARD
     ============================================================ */
+    const { user } = useAuth();
 
     const handleForwardSelected = async () => {
-        const selectedRequests = requests.filter(
-            (request) =>
+        const selectedRequests = leaveWithoutPayRequest.filter(
+            (request: ILeaveWithoutPayRequest) =>
                 selectedIds.includes(request.requestId) &&
-                request.status === "Pending"
+                request.status.toUpperCase() === "PENDING"
         );
 
         if (selectedRequests.length === 0) {
@@ -273,37 +131,41 @@ const LeaveWithoutPayRequest: React.FC = () => {
         try {
             setForwardingAll(true);
 
-            console.log(
-                "Forward selected LWP requests:",
-                selectedRequests.map((request) => ({
-                    requestId: request.requestId,
+            const payload = {
+                requests: selectedRequests.map((request: ILeaveWithoutPayRequest) => ({
                     employeeId: request.employeeId,
-                    status: "FORWARDED",
-                }))
-            );
+                    employeeName: request.employeeName,
+                    leaveType: request.leaveType,
+                    fromDate: request.fromDate,
+                    toDate: request.toDate,
+                    reason: request.reason,
+                    forwardedBy: user?.userId,
+                    forwardedDate: format(new Date(), "yyyy-MM-dd"),
+                })),
+                createdBy: user?.userId,
+            };
 
-            await new Promise((resolve) => setTimeout(resolve, 500));
 
-            const selectedRequestIds = selectedRequests.map(
-                (request) => request.requestId
-            );
+            ForwardRequest(payload, {
+                onSuccess: (response) => {
+                    toast.success(
+                        response.message ||
+                        "Review submitted to IT successfully!",
+                    );
+                 refetchLWPRequests();
+                },
 
-            setRequests((previous) =>
-                previous.map((item) =>
-                    selectedRequestIds.includes(item.requestId)
-                        ? {
-                            ...item,
-                            status: "Forwarded",
-                        }
-                        : item
-                )
-            );
+                onError: (error) => {
+                    toast.error(
+                        error.message ||
+                        "Failed to submit review.",
+                    );
+                },
+            });
+
 
             setSelectedIds([]);
 
-            alert(
-                `${selectedRequests.length} Leave Without Pay request(s) forwarded successfully.`
-            );
         } catch (error) {
             console.error(error);
             alert("Unable to forward selected requests.");
@@ -313,8 +175,8 @@ const LeaveWithoutPayRequest: React.FC = () => {
     };
 
     const handleForwardAll = async () => {
-        const pendingRequests = requests.filter(
-            (request) => request.status === "Pending"
+        const pendingRequests = leaveWithoutPayRequest.filter(
+            (request: ILeaveWithoutPayRequest) => request.status.toUpperCase() === "PENDING"
         );
 
         if (pendingRequests.length === 0) {
@@ -325,33 +187,37 @@ const LeaveWithoutPayRequest: React.FC = () => {
         try {
             setForwardingAll(true);
 
-            console.log(
-                "Forward all LWP requests:",
-                pendingRequests.map((request) => ({
-                    requestId: request.requestId,
+           const payload = {
+                requests: pendingRequests.map((request: ILeaveWithoutPayRequest) => ({
                     employeeId: request.employeeId,
-                    status: "FORWARDED",
-                }))
-            );
+                    employeeName: request.employeeName,
+                    leaveType: request.leaveType,
+                    fromDate: request.fromDate,
+                    toDate: request.toDate,
+                    reason: request.reason,
+                    forwardedBy: user?.userId,
+                    forwardedDate: format(new Date(), "yyyy-MM-dd"),
+                })),
+                createdBy: user?.userId,
+            };
 
-            await new Promise((resolve) => setTimeout(resolve, 500));
 
-            setRequests((previous) =>
-                previous.map((item) =>
-                    item.status === "Pending"
-                        ? {
-                            ...item,
-                            status: "Forwarded",
-                        }
-                        : item
-                )
-            );
+            ForwardRequest(payload, {
+                onSuccess: (response) => {
+                    toast.success(
+                        response.message ||
+                        "Review submitted to IT successfully!",
+                    );
+                refetchLWPRequests();
+                },
 
-            setSelectedIds([]);
-
-            alert(
-                `${pendingRequests.length} Leave Without Pay request(s) forwarded successfully.`
-            );
+                onError: (error) => {
+                    toast.error(
+                        error.message ||
+                        "Failed to submit review.",
+                    );
+                },
+            });
         } catch (error) {
             console.error(error);
             alert("Unable to forward all requests.");
@@ -362,10 +228,10 @@ const LeaveWithoutPayRequest: React.FC = () => {
 
     const handleSelectAll = () => {
         const pendingIds = paginatedRequests
-            .filter((request) => request.status === "Pending")
-            .map((request) => request.requestId);
+            .filter((request:ILeaveWithoutPayRequest) => request.status === "Pending")
+            .map((request:ILeaveWithoutPayRequest) => request.requestId);
 
-        const allSelected = pendingIds.every((id) =>
+        const allSelected = pendingIds.every((id: string) =>
             selectedIds.includes(id)
         );
 
@@ -1091,8 +957,6 @@ const LeaveWithoutPayRequest: React.FC = () => {
 
                                     <th className="px-3 py-3 text-center text-[9px] font-bold text-gray-600">
                                         Forwarded Date
-                                        <br />
-                                        & Time
                                     </th>
 
                                     <th className="px-3 py-3 text-center text-[9px] font-bold text-gray-600">
@@ -1104,11 +968,11 @@ const LeaveWithoutPayRequest: React.FC = () => {
                                             type="checkbox"
                                             checked={
                                                 paginatedRequests.filter(
-                                                    (request) => request.status === "Pending"
+                                                    (request:ILeaveWithoutPayRequest) => request.status.toUpperCase() === "PENDING"
                                                 ).length > 0 &&
                                                 paginatedRequests
-                                                    .filter((request) => request.status === "Pending")
-                                                    .every((request) =>
+                                                    .filter((request:ILeaveWithoutPayRequest) => request.status.toUpperCase() === "PENDING")
+                                                    .every((request: ILeaveWithoutPayRequest) =>
                                                         selectedIds.includes(request.requestId)
                                                     )
                                             }
@@ -1138,7 +1002,7 @@ const LeaveWithoutPayRequest: React.FC = () => {
                                     </tr>
                                 ) : (
                                     paginatedRequests.map(
-                                        (request, index) => (
+                                        (request: ILeaveWithoutPayRequest, index: number) => (
                                             <tr
                                                 key={
                                                     request.requestId
@@ -1174,19 +1038,19 @@ const LeaveWithoutPayRequest: React.FC = () => {
 
                                                 <td className="px-3 py-3 text-[9px]">
                                                     {
-                                                        request.department
+                                                        request.departmentName
                                                     }
                                                 </td>
 
                                                 <td className="px-3 py-3 text-[9px]">
                                                     {
-                                                        request.leaveFrom
+                                                        request.fromDate
                                                     }
                                                 </td>
 
                                                 <td className="px-3 py-3 text-[9px]">
                                                     {
-                                                        request.leaveTo
+                                                        request.toDate
                                                     }
                                                 </td>
 
@@ -1199,7 +1063,7 @@ const LeaveWithoutPayRequest: React.FC = () => {
 
                                                 <td className="px-3 py-3 text-[9px]">
                                                     {
-                                                        request.lwpReason
+                                                        request.reason
                                                     }
                                                 </td>
 
@@ -1229,28 +1093,7 @@ const LeaveWithoutPayRequest: React.FC = () => {
                                                 </td>
 
                                                 <td className="px-3 py-3 text-center text-[9px]">
-                                                    {request.forwardedDate && request.forwardedDate
-                                                        .split(" ")
-                                                        .map(
-                                                            (
-                                                                value,
-                                                                i
-                                                            ) => (
-                                                                <React.Fragment
-                                                                    key={
-                                                                        i
-                                                                    }
-                                                                >
-                                                                    {i >
-                                                                        0 && (
-                                                                            <br />
-                                                                        )}
-                                                                    {
-                                                                        value
-                                                                    }
-                                                                </React.Fragment>
-                                                            )
-                                                        )}
+                                                    {request.forwardedDate}
                                                 </td>
 
                                                 <td className="px-3 py-3 text-center">
@@ -1282,7 +1125,7 @@ const LeaveWithoutPayRequest: React.FC = () => {
                                                 </td>
 
                                                 <td className="px-3 py-3 text-center">
-                                                    {request.status === "PENDING" ? (
+                                                    {request.status.toUpperCase() === "PENDING" ? (
                                                         <input
                                                             type="checkbox"
                                                             checked={selectedIds.includes(request.requestId)}
@@ -1464,7 +1307,7 @@ const LeaveWithoutPayRequest: React.FC = () => {
                         onClick={handleForwardAll}
                         disabled={
                             forwardingAll ||
-                            !requests.some((request) => request.status === "Pending")
+                            !leaveWithoutPayRequest.some((request: ILeaveWithoutPayRequest) => request.status.toUpperCase() === "PENDING")
                         }
                         className="
                         rounded-md
