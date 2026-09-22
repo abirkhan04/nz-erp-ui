@@ -5,9 +5,8 @@ import { API_ROUTES } from "../../api/routes";
 import { useForm } from "react-hook-form";
 import { format, subYears } from "date-fns";
 import CommonInputField from "../../components/CommonInputFields";
-import { usePost } from "../../hooks/usePost";
-import toast from "react-hot-toast";
 import { useAuth } from "../../context/AuthContext";
+import { api } from "../../api/client";
 
 interface ILeaveWithoutPayRequest {
     requestId: string;
@@ -55,8 +54,7 @@ const LeaveWithoutPayRequest: React.FC = () => {
     const fromDate = watch("fromDate");
     const toDate = watch("toDate");
 
-    const { data: { data: leaveWithoutPayRequest = [] } = {}, refetch: refetchLWPRequests } = useGet({ key: ["leaveWithoutPayRequest", fromDate, toDate], url: `${API_ROUTES.LEAVE}?leaveType=LWP&fromDate=${fromDate}&toDate=${toDate}` });
-    const { mutate: ForwardRequest } = usePost(API_ROUTES.LEAVE);
+    const { data: { data: leaveWithoutPayRequest = [] } = {}, refetch: refetchLWPRequests } = useGet({ key: ["leaveWithoutPayRequest", fromDate, toDate], url: `${API_ROUTES.LEAVE}?leaveType=LWP&fromDate=${fromDate}&toDate=${toDate}&status=PENDING` });
 
     const [currentPage, setCurrentPage] = useState(1);
     const pageSize = 5;
@@ -131,38 +129,21 @@ const LeaveWithoutPayRequest: React.FC = () => {
         try {
             setForwardingAll(true);
 
-            const payload = {
-                requests: selectedRequests.map((request: ILeaveWithoutPayRequest) => ({
-                    employeeId: request.employeeId,
-                    employeeName: request.employeeName,
-                    leaveType: request.leaveType,
-                    fromDate: request.fromDate,
-                    toDate: request.toDate,
-                    reason: request.reason,
-                    forwardedBy: user?.userId,
-                    forwardedDate: format(new Date(), "yyyy-MM-dd"),
-                })),
-                createdBy: user?.userId,
-            };
+            const payload = selectedRequests.map((request: ILeaveWithoutPayRequest) => ({
+                requestId: request.requestId,
+                leaveType: request.leaveType,
+                fromDate: request.fromDate,
+                toDate: request.toDate,
+                reason: request.reason,
+                forwardedBy: user?.userId,
+                forwardedDate: format(new Date(), "yyyy-MM-dd"),
+                approvedBy: user?.userId,
+                approvStatus: "APPROVED"
+            }));
 
 
-            ForwardRequest(payload, {
-                onSuccess: (response) => {
-                    toast.success(
-                        response.message ||
-                        "Review submitted to IT successfully!",
-                    );
-                 refetchLWPRequests();
-                },
-
-                onError: (error) => {
-                    toast.error(
-                        error.message ||
-                        "Failed to submit review.",
-                    );
-                },
-            });
-
+            await api.put(API_ROUTES.LEAVE, payload);
+            refetchLWPRequests();
 
             setSelectedIds([]);
 
@@ -187,37 +168,22 @@ const LeaveWithoutPayRequest: React.FC = () => {
         try {
             setForwardingAll(true);
 
-           const payload = {
-                requests: pendingRequests.map((request: ILeaveWithoutPayRequest) => ({
-                    employeeId: request.employeeId,
-                    employeeName: request.employeeName,
-                    leaveType: request.leaveType,
-                    fromDate: request.fromDate,
-                    toDate: request.toDate,
-                    reason: request.reason,
-                    forwardedBy: user?.userId,
-                    forwardedDate: format(new Date(), "yyyy-MM-dd"),
-                })),
-                createdBy: user?.userId,
-            };
+            const payload = pendingRequests.map((request: ILeaveWithoutPayRequest) => ({
+                requestId: request.requestId,
+                leaveType: request.leaveType,
+                fromDate: request.fromDate,
+                toDate: request.toDate,
+                reason: request.reason,
+                forwardedBy: user?.userId,
+                forwardedDate: format(new Date(), "yyyy-MM-dd"),
+                approvedBy: user?.userId,
+                approvStatus: "FORWARDED"
+            }));
 
 
-            ForwardRequest(payload, {
-                onSuccess: (response) => {
-                    toast.success(
-                        response.message ||
-                        "Review submitted to IT successfully!",
-                    );
-                refetchLWPRequests();
-                },
+            await api.put(API_ROUTES.LEAVE, payload);
+            refetchLWPRequests();
 
-                onError: (error) => {
-                    toast.error(
-                        error.message ||
-                        "Failed to submit review.",
-                    );
-                },
-            });
         } catch (error) {
             console.error(error);
             alert("Unable to forward all requests.");
@@ -228,8 +194,8 @@ const LeaveWithoutPayRequest: React.FC = () => {
 
     const handleSelectAll = () => {
         const pendingIds = paginatedRequests
-            .filter((request:ILeaveWithoutPayRequest) => request.status === "Pending")
-            .map((request:ILeaveWithoutPayRequest) => request.requestId);
+            .filter((request: ILeaveWithoutPayRequest) => request.status === "Pending")
+            .map((request: ILeaveWithoutPayRequest) => request.requestId);
 
         const allSelected = pendingIds.every((id: string) =>
             selectedIds.includes(id)
@@ -962,10 +928,10 @@ const LeaveWithoutPayRequest: React.FC = () => {
                                             type="checkbox"
                                             checked={
                                                 paginatedRequests.filter(
-                                                    (request:ILeaveWithoutPayRequest) => request.status.toUpperCase() === "PENDING"
+                                                    (request: ILeaveWithoutPayRequest) => request.status.toUpperCase() === "PENDING"
                                                 ).length > 0 &&
                                                 paginatedRequests
-                                                    .filter((request:ILeaveWithoutPayRequest) => request.status.toUpperCase() === "PENDING")
+                                                    .filter((request: ILeaveWithoutPayRequest) => request.status.toUpperCase() === "PENDING")
                                                     .every((request: ILeaveWithoutPayRequest) =>
                                                         selectedIds.includes(request.requestId)
                                                     )
