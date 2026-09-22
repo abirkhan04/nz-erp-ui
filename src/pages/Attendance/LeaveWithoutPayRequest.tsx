@@ -20,7 +20,7 @@ interface ILeaveWithoutPayRequest {
     totalDays: number;
     leaveType: string;
     reason: string;
-    leaveBalance: number;
+    availableLeaves: Array<any>;
     lwpDaysRequested: number;
     remarks: string;
     forwardedBy: string;
@@ -939,12 +939,6 @@ const LeaveWithoutPayRequest: React.FC = () => {
                                         (EL + CL + SL)
                                     </th>
 
-                                    <th className="px-3 py-3 text-center text-[9px] font-bold text-gray-600">
-                                        LWP Days
-                                        <br />
-                                        Requested
-                                    </th>
-
                                     <th className="px-3 py-3 text-left text-[9px] font-bold text-gray-600">
                                         Remarks
                                     </th>
@@ -1068,16 +1062,7 @@ const LeaveWithoutPayRequest: React.FC = () => {
                                                 </td>
 
                                                 <td className="px-3 py-3 text-center text-[9px] font-bold text-red-500">
-                                                    {request.leaveBalance?.toFixed(
-                                                        1
-                                                    )}
-                                                </td>
-
-                                                <td className="px-3 py-3 text-center text-[9px]">
-                                                    {
-                                                        request.lwpDaysRequested
-                                                    }
-                                                    .0
+                                                    {request.availableLeaves[0]?.closingBalance}
                                                 </td>
 
                                                 <td className="px-3 py-3 text-[9px]">
