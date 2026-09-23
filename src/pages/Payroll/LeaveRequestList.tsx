@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
     ArrowLeft,
     CalendarDays,
@@ -6,23 +6,25 @@ import {
     CircleHelp,
     Eye,
     Info,
-    RefreshCw,
+    UsersRound,
     XCircle,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import type { ColumnDef } from "@tanstack/react-table";
 
-import ReportTable from "../../components/table/ReportTable";
+import { API_ROUTES } from "../../api/routes";
+import { useGet } from "../../hooks/useGet";
+import { api } from "../../api/client";
+// import { useAuth } from "../../hooks/useAuth";
 
 interface LeaveRequest {
-    id: string;
+    requestId: string;
     employeeId: string;
     employeeName: string;
-    department: string;
+    departmentName: string;
     leaveType: string;
-    leaveFrom: string;
-    leaveTo: string;
-    appliedOn: string;
+    fromDate: string;
+    toDate: string;
+    forwardedDate: string;
     reason: string;
     forwardedBy: string;
     status: "Pending" | "Approved" | "Rejected";
@@ -30,993 +32,937 @@ interface LeaveRequest {
 
 interface LeaveRequestResponse {
     data: LeaveRequest[];
-    totalCount: number;
+    totalCount?: number;
+    total?: number;
 }
 
-/*
- * --------------------------------------------------------------------------
- * MOCK DATA
- * --------------------------------------------------------------------------
- *
- * 18 records are intentionally provided so server-side pagination can be
- * demonstrated with multiple pages.
- *
- * Replace fetchLeaveRequests() with your actual API call later.
- */
-
-const MOCK_LEAVE_REQUESTS: LeaveRequest[] = [
-    {
-        id: "LR250515001",
-        employeeId: "10023",
-        employeeName: "Rokon Uddin",
-        department: "Weaving",
-        leaveType: "Casual Leave (CL)",
-        leaveFrom: "18-May-2025",
-        leaveTo: "20-May-2025",
-        appliedOn: "15-May-2025 08:15 AM",
-        reason: "Family function",
-        forwardedBy: "Time Officer",
-        status: "Pending",
-    },
-    {
-        id: "LR250515002",
-        employeeId: "10087",
-        employeeName: "Ripon Miah",
-        department: "Spinning",
-        leaveType: "Sick Leave (SL)",
-        leaveFrom: "22-May-2025",
-        leaveTo: "23-May-2025",
-        appliedOn: "15-May-2025 08:20 AM",
-        reason: "Fever & cold",
-        forwardedBy: "Time Officer",
-        status: "Pending",
-    },
-    {
-        id: "LR250515003",
-        employeeId: "10102",
-        employeeName: "Sabina Akter",
-        department: "Dyeing",
-        leaveType: "Annual Leave (AL)",
-        leaveFrom: "05-Jun-2025",
-        leaveTo: "11-Jun-2025",
-        appliedOn: "15-May-2025 08:25 AM",
-        reason: "Personal vacation",
-        forwardedBy: "Time Officer",
-        status: "Pending",
-    },
-    {
-        id: "LR250515004",
-        employeeId: "10145",
-        employeeName: "Nazma Akter",
-        department: "Finishing",
-        leaveType: "Maternity Leave (ML)",
-        leaveFrom: "30-Aug-2025",
-        leaveTo: "28-Nov-2025",
-        appliedOn: "15-May-2025 08:30 AM",
-        reason: "Maternity",
-        forwardedBy: "Time Officer",
-        status: "Pending",
-    },
-    {
-        id: "LR250515005",
-        employeeId: "10211",
-        employeeName: "Shakil Ahmed",
-        department: "Maintenance",
-        leaveType: "Paternity Leave (PL)",
-        leaveFrom: "10-Jun-2025",
-        leaveTo: "14-Jun-2025",
-        appliedOn: "15-May-2025 08:32 AM",
-        reason: "Wife delivery",
-        forwardedBy: "Time Officer",
-        status: "Pending",
-    },
-    {
-        id: "LR250515006",
-        employeeId: "10234",
-        employeeName: "Mizanur Rahman",
-        department: "Production",
-        leaveType: "Casual Leave (CL)",
-        leaveFrom: "25-May-2025",
-        leaveTo: "26-May-2025",
-        appliedOn: "15-May-2025 08:40 AM",
-        reason: "Personal work",
-        forwardedBy: "Time Officer",
-        status: "Pending",
-    },
-    {
-        id: "LR250515007",
-        employeeId: "10278",
-        employeeName: "Jannatul Ferdous",
-        department: "HR",
-        leaveType: "Annual Leave (AL)",
-        leaveFrom: "01-Jun-2025",
-        leaveTo: "03-Jun-2025",
-        appliedOn: "15-May-2025 08:45 AM",
-        reason: "Travel",
-        forwardedBy: "Time Officer",
-        status: "Pending",
-    },
-    {
-        id: "LR250515008",
-        employeeId: "10305",
-        employeeName: "Masud Rana",
-        department: "Knitting",
-        leaveType: "Sick Leave (SL)",
-        leaveFrom: "19-May-2025",
-        leaveTo: "19-May-2025",
-        appliedOn: "15-May-2025 08:50 AM",
-        reason: "Medical appointment",
-        forwardedBy: "Time Officer",
-        status: "Pending",
-    },
-    {
-        id: "LR250515009",
-        employeeId: "10342",
-        employeeName: "Farzana Yasmin",
-        department: "Accounts",
-        leaveType: "Casual Leave (CL)",
-        leaveFrom: "27-May-2025",
-        leaveTo: "28-May-2025",
-        appliedOn: "15-May-2025 09:00 AM",
-        reason: "Family matter",
-        forwardedBy: "Time Officer",
-        status: "Pending",
-    },
-    {
-        id: "LR250515010",
-        employeeId: "10381",
-        employeeName: "Rashedul Islam",
-        department: "Logistics",
-        leaveType: "Annual Leave (AL)",
-        leaveFrom: "15-Jun-2025",
-        leaveTo: "20-Jun-2025",
-        appliedOn: "15-May-2025 09:10 AM",
-        reason: "Vacation",
-        forwardedBy: "Time Officer",
-        status: "Pending",
-    },
-    {
-        id: "LR250515011",
-        employeeId: "10413",
-        employeeName: "Sumaiya Akter",
-        department: "Quality",
-        leaveType: "Casual Leave (CL)",
-        leaveFrom: "03-Jun-2025",
-        leaveTo: "04-Jun-2025",
-        appliedOn: "15-May-2025 09:20 AM",
-        reason: "Personal work",
-        forwardedBy: "Time Officer",
-        status: "Pending",
-    },
-    {
-        id: "LR250515012",
-        employeeId: "10456",
-        employeeName: "Hasan Mahmud",
-        department: "Warehouse",
-        leaveType: "Sick Leave (SL)",
-        leaveFrom: "21-May-2025",
-        leaveTo: "22-May-2025",
-        appliedOn: "15-May-2025 09:25 AM",
-        reason: "Fever",
-        forwardedBy: "Time Officer",
-        status: "Pending",
-    },
-    {
-        id: "LR250515013",
-        employeeId: "10489",
-        employeeName: "Nusrat Jahan",
-        department: "Administration",
-        leaveType: "Annual Leave (AL)",
-        leaveFrom: "10-Jul-2025",
-        leaveTo: "14-Jul-2025",
-        appliedOn: "15-May-2025 09:30 AM",
-        reason: "Family vacation",
-        forwardedBy: "Time Officer",
-        status: "Pending",
-    },
-    {
-        id: "LR250515014",
-        employeeId: "10521",
-        employeeName: "Tanvir Hossain",
-        department: "Cutting",
-        leaveType: "Casual Leave (CL)",
-        leaveFrom: "29-May-2025",
-        leaveTo: "30-May-2025",
-        appliedOn: "15-May-2025 09:35 AM",
-        reason: "Urgent personal work",
-        forwardedBy: "Time Officer",
-        status: "Pending",
-    },
-    {
-        id: "LR250515015",
-        employeeId: "10567",
-        employeeName: "Moumita Das",
-        department: "Merchandising",
-        leaveType: "Sick Leave (SL)",
-        leaveFrom: "02-Jun-2025",
-        leaveTo: "02-Jun-2025",
-        appliedOn: "15-May-2025 09:40 AM",
-        reason: "Illness",
-        forwardedBy: "Time Officer",
-        status: "Pending",
-    },
-    {
-        id: "LR250515016",
-        employeeId: "10602",
-        employeeName: "Imran Khan",
-        department: "Security",
-        leaveType: "Casual Leave (CL)",
-        leaveFrom: "06-Jun-2025",
-        leaveTo: "07-Jun-2025",
-        appliedOn: "15-May-2025 09:45 AM",
-        reason: "Family event",
-        forwardedBy: "Time Officer",
-        status: "Pending",
-    },
-    {
-        id: "LR250515017",
-        employeeId: "10634",
-        employeeName: "Shamim Ahmed",
-        department: "Printing",
-        leaveType: "Annual Leave (AL)",
-        leaveFrom: "18-Jun-2025",
-        leaveTo: "22-Jun-2025",
-        appliedOn: "15-May-2025 09:50 AM",
-        reason: "Travel",
-        forwardedBy: "Time Officer",
-        status: "Pending",
-    },
-    {
-        id: "LR250515018",
-        employeeId: "10678",
-        employeeName: "Rumana Akter",
-        department: "IT",
-        leaveType: "Casual Leave (CL)",
-        leaveFrom: "12-Jun-2025",
-        leaveTo: "13-Jun-2025",
-        appliedOn: "15-May-2025 10:00 AM",
-        reason: "Personal matter",
-        forwardedBy: "Time Officer",
-        status: "Pending",
-    },
-];
-
-/*
- * --------------------------------------------------------------------------
- * SERVER-SIDE READY DATA FUNCTION
- * --------------------------------------------------------------------------
- *
- * Current implementation:
- *   - receives pageNumber/pageSize
- *   - simulates network delay
- *   - slices mock data
- *
- * Later replace the body with:
- *
- * const response = await api.get("/leave-requests", {
- *     params: {
- *         pageNumber,
- *         pageSize,
- *     },
- * });
- *
- * return response.data;
- */
-
-const fetchLeaveRequests = async (
-    pageNumber: number,
-    pageSize: number,
-): Promise<LeaveRequestResponse> => {
-    await new Promise((resolve) =>
-        setTimeout(resolve, 500),
-    );
-
-    const startIndex =
-        (pageNumber - 1) * pageSize;
-
-    const endIndex =
-        startIndex + pageSize;
-
-    return {
-        data: MOCK_LEAVE_REQUESTS.slice(
-            startIndex,
-            endIndex,
-        ),
-        totalCount: MOCK_LEAVE_REQUESTS.length,
-    };
-};
+interface LeaveApprovalPayload {
+    requestId: string;
+    leaveType: string;
+    fromDate: string;
+    toDate: string;
+    reason: string;
+    forwardedBy: string;
+    forwardedDate: string;
+    approvedBy: string;
+    approvStatus: string;
+}
 
 const LeaveRequestList: React.FC = () => {
     const navigate = useNavigate();
 
-    const [data, setData] = useState<LeaveRequest[]>(
-        [],
-    );
-
-    const [loading, setLoading] =
-        useState<boolean>(false);
-
-    const [pageNumber, setPageNumber] =
-        useState<number>(1);
-
-    const [pageSize, setPageSize] =
-        useState<number>(5);
-
-    const [totalCount, setTotalCount] =
-        useState<number>(0);
-
-    const [selectedRequest, setSelectedRequest] =
-        useState<LeaveRequest | null>(null);
-
     /*
-     * ----------------------------------------------------------------------
-     * FETCH DATA
-     * ----------------------------------------------------------------------
-     *
-     * This is the only place that needs to change when the real API
-     * is connected.
+     * --------------------------------------------------------------------------
+     * DATA
+     * --------------------------------------------------------------------------
      */
-    const loadLeaveRequests = useCallback(
-        async () => {
-            try {
-                setLoading(true);
 
-                const response =
-                    await fetchLeaveRequests(
-                        pageNumber,
-                        pageSize,
-                    );
+    const {
+        data: leaveRequestsResponse,
+        refetch: refetchRequests,
+        isLoading,
+    } = useGet<LeaveRequestResponse>({
+        key: ["leaveRequests"],
+        url: `${API_ROUTES.LEAVE}?status=FORWARDED&page=1&size=10000`,
+    });
 
-                setData(response.data);
-                setTotalCount(
-                    response.totalCount,
-                );
-
-                /*
-                 * Clear selected item if it isn't
-                 * available on the current page.
-                 */
-                setSelectedRequest(null);
-            } catch (error) {
-                console.error(
-                    "Failed to load leave requests:",
-                    error,
-                );
-                setData([]);
-                setTotalCount(0);
-            } finally {
-                setLoading(false);
-            }
-        },
-        [pageNumber, pageSize],
-    );
+    const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
 
     useEffect(() => {
-        loadLeaveRequests();
-    }, [loadLeaveRequests]);
+        if (leaveRequestsResponse?.data) {
+            setLeaveRequests(leaveRequestsResponse.data);
+        }
+    }, [leaveRequestsResponse]);
 
     /*
-     * ----------------------------------------------------------------------
-     * PAGINATION
-     * ----------------------------------------------------------------------
+     * --------------------------------------------------------------------------
+     * PAGINATION - UI SIDE ONLY
+     * --------------------------------------------------------------------------
      */
 
-    const handlePageChange = (
-        newPage: number,
-    ) => {
-        setPageNumber(newPage);
+    const [pageNumber, setPageNumber] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
+
+    const totalCount = leaveRequests.length;
+
+    const totalPages = Math.max(
+        1,
+        Math.ceil(totalCount / pageSize)
+    );
+
+    const currentPageData = useMemo(() => {
+        const startIndex = (pageNumber - 1) * pageSize;
+        const endIndex = startIndex + pageSize;
+
+        return leaveRequests.slice(startIndex, endIndex);
+    }, [leaveRequests, pageNumber, pageSize]);
+
+    /*
+     * --------------------------------------------------------------------------
+     * SELECTION
+     * --------------------------------------------------------------------------
+     */
+
+    const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+    const currentPageIds = currentPageData.map(
+        (request) => request.requestId
+    );
+
+    const selectedCurrentPageCount = currentPageIds.filter(
+        (id) => selectedIds.includes(id)
+    ).length;
+
+    const allCurrentPageSelected =
+        currentPageData.length > 0 &&
+        selectedCurrentPageCount === currentPageData.length;
+
+    const someCurrentPageSelected =
+        selectedCurrentPageCount > 0 &&
+        selectedCurrentPageCount < currentPageData.length;
+
+    /*
+     * --------------------------------------------------------------------------
+     * SELECT / DESELECT
+     * --------------------------------------------------------------------------
+     */
+
+    const handleSelectRow = (id: string) => {
+        setSelectedIds((previous) => {
+            if (previous.includes(id)) {
+                return previous.filter(
+                    (selectedId) => selectedId !== id
+                );
+            }
+
+            return [...previous, id];
+        });
     };
 
-    const handlePageSizeChange = (
-        newPageSize: number,
-    ) => {
-        /*
-         * When page size changes, always return
-         * to page 1.
-         */
-        setPageSize(newPageSize);
-        setPageNumber(1);
+    const handleSelectCurrentPage = () => {
+        if (allCurrentPageSelected) {
+            setSelectedIds((previous) =>
+                previous.filter(
+                    (id) => !currentPageIds.includes(id)
+                )
+            );
+
+            return;
+        }
+
+        setSelectedIds((previous) => {
+            const ids = new Set(previous);
+
+            currentPageIds.forEach((id) => ids.add(id));
+
+            return Array.from(ids);
+        });
     };
 
     /*
-     * ----------------------------------------------------------------------
-     * ACTIONS
-     * ----------------------------------------------------------------------
+     * --------------------------------------------------------------------------
+     * SELECTED REQUESTS
+     * --------------------------------------------------------------------------
      */
 
-    const handleApprove = () => {
-        if (!selectedRequest) return;
-
-        console.log(
-            "Approve Leave:",
-            selectedRequest,
+    const selectedRequests = useMemo(() => {
+        return leaveRequests.filter((request) =>
+            selectedIds.includes(request.requestId)
         );
+    }, [leaveRequests, selectedIds]);
 
-        /*
-         * Real API example:
-         *
-         * await api.post(
-         *     `/leave-requests/${selectedRequest.id}/approve`
-         * );
-         *
-         * await loadLeaveRequests();
-         */
+    /*
+     * --------------------------------------------------------------------------
+     * APPROVE / REJECT
+     * --------------------------------------------------------------------------
+     */
+
+    const [actionLoading, setActionLoading] = useState(false);
+
+    /*
+     * Replace this with your actual authenticated user ID.
+     *
+     * Example:
+     *
+     * const { user } = useAuth();
+     * const approvedBy = user.userId;
+     */
+    const approvedBy = "CURRENT_USER_ID";
+
+    const buildPayload = (
+        requests: LeaveRequest[],
+        status: "APPROVED" | "REJECTED"
+    ): LeaveApprovalPayload[] => {
+        return requests.map((request) => ({
+            requestId: request.requestId,
+            leaveType: request.leaveType,
+            fromDate: request.fromDate,
+            toDate: request.toDate,
+            reason: request.reason,
+            forwardedBy: request.forwardedBy,
+            forwardedDate: request.forwardedDate,
+            approvedBy,
+            approvStatus: status,
+        }));
     };
 
-    const handleReject = () => {
-        if (!selectedRequest) return;
+    const handleApprovalAction = async (
+        status: "APPROVED" | "REJECTED"
+    ) => {
+        if (selectedRequests.length === 0) {
+            return;
+        }
 
-        console.log(
-            "Reject Leave:",
-            selectedRequest,
+        const payload = buildPayload(
+            selectedRequests,
+            status
         );
 
-        /*
-         * Real API example:
-         *
-         * await api.post(
-         *     `/leave-requests/${selectedRequest.id}/reject`
-         * );
-         */
+        try {
+            setActionLoading(true);
+
+            console.log(
+                `${status} payload:`,
+                payload
+            );
+
+            await api.put(
+                API_ROUTES.LEAVE,
+                payload
+            );
+
+            /*
+             * Remove successfully processed requests
+             * from the local UI.
+             */
+
+            setLeaveRequests((previous) =>
+                previous.filter(
+                    (request) =>
+                        !selectedIds.includes(request.requestId)
+                )
+            );
+
+            setSelectedIds([]);
+
+            /*
+             * Make sure page number remains valid
+             * after removing records.
+             */
+            setPageNumber((previousPage) => {
+                const remainingCount =
+                    leaveRequests.length -
+                    selectedRequests.length;
+
+                const remainingPages = Math.max(
+                    1,
+                    Math.ceil(
+                        remainingCount / pageSize
+                    )
+                );
+
+                return Math.min(
+                    previousPage,
+                    remainingPages
+                );
+            });
+
+            await refetchRequests();
+        } catch (error) {
+            console.error(
+                `Failed to ${status.toLowerCase()} leave requests:`,
+                error
+            );
+        } finally {
+            setActionLoading(false);
+        }
     };
 
-    const handleRequestInformation = () => {
-        if (!selectedRequest) return;
+    /*
+     * --------------------------------------------------------------------------
+     * VIEW DETAILS
+     * --------------------------------------------------------------------------
+     */
 
-        console.log(
-            "Request More Information:",
-            selectedRequest,
-        );
-    };
-
-    const handleViewDetails = (request: LeaveRequest) => {
+    const handleViewDetails = (
+        request: LeaveRequest
+    ) => {
         navigate(
-            `/payroll-and-workforce-movement/attendance-cell/leave-requests/${request.id}`,
+            `/payroll-and-workforce-movement/attendance-cell/leave-requests/${request.requestId}`,
             {
                 state: {
                     request,
                 },
-            },
+            }
         );
     };
 
     /*
-     * ----------------------------------------------------------------------
-     * TABLE COLUMNS
-     * ----------------------------------------------------------------------
+     * --------------------------------------------------------------------------
+     * PAGINATION
+     * --------------------------------------------------------------------------
      */
 
-    const columns =
-        useMemo<ColumnDef<LeaveRequest>[]>(
-            () => [
-                {
-                    id: "serial",
-                    header: "#",
-                    cell: ({ row }) =>
-                        (pageNumber - 1) *
-                        pageSize +
-                        row.index +
-                        1,
-                },
+    const handlePageChange = (page: number) => {
+        if (page < 1 || page > totalPages) {
+            return;
+        }
+        setPageNumber(page);
+    };
 
-                {
-                    accessorKey: "id",
-                    header: "Request ID",
-                },
+    const handlePageSizeChange = (
+        newPageSize: number
+    ) => {
+        setPageSize(newPageSize);
+        setPageNumber(1);
+    };
+    /*
+     * --------------------------------------------------------------------------
+     * PAGE NUMBERS
+     * --------------------------------------------------------------------------
+     */
+    const pageNumbers = useMemo(() => {
+        const pages: number[] = [];
 
-                {
-                    accessorKey: "employeeId",
-                    header: "Employee ID",
-                },
+        for (
+            let page = 1;
+            page <= totalPages;
+            page++
+        ) {
+            pages.push(page);
+        }
 
-                {
-                    accessorKey: "employeeName",
-                    header: "Employee Name",
-                    cell: ({ getValue }) => (
-                        <span className="font-semibold text-slate-800">
-                            {getValue<string>()}
-                        </span>
-                    ),
-                },
+        return pages;
+    }, [totalPages]);
 
-                {
-                    accessorKey: "department",
-                    header: "Department",
-                },
-
-                {
-                    accessorKey: "leaveType",
-                    header: "Leave Type",
-                    cell: ({ getValue }) => (
-                        <span className="font-medium text-blue-700">
-                            {getValue<string>()}
-                        </span>
-                    ),
-                },
-
-                {
-                    accessorKey: "leaveFrom",
-                    header: "Leave From",
-                },
-
-                {
-                    accessorKey: "leaveTo",
-                    header: "Leave To",
-                },
-
-                {
-                    accessorKey: "appliedOn",
-                    header: "Applied On",
-                },
-
-                {
-                    accessorKey: "reason",
-                    header: "Reason",
-                },
-
-                {
-                    accessorKey: "forwardedBy",
-                    header: "Forwarded By",
-                },
-
-                {
-                    accessorKey: "status",
-                    header: "Status",
-                    cell: ({ getValue }) => {
-                        const status =
-                            getValue<LeaveRequest["status"]>();
-
-                        return (
-                            <span
-                                className={`
-                                    inline-flex
-                                    rounded-md
-                                    px-2.5
-                                    py-1
-                                    text-xs
-                                    font-semibold
-                                    ${status ===
-                                        "Pending"
-                                        ? "bg-orange-50 text-orange-600"
-                                        : status ===
-                                            "Approved"
-                                            ? "bg-green-50 text-green-600"
-                                            : "bg-red-50 text-red-600"
-                                    }
-                                `}
-                            >
-                                {status}
-                            </span>
-                        );
-                    },
-                },
-
-                {
-                    id: "action",
-                    header: "Action",
-                    cell: ({ row }) => (
-                        <button
-                            type="button"
-                            onClick={() =>
-                                handleViewDetails(
-                                    row.original,
-                                )
-                            }
-                            className="
-                                inline-flex
-                                items-center
-                                gap-1.5
-                                rounded-md
-                                border
-                                border-blue-200
-                                bg-white
-                                px-3
-                                py-1.5
-                                text-xs
-                                font-semibold
-                                text-blue-600
-                                transition
-                                hover:bg-blue-50
-                            "
-                        >
-                            <Eye size={14} />
-                            View Details
-                        </button>
-                    ),
-                },
-            ],
-            [pageNumber, pageSize],
+    /*
+     * --------------------------------------------------------------------------
+     * DATE
+     * --------------------------------------------------------------------------
+     */
+    const currentDate = new Date();
+    const formattedDate =
+        currentDate.toLocaleDateString(
+            "en-GB",
+            {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+            }
         );
+
+    const currentDay =
+        currentDate.toLocaleDateString(
+            "en-US",
+            {
+                weekday: "long",
+            }
+        );
+
+    /*
+     * --------------------------------------------------------------------------
+     * RENDER
+     * --------------------------------------------------------------------------
+     */
 
     return (
         <div className="min-h-screen bg-slate-50 p-4 md:p-6">
 
-            {/* --------------------------------------------------------------
-             * PAGE HEADER
-             * -------------------------------------------------------------- */}
+            {/* HEADER */}
 
-            <div className="mb-4 rounded-xl border border-blue-100 bg-white px-5 py-4 shadow-sm">
+            <header className="flex h-[66px] items-center justify-between bg-gradient-to-r from-[#063bb8] to-[#07379d] px-7 text-white">
 
-                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <div className="flex items-center gap-4">
 
-                    <div>
-                        <div className="flex items-center gap-2">
-                            <CalendarDays
-                                size={21}
-                                className="text-blue-600"
-                            />
+                    <div className="flex items-center gap-3">
 
-                            <h1 className="text-lg font-bold text-blue-800">
-                                Leave Requests
+                        <span className="text-[42px] font-bold leading-none">
+                            S
+                        </span>
+
+                        <div>
+                            <h1 className="text-[20px] font-bold leading-none">
+                                SYNEXIS
                             </h1>
+
+                            <p className="mt-1 text-[8px]">
+                                Creating Enterprise Synergy
+                            </p>
                         </div>
 
-                        <p className="mt-1 text-sm text-slate-500">
-                            Showing leave requests
-                            forwarded by Time Office
-                            to Attendance Cell.
+                    </div>
+
+                    <div className="h-10 w-px bg-white/30" />
+
+                    <div>
+                        <h2 className="text-[16px] font-bold leading-tight">
+                            PAYROLL &amp; WORKFORCE MOVEMENT SECTION – ATTENDANCE CELL
+                        </h2>
+
+                        <p className="mt-1 text-[12px]">
+                            Dashboard &gt; Attendance &gt; Section
                         </p>
                     </div>
 
+                </div>
+
+                <div className="flex items-center gap-4">
+
+                    <div className="flex items-center gap-2 rounded-md bg-white px-3 py-2 text-[11px] font-semibold text-[#10245c]">
+
+                        <CalendarDays size={15} />
+
+                        <span>
+                            {formattedDate} | {currentDay}
+                        </span>
+
+                    </div>
+
+                    <div className="flex items-center gap-2 border-l border-white/30 pl-4">
+
+                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[#0a48c7]">
+                            <UsersRound size={20} />
+                        </div>
+
+                        <div>
+                            <p className="text-[11px] font-semibold">
+                                Nusrat Jahan
+                            </p>
+
+                            <p className="text-[9px]">
+                                Section Incharge
+                            </p>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </header>
+
+            {/* TITLE */}
+
+            <div className="mb-4 rounded-xl border border-blue-100 bg-white px-5 py-4 shadow-sm">
+
+                <div className="flex items-center gap-2">
+
+                    <CalendarDays
+                        size={21}
+                        className="text-blue-600"
+                    />
+
+                    <h1 className="text-lg font-bold text-blue-800">
+                        Leave Requests
+                    </h1>
+
+                </div>
+
+                <p className="mt-1 text-sm text-slate-500">
+                    Showing leave requests forwarded by Time Office to Attendance Cell.
+                </p>
+
+            </div>
+
+            {/* INFORMATION / ACTION BAR */}
+
+            <div className="mb-4 flex flex-col gap-3 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 lg:flex-row lg:items-center lg:justify-between">
+
+                <div className="flex items-start gap-3">
+
+                    <Info
+                        size={18}
+                        className="mt-0.5 shrink-0 text-blue-600"
+                    />
+
+                    <div>
+
+                        <p className="text-sm font-semibold text-blue-700">
+                            Leave Request List
+                        </p>
+
+                        <p className="text-xs text-blue-600">
+                            {selectedIds.length} selected of{" "}
+                            {totalCount} requests
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <div className="flex gap-2">
+
                     <button
                         type="button"
-                        onClick={loadLeaveRequests}
-                        disabled={loading}
-                        className="
-                            inline-flex
-                            items-center
-                            justify-center
-                            gap-2
-                            rounded-lg
-                            border
-                            border-blue-200
-                            bg-white
-                            px-4
-                            py-2
-                            text-sm
-                            font-semibold
-                            text-blue-600
-                            transition
-                            hover:bg-blue-50
-                            disabled:cursor-not-allowed
-                            disabled:opacity-50
-                        "
+                        disabled={
+                            selectedIds.length === 0 ||
+                            actionLoading
+                        }
+                        onClick={() =>
+                            handleApprovalAction(
+                                "APPROVED"
+                            )
+                        }
+                        className="inline-flex items-center gap-2 rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-40"
                     >
-                        <RefreshCw
-                            size={15}
-                            className={
-                                loading
-                                    ? "animate-spin"
-                                    : ""
-                            }
-                        />
+                        <CheckCircle2 size={16} />
 
-                        Refresh
+                        Approve Selected
+                    </button>
+
+                    <button
+                        type="button"
+                        disabled={
+                            selectedIds.length === 0 ||
+                            actionLoading
+                        }
+                        onClick={() =>
+                            handleApprovalAction(
+                                "REJECTED"
+                            )
+                        }
+                        className="inline-flex items-center gap-2 rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                        <XCircle size={16} />
+
+                        Reject Selected
                     </button>
 
                 </div>
 
             </div>
 
-            {/* --------------------------------------------------------------
-             * INFORMATION BAR
-             * -------------------------------------------------------------- */}
+            {/* TABLE */}
 
-            <div className="mb-4 flex items-start gap-3 rounded-lg border border-blue-100 bg-blue-50 px-4 py-3">
+            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
 
-                <Info
-                    size={18}
-                    className="mt-0.5 shrink-0 text-blue-600"
-                />
+                <div className="overflow-x-auto">
 
-                <div>
-                    <p className="text-sm font-semibold text-blue-700">
-                        Leave Request List
-                    </p>
+                    <table className="w-full min-w-[1300px] text-sm">
 
-                    <p className="text-xs text-blue-600">
-                        Select a leave request from
-                        the table to view details and
-                        perform an action.
-                    </p>
+                        <thead className="bg-slate-100">
+
+                            <tr>
+
+                                {/* SELECT ALL */}
+
+                                <th className="w-12 px-4 py-3 text-center">
+
+                                    <input
+                                        type="checkbox"
+                                        checked={
+                                            allCurrentPageSelected
+                                        }
+                                        ref={(element) => {
+                                            if (element) {
+                                                element.indeterminate =
+                                                    someCurrentPageSelected;
+                                            }
+                                        }}
+                                        onChange={
+                                            handleSelectCurrentPage
+                                        }
+                                        className="h-4 w-4 cursor-pointer"
+                                    />
+
+                                </th>
+
+                                <th className="px-4 py-3 text-left text-xs font-bold uppercase text-slate-600">
+                                    #
+                                </th>
+
+                                <th className="px-4 py-3 text-left text-xs font-bold uppercase text-slate-600">
+                                    Request ID
+                                </th>
+
+                                <th className="px-4 py-3 text-left text-xs font-bold uppercase text-slate-600">
+                                    Employee ID
+                                </th>
+
+                                <th className="px-4 py-3 text-left text-xs font-bold uppercase text-slate-600">
+                                    Employee Name
+                                </th>
+
+                                <th className="px-4 py-3 text-left text-xs font-bold uppercase text-slate-600">
+                                    Department
+                                </th>
+
+                                <th className="px-4 py-3 text-left text-xs font-bold uppercase text-slate-600">
+                                    Leave Type
+                                </th>
+
+                                <th className="px-4 py-3 text-left text-xs font-bold uppercase text-slate-600">
+                                    Leave From
+                                </th>
+
+                                <th className="px-4 py-3 text-left text-xs font-bold uppercase text-slate-600">
+                                    Leave To
+                                </th>
+
+                                <th className="px-4 py-3 text-left text-xs font-bold uppercase text-slate-600">
+                                    Applied On
+                                </th>
+
+                                <th className="px-4 py-3 text-left text-xs font-bold uppercase text-slate-600">
+                                    Reason
+                                </th>
+
+                                <th className="px-4 py-3 text-left text-xs font-bold uppercase text-slate-600">
+                                    Forwarded By
+                                </th>
+
+                                <th className="px-4 py-3 text-center text-xs font-bold uppercase text-slate-600">
+                                    Action
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody className="divide-y divide-slate-100">
+
+                            {isLoading ? (
+
+                                <tr>
+                                    <td
+                                        colSpan={13}
+                                        className="px-4 py-12 text-center text-sm text-slate-500"
+                                    >
+                                        Loading leave requests...
+                                    </td>
+                                </tr>
+
+                            ) : currentPageData.length === 0 ? (
+
+                                <tr>
+                                    <td
+                                        colSpan={13}
+                                        className="px-4 py-12 text-center text-sm text-slate-500"
+                                    >
+                                        No leave requests found.
+                                    </td>
+                                </tr>
+
+                            ) : (
+
+                                currentPageData.map(
+                                    (
+                                        request,
+                                        index
+                                    ) => {
+
+                                        const isSelected =
+                                            selectedIds.includes(
+                                                request.requestId
+                                            );
+
+                                        const serialNumber =
+                                            (pageNumber - 1) *
+                                                pageSize +
+                                            index +
+                                            1;
+
+                                        return (
+                                            <tr
+                                                key={
+                                                    request.requestId
+                                                }
+                                                className={
+                                                    isSelected
+                                                        ? "bg-blue-50"
+                                                        : "hover:bg-slate-50"
+                                                }
+                                            >
+
+                                                {/* CHECKBOX */}
+
+                                                <td className="px-4 py-3 text-center">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={
+                                                            isSelected
+                                                        }
+                                                        onChange={() =>
+                                                            handleSelectRow(
+                                                                request.requestId
+                                                            )
+                                                        }
+                                                        className="h-4 w-4 cursor-pointer"
+                                                    />
+
+                                                </td>
+
+                                                {/* SERIAL */}
+
+                                                <td className="px-4 py-3 text-slate-600">
+                                                    {serialNumber}
+                                                </td>
+
+                                                <td className="px-4 py-3 font-medium text-slate-700">
+                                                    {
+                                                        request.requestId
+                                                    }
+                                                </td>
+
+                                                <td className="px-4 py-3 text-slate-600">
+                                                    {
+                                                        request.employeeId
+                                                    }
+                                                </td>
+
+                                                <td className="px-4 py-3 font-semibold text-slate-800">
+                                                    {
+                                                        request.employeeName
+                                                    }
+                                                </td>
+
+                                                <td className="px-4 py-3 text-slate-600">
+                                                    {
+                                                        request.departmentName
+                                                    }
+                                                </td>
+
+                                                <td className="px-4 py-3 font-medium text-blue-700">
+                                                    {
+                                                        request.leaveType
+                                                    }
+                                                </td>
+
+                                                <td className="px-4 py-3 text-slate-600">
+                                                    {
+                                                        request.fromDate
+                                                    }
+                                                </td>
+
+                                                <td className="px-4 py-3 text-slate-600">
+                                                    {
+                                                        request.toDate
+                                                    }
+                                                </td>
+
+                                                <td className="px-4 py-3 text-slate-600">
+                                                    {
+                                                        request.forwardedDate
+                                                    }
+                                                </td>
+
+                                                <td className="max-w-[220px] px-4 py-3 text-slate-600">
+                                                    {
+                                                        request.reason
+                                                    }
+                                                </td>
+
+                                                <td className="px-4 py-3 text-slate-600">
+                                                    {
+                                                        request.forwardedBy
+                                                    }
+                                                </td>
+
+                                                <td className="px-4 py-3 text-center">
+
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            handleViewDetails(
+                                                                request
+                                                            )
+                                                        }
+                                                        className="inline-flex items-center gap-1.5 rounded-md border border-blue-200 bg-white px-3 py-1.5 text-xs font-semibold text-blue-600 transition hover:bg-blue-50"
+                                                    >
+                                                        <Eye
+                                                            size={
+                                                                14
+                                                            }
+                                                        />
+
+                                                        View
+                                                    </button>
+
+                                                </td>
+
+                                            </tr>
+                                        );
+                                    }
+                                )
+
+                            )}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                {/* PAGINATION */}
+
+                <div className="flex flex-col gap-3 border-t border-slate-200 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+
+                    <div className="flex items-center gap-2 text-sm text-slate-600">
+
+                        <span>
+                            Rows per page:
+                        </span>
+
+                        <select
+                            value={pageSize}
+                            onChange={(event) =>
+                                handlePageSizeChange(
+                                    Number(
+                                        event.target
+                                            .value
+                                    )
+                                )
+                            }
+                            className="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm outline-none focus:border-blue-500"
+                        >
+                            <option value={5}>
+                                5
+                            </option>
+
+                            <option value={10}>
+                                10
+                            </option>
+
+                            <option value={20}>
+                                20
+                            </option>
+
+                            <option value={50}>
+                                50
+                            </option>
+
+                            <option value={100}>
+                                100
+                            </option>
+                        </select>
+
+                        <span>
+                            {totalCount === 0
+                                ? "0"
+                                : (pageNumber -
+                                      1) *
+                                      pageSize +
+                                  1}
+                            -
+                            {Math.min(
+                                pageNumber *
+                                    pageSize,
+                                totalCount
+                            )}{" "}
+                            of {totalCount}
+                        </span>
+
+                    </div>
+
+                    <div className="flex items-center gap-1">
+
+                        <button
+                            type="button"
+                            disabled={
+                                pageNumber === 1
+                            }
+                            onClick={() =>
+                                handlePageChange(
+                                    pageNumber - 1
+                                )
+                            }
+                            className="rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                            Previous
+                        </button>
+
+                        {pageNumbers.map(
+                            (page) => (
+                                <button
+                                    key={page}
+                                    type="button"
+                                    onClick={() =>
+                                        handlePageChange(
+                                            page
+                                        )
+                                    }
+                                    className={`min-w-9 rounded-md px-3 py-1.5 text-sm font-semibold ${
+                                        page ===
+                                        pageNumber
+                                            ? "bg-blue-600 text-white"
+                                            : "border border-slate-300 text-slate-600 hover:bg-slate-50"
+                                    }`}
+                                >
+                                    {page}
+                                </button>
+                            )
+                        )}
+
+                        <button
+                            type="button"
+                            disabled={
+                                pageNumber ===
+                                totalPages
+                            }
+                            onClick={() =>
+                                handlePageChange(
+                                    pageNumber + 1
+                                )
+                            }
+                            className="rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                            Next
+                        </button>
+
+                    </div>
+
                 </div>
 
             </div>
 
-            {/* --------------------------------------------------------------
-             * TABLE + ACTION PANEL
-             * -------------------------------------------------------------- */}
+            {/* SELECTION SUMMARY */}
 
-            <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_280px]">
+            {selectedIds.length > 0 && (
+                <div className="mt-4 flex items-center justify-between rounded-lg border border-blue-200 bg-blue-50 px-4 py-3">
 
-                {/* TABLE */}
+                    <div className="flex items-center gap-2 text-sm text-blue-700">
 
-                <div className="min-w-0">
+                        <CheckCircle2
+                            size={17}
+                        />
 
-                    <ReportTable<LeaveRequest>
-                        data={data}
-                        columns={columns}
-                        loading={loading}
-                        pageNumber={pageNumber}
-                        pageSize={pageSize}
-                        totalCount={totalCount}
-                        onPageChange={
-                            handlePageChange
+                        <span className="font-semibold">
+                            {selectedIds.length}{" "}
+                            request
+                            {selectedIds.length !==
+                            1
+                                ? "s"
+                                : ""}{" "}
+                            selected
+                        </span>
+
+                    </div>
+
+                    <button
+                        type="button"
+                        onClick={() =>
+                            setSelectedIds([])
                         }
-                        onPageSizeChange={
-                            handlePageSizeChange
-                        }
-                        pageSizeOptions={[
-                            5,
-                            10,
-                            20,
-                            50,
-                        ]}
-                    />
+                        className="text-sm font-semibold text-blue-600 hover:underline"
+                    >
+                        Clear selection
+                    </button>
 
                 </div>
+            )}
 
-                {/* ACTION PANEL */}
-
-                <div className="h-fit overflow-hidden rounded-xl border border-slate-200 bg-white">
-
-                    <div className="border-b border-slate-200 bg-blue-50 px-4 py-3">
-
-                        <h2 className="text-sm font-bold uppercase tracking-wide text-blue-800">
-                            Actions
-                        </h2>
-
-                        <p className="mt-1 text-xs text-slate-500">
-                            {selectedRequest
-                                ? "Selected leave request"
-                                : "Select a request to view full details and take action."}
-                        </p>
-
-                    </div>
-
-                    <div className="space-y-2 p-4">
-
-                        <button
-                            type="button"
-                            disabled={
-                                !selectedRequest
-                            }
-                            onClick={handleApprove}
-                            className="
-                                flex
-                                w-full
-                                items-center
-                                gap-2
-                                rounded-md
-                                border
-                                border-green-200
-                                px-3
-                                py-2
-                                text-left
-                                text-sm
-                                font-semibold
-                                text-green-600
-                                transition
-                                hover:bg-green-50
-                                disabled:cursor-not-allowed
-                                disabled:opacity-40
-                            "
-                        >
-                            <CheckCircle2
-                                size={16}
-                            />
-
-                            Approve Leave
-                        </button>
-
-                        <button
-                            type="button"
-                            disabled={
-                                !selectedRequest
-                            }
-                            onClick={handleReject}
-                            className="
-                                flex
-                                w-full
-                                items-center
-                                gap-2
-                                rounded-md
-                                border
-                                border-red-200
-                                px-3
-                                py-2
-                                text-left
-                                text-sm
-                                font-semibold
-                                text-red-600
-                                transition
-                                hover:bg-red-50
-                                disabled:cursor-not-allowed
-                                disabled:opacity-40
-                            "
-                        >
-                            <XCircle size={16} />
-
-                            Reject Leave
-                        </button>
-
-                        <button
-                            type="button"
-                            disabled={
-                                !selectedRequest
-                            }
-                            onClick={
-                                handleRequestInformation
-                            }
-                            className="
-                                flex
-                                w-full
-                                items-center
-                                gap-2
-                                rounded-md
-                                border
-                                border-blue-200
-                                px-3
-                                py-2
-                                text-left
-                                text-sm
-                                font-semibold
-                                text-blue-600
-                                transition
-                                hover:bg-blue-50
-                                disabled:cursor-not-allowed
-                                disabled:opacity-40
-                            "
-                        >
-                            <CircleHelp
-                                size={16}
-                            />
-
-                            Request More Information
-                        </button>
-
-                    </div>
-
-                    {/* Selected request summary */}
-
-                    {selectedRequest && (
-                        <div className="border-t border-slate-200 bg-slate-50 p-4">
-
-                            <p className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-500">
-                                Selected Request
-                            </p>
-
-                            <div className="space-y-2 text-xs">
-
-                                <div className="flex justify-between gap-3">
-                                    <span className="text-slate-500">
-                                        Request ID
-                                    </span>
-
-                                    <span className="font-semibold text-slate-700">
-                                        {
-                                            selectedRequest.id
-                                        }
-                                    </span>
-                                </div>
-
-                                <div className="flex justify-between gap-3">
-                                    <span className="text-slate-500">
-                                        Employee
-                                    </span>
-
-                                    <span className="font-semibold text-slate-700">
-                                        {
-                                            selectedRequest.employeeName
-                                        }
-                                    </span>
-                                </div>
-
-                                <div className="flex justify-between gap-3">
-                                    <span className="text-slate-500">
-                                        Leave Type
-                                    </span>
-
-                                    <span className="font-semibold text-slate-700">
-                                        {
-                                            selectedRequest.leaveType
-                                        }
-                                    </span>
-                                </div>
-
-                                <div className="flex justify-between gap-3">
-                                    <span className="text-slate-500">
-                                        Period
-                                    </span>
-
-                                    <span className="text-right font-semibold text-slate-700">
-                                        {
-                                            selectedRequest.leaveFrom
-                                        }
-                                        {" - "}
-                                        {
-                                            selectedRequest.leaveTo
-                                        }
-                                    </span>
-                                </div>
-
-                            </div>
-
-                        </div>
-                    )}
-
-                    {/* Notes */}
-
-                    <div className="border-t border-slate-200 p-4">
-
-                        <p className="text-xs font-bold text-slate-700">
-                            Note:
-                        </p>
-
-                        <ul className="mt-2 space-y-2 text-[11px] leading-4 text-slate-500">
-
-                            <li>
-                                <strong className="text-slate-700">
-                                    Approve:
-                                </strong>{" "}
-                                Leave will be granted
-                                and informed to
-                                employee.
-                            </li>
-
-                            <li>
-                                <strong className="text-slate-700">
-                                    Reject:
-                                </strong>{" "}
-                                Leave will be rejected
-                                and employee will be
-                                informed.
-                            </li>
-
-                            <li>
-                                <strong className="text-slate-700">
-                                    Request More
-                                    Information:
-                                </strong>{" "}
-                                Additional information
-                                will be requested from
-                                employee.
-                            </li>
-
-                        </ul>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-            {/* --------------------------------------------------------------
-             * BACK BUTTON
-             * -------------------------------------------------------------- */}
+            {/* BACK */}
 
             <button
                 type="button"
-                onClick={() => navigate("/payroll-and-workforce-movement/attendance-cell")}
-                className="
-                    mt-4
-                    inline-flex
-                    items-center
-                    gap-2
-                    rounded-lg
-                    border
-                    border-blue-300
-                    bg-white
-                    px-4
-                    py-2
-                    text-sm
-                    font-semibold
-                    text-blue-600
-                    transition
-                    hover:bg-blue-50
-                "
+                onClick={() =>
+                    navigate(
+                        "/payroll-and-workforce-movement/attendance-cell"
+                    )
+                }
+                className="mt-4 inline-flex items-center gap-2 rounded-lg border border-blue-300 bg-white px-4 py-2 text-sm font-semibold text-blue-600 transition hover:bg-blue-50"
             >
                 <ArrowLeft size={16} />
+
                 Back to Dashboard
             </button>
 
