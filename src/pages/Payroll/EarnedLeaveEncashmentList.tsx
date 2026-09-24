@@ -1,257 +1,104 @@
-import React, {
-    useCallback,
-    useEffect,
-    useMemo,
-    useState,
-} from "react";
+import React, { useMemo, useState } from "react";
 import {
     ArrowLeft,
     CalendarDays,
     CheckCircle2,
-    CircleHelp,
     Eye,
     Info,
     RefreshCw,
     XCircle,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import type { ColumnDef } from "@tanstack/react-table";
 
-import ReportTable from "../../components/table/ReportTable";
+import { API_ROUTES } from "../../api/routes";
+import { useGet } from "../../hooks/useGet";
+import { useAuth } from "../../context/AuthContext";
+import { api } from "../../api/client";
 
 /* ==========================================================================
  * TYPES
  * ========================================================================== */
 
 interface EarnedLeaveEncashmentRequest {
-    id: string;
+    requestId: string;
     employeeId: string;
     employeeName: string;
-    department: string;
-    designation: string;
-    appliedOn: string;
-    status: "Pending" | "Approved" | "Rejected";
+    leaveType: string;
+    encashDate: string;
+    encashDays: number;
+    reason: string;
+    instalment: string;
+    createdBy: string | null;
+    createdDate: string | null;
+    modifiedBy: string | null;
+    modifiedDate: string | null;
     forwardedBy: string;
+    forwardedDate: string;
+    leaveBalance: number;
+    leaveAccruedThisYear: number;
+    fromDate: string | null;
+    toDate: string | null;
+    status: string;
+    employeeCode: string;
+    department: string;
 }
 
 interface EarnedLeaveEncashmentResponse {
+    success: boolean;
     data: EarnedLeaveEncashmentRequest[];
-    totalCount: number;
+    total: number;
+}
+
+interface EncashmentActionPayload {
+    requestId: string;
+    leaveType: string;
+    employeeId: string;
+    employeeName: string;
+    encashDate: string;
+    encashDays: number;
+    reason: string;
+    forwardedBy: string;
+    forwardedDate: string;
+    modifiedBy: string | undefined;
+    status: string;
 }
 
 /* ==========================================================================
- * MOCK DATA
+ * HELPERS
  * ========================================================================== */
 
-const MOCK_ENCASHMENT_REQUESTS: EarnedLeaveEncashmentRequest[] = [
-    {
-        id: "ELENC2505001",
-        employeeId: "10211",
-        employeeName: "Shakil Ahmed",
-        department: "Maintenance",
-        designation: "Technician",
-        appliedOn: "14-May-2025 09:15 AM",
-        status: "Pending",
-        forwardedBy: "Production Floor",
-    },
-    {
-        id: "ELENC2505002",
-        employeeId: "10075",
-        employeeName: "Abul Kashem",
-        department: "Production",
-        designation: "Senior Operator",
-        appliedOn: "14-May-2025 09:20 AM",
-        status: "Pending",
-        forwardedBy: "Production Floor",
-    },
-    {
-        id: "ELENC2505003",
-        employeeId: "10102",
-        employeeName: "Mohammad Hasan",
-        department: "Spinning",
-        designation: "Supervisor",
-        appliedOn: "14-May-2025 09:25 AM",
-        status: "Pending",
-        forwardedBy: "Spinning Floor",
-    },
-    {
-        id: "ELENC2505004",
-        employeeId: "10145",
-        employeeName: "Nazma Akter",
-        department: "Finishing",
-        designation: "Senior Operator",
-        appliedOn: "14-May-2025 09:30 AM",
-        status: "Pending",
-        forwardedBy: "Finishing Floor",
-    },
-    {
-        id: "ELENC2505005",
-        employeeId: "10234",
-        employeeName: "Mizanur Rahman",
-        department: "Production",
-        designation: "Operator",
-        appliedOn: "14-May-2025 09:35 AM",
-        status: "Pending",
-        forwardedBy: "Production Floor",
-    },
-    {
-        id: "ELENC2505006",
-        employeeId: "10278",
-        employeeName: "Jannatul Ferdous",
-        department: "HR",
-        designation: "Executive",
-        appliedOn: "14-May-2025 09:40 AM",
-        status: "Pending",
-        forwardedBy: "HR Department",
-    },
-    {
-        id: "ELENC2505007",
-        employeeId: "10305",
-        employeeName: "Masud Rana",
-        department: "Knitting",
-        designation: "Operator",
-        appliedOn: "14-May-2025 09:45 AM",
-        status: "Pending",
-        forwardedBy: "Knitting Floor",
-    },
-    {
-        id: "ELENC2505008",
-        employeeId: "10342",
-        employeeName: "Farzana Yasmin",
-        department: "Accounts",
-        designation: "Senior Executive",
-        appliedOn: "14-May-2025 09:50 AM",
-        status: "Pending",
-        forwardedBy: "Accounts Department",
-    },
-    {
-        id: "ELENC2505009",
-        employeeId: "10381",
-        employeeName: "Rashedul Islam",
-        department: "Logistics",
-        designation: "Officer",
-        appliedOn: "14-May-2025 10:00 AM",
-        status: "Pending",
-        forwardedBy: "Logistics Department",
-    },
-    {
-        id: "ELENC2505010",
-        employeeId: "10413",
-        employeeName: "Sumaiya Akter",
-        department: "Quality",
-        designation: "Quality Officer",
-        appliedOn: "14-May-2025 10:05 AM",
-        status: "Pending",
-        forwardedBy: "Quality Department",
-    },
-    {
-        id: "ELENC2505011",
-        employeeId: "10456",
-        employeeName: "Hasan Mahmud",
-        department: "Warehouse",
-        designation: "Warehouse Officer",
-        appliedOn: "14-May-2025 10:10 AM",
-        status: "Pending",
-        forwardedBy: "Warehouse",
-    },
-    {
-        id: "ELENC2505012",
-        employeeId: "10489",
-        employeeName: "Nusrat Jahan",
-        department: "Administration",
-        designation: "Executive",
-        appliedOn: "14-May-2025 10:15 AM",
-        status: "Pending",
-        forwardedBy: "Administration",
-    },
-    {
-        id: "ELENC2505013",
-        employeeId: "10521",
-        employeeName: "Tanvir Hossain",
-        department: "Cutting",
-        designation: "Operator",
-        appliedOn: "14-May-2025 10:20 AM",
-        status: "Pending",
-        forwardedBy: "Cutting Floor",
-    },
-    {
-        id: "ELENC2505014",
-        employeeId: "10567",
-        employeeName: "Moumita Das",
-        department: "Merchandising",
-        designation: "Merchandiser",
-        appliedOn: "14-May-2025 10:25 AM",
-        status: "Pending",
-        forwardedBy: "Merchandising",
-    },
-    {
-        id: "ELENC2505015",
-        employeeId: "10602",
-        employeeName: "Imran Khan",
-        department: "Security",
-        designation: "Security Officer",
-        appliedOn: "14-May-2025 10:30 AM",
-        status: "Pending",
-        forwardedBy: "Security",
-    },
-    {
-        id: "ELENC2505016",
-        employeeId: "10634",
-        employeeName: "Shamim Ahmed",
-        department: "Printing",
-        designation: "Printer",
-        appliedOn: "14-May-2025 10:35 AM",
-        status: "Pending",
-        forwardedBy: "Printing Floor",
-    },
-    {
-        id: "ELENC2505017",
-        employeeId: "10678",
-        employeeName: "Rumana Akter",
-        department: "IT",
-        designation: "IT Executive",
-        appliedOn: "14-May-2025 10:40 AM",
-        status: "Pending",
-        forwardedBy: "IT Department",
-    },
-    {
-        id: "ELENC2505018",
-        employeeId: "10712",
-        employeeName: "Rakib Hasan",
-        department: "Dyeing",
-        designation: "Operator",
-        appliedOn: "14-May-2025 10:45 AM",
-        status: "Pending",
-        forwardedBy: "Dyeing Floor",
-    },
-];
+const formatDate = (date: string | null) => {
+    if (!date) return "-";
 
-/* ==========================================================================
- * DATA FUNCTION
- * ========================================================================== */
+    const parsedDate = new Date(date);
 
-const fetchEncashmentRequests = async (
-    pageNumber: number,
-    pageSize: number,
-): Promise<EarnedLeaveEncashmentResponse> => {
-    await new Promise((resolve) =>
-        setTimeout(resolve, 500),
-    );
+    if (Number.isNaN(parsedDate.getTime())) {
+        return date;
+    }
 
-    const startIndex =
-        (pageNumber - 1) * pageSize;
+    return parsedDate.toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+    });
+};
 
-    const endIndex =
-        startIndex + pageSize;
+const formatDateTime = (date: string | null) => {
+    if (!date) return "-";
 
-    return {
-        data: MOCK_ENCASHMENT_REQUESTS.slice(
-            startIndex,
-            endIndex,
-        ),
-        totalCount:
-            MOCK_ENCASHMENT_REQUESTS.length,
-    };
+    const parsedDate = new Date(date);
+
+    if (Number.isNaN(parsedDate.getTime())) {
+        return date;
+    }
+
+    return parsedDate.toLocaleString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+    });
 };
 
 /* ==========================================================================
@@ -261,72 +108,156 @@ const fetchEncashmentRequests = async (
 const EarnedLeaveEncashmentList: React.FC = () => {
     const navigate = useNavigate();
 
-    const [data, setData] = useState<
-        EarnedLeaveEncashmentRequest[]
-    >([]);
+    /* ----------------------------------------------------------------------
+     * GET ALL DATA
+     * ---------------------------------------------------------------------- */
 
-    const [loading, setLoading] =
-        useState<boolean>(false);
+    const {
+        data: response,
+        isLoading,
+        refetch,
+    } = useGet<EarnedLeaveEncashmentResponse>({
+        key: ["encashRequests"],
+        url: `${API_ROUTES.LEAVE_ENCASHMENT_REQUESTS}?status=FORWARDED&leaveType=EL&page=1&size=10000`,
+    });
 
-    const [pageNumber, setPageNumber] =
-        useState<number>(1);
+    const encashRequests = response?.data ?? [];
 
-    const [pageSize, setPageSize] =
-        useState<number>(5);
+    /* ----------------------------------------------------------------------
+     * PAGINATION
+     * ---------------------------------------------------------------------- */
 
-    const [totalCount, setTotalCount] =
-        useState<number>(0);
+    const [pageNumber, setPageNumber] = useState(1);
 
-    const [selectedRequest, setSelectedRequest] =
-        useState<EarnedLeaveEncashmentRequest | null>(
-            null,
+    const [pageSize, setPageSize] = useState(5);
+
+    const totalCount = encashRequests.length;
+
+    const totalPages = Math.max(
+        1,
+        Math.ceil(totalCount / pageSize),
+    );
+
+    const paginatedRequests = useMemo(() => {
+        const startIndex =
+            (pageNumber - 1) * pageSize;
+
+        const endIndex =
+            startIndex + pageSize;
+
+        return encashRequests.slice(
+            startIndex,
+            endIndex,
+        );
+    }, [
+        encashRequests,
+        pageNumber,
+        pageSize,
+    ]);
+
+    /* ----------------------------------------------------------------------
+     * SELECTION
+     *
+     * Store requestId instead of the complete object.
+     * This allows selections to remain active while changing pages.
+     * ---------------------------------------------------------------------- */
+
+    const [selectedIds, setSelectedIds] =
+        useState<Set<string>>(new Set());
+
+    /* ----------------------------------------------------------------------
+     * CURRENT PAGE SELECTION
+     * ---------------------------------------------------------------------- */
+
+    const currentPageIds = useMemo(
+        () =>
+            paginatedRequests.map(
+                (request) => request.requestId,
+            ),
+        [paginatedRequests],
+    );
+
+    const allCurrentPageSelected =
+        currentPageIds.length > 0 &&
+        currentPageIds.every((id) =>
+            selectedIds.has(id),
         );
 
-    /* ==========================================================================
-     * FETCH
-     * ========================================================================== */
+    const someCurrentPageSelected =
+        currentPageIds.some((id) =>
+            selectedIds.has(id),
+        );
 
-    const loadEncashmentRequests =
-        useCallback(async () => {
-            try {
-                setLoading(true);
+    /* ----------------------------------------------------------------------
+     * SELECT / UNSELECT SINGLE ROW
+     * ---------------------------------------------------------------------- */
 
-                const response =
-                    await fetchEncashmentRequests(
-                        pageNumber,
-                        pageSize,
-                    );
+    const handleSelectRow = (
+        requestId: string,
+    ) => {
+        setSelectedIds((previous) => {
+            const next = new Set(previous);
 
-                setData(response.data);
-                setTotalCount(
-                    response.totalCount,
-                );
-
-                setSelectedRequest(null);
-            } catch (error) {
-                console.error(
-                    "Failed to load earned leave encashment requests:",
-                    error,
-                );
-
-                setData([]);
-                setTotalCount(0);
-            } finally {
-                setLoading(false);
+            if (next.has(requestId)) {
+                next.delete(requestId);
+            } else {
+                next.add(requestId);
             }
-        }, [pageNumber, pageSize]);
 
-    useEffect(() => {
-        loadEncashmentRequests();
-    }, [loadEncashmentRequests]);
+            return next;
+        });
+    };
 
-    /* ==========================================================================
-     * PAGINATION
-     * ========================================================================== */
+    /* ----------------------------------------------------------------------
+     * SELECT / UNSELECT CURRENT PAGE
+     * ---------------------------------------------------------------------- */
+
+    const handleSelectCurrentPage = () => {
+        setSelectedIds((previous) => {
+            const next = new Set(previous);
+
+            if (allCurrentPageSelected) {
+                currentPageIds.forEach((id) =>
+                    next.delete(id),
+                );
+            } else {
+                currentPageIds.forEach((id) =>
+                    next.add(id),
+                );
+            }
+
+            return next;
+        });
+    };
+
+    /* ----------------------------------------------------------------------
+     * SELECTED REQUESTS
+     * ---------------------------------------------------------------------- */
+
+    const selectedRequests = useMemo(
+        () =>
+            encashRequests.filter((request) =>
+                selectedIds.has(
+                    request.requestId,
+                ),
+            ),
+        [encashRequests, selectedIds],
+    );
+
+    /* ----------------------------------------------------------------------
+     * PAGINATION HANDLERS
+     * ---------------------------------------------------------------------- */
 
     const handlePageChange = (
         newPage: number,
     ) => {
+        if (
+            newPage < 1 ||
+            newPage > totalPages
+        ) {
+            return;
+        }
+
         setPageNumber(newPage);
     };
 
@@ -337,64 +268,15 @@ const EarnedLeaveEncashmentList: React.FC = () => {
         setPageNumber(1);
     };
 
-    /* ==========================================================================
-     * ACTIONS
-     * ========================================================================== */
-
-    const handleForward = () => {
-        if (!selectedRequest) return;
-
-        console.log(
-            "Forward Earned Leave Encashment:",
-            selectedRequest,
-        );
-
-        /*
-         * Real API example:
-         *
-         * await api.post(
-         *     `/earned-leave-encashment/${selectedRequest.id}/forward`
-         * );
-         */
-    };
-
-    const handleReject = () => {
-        if (!selectedRequest) return;
-
-        console.log(
-            "Reject Earned Leave Encashment:",
-            selectedRequest,
-        );
-
-        /*
-         * Real API example:
-         *
-         * await api.post(
-         *     `/earned-leave-encashment/${selectedRequest.id}/reject`
-         * );
-         */
-    };
-
-    const handleRequestInformation = () => {
-        if (!selectedRequest) return;
-
-        console.log(
-            "Request More Information:",
-            selectedRequest,
-        );
-    };
-
-    /* ==========================================================================
+    /* ----------------------------------------------------------------------
      * VIEW DETAILS
-     * ========================================================================== */
+     * ---------------------------------------------------------------------- */
 
     const handleViewDetails = (
         request: EarnedLeaveEncashmentRequest,
     ) => {
-        setSelectedRequest(request);
-
         navigate(
-            `/payroll-and-workforce-movement/attendance-cell/earned-leave-encashment-requests/${request.id}`,
+            `/payroll-and-workforce-movement/attendance-cell/earned-leave-encashment-requests/${request.requestId}`,
             {
                 state: {
                     request,
@@ -403,135 +285,119 @@ const EarnedLeaveEncashmentList: React.FC = () => {
         );
     };
 
-    /* ==========================================================================
-     * TABLE COLUMNS
-     * ========================================================================== */
+    /* ----------------------------------------------------------------------
+     * FORWARD SELECTED
+     * ---------------------------------------------------------------------- */
 
-    const columns = useMemo<
-        ColumnDef<EarnedLeaveEncashmentRequest>[]
-    >(
-        () => [
-            {
-                id: "serial",
-                header: "#",
-                cell: ({ row }) =>
-                    (pageNumber - 1) *
-                        pageSize +
-                    row.index +
-                    1,
-            },
+    const { user } = useAuth();
 
-            {
-                accessorKey: "id",
-                header: "Request ID",
-            },
+    const handleForwardSelected = async () => {
+        if (selectedRequests.length === 0) {
+            return;
+        }
 
-            {
-                accessorKey: "employeeId",
-                header: "Employee ID",
-            },
+        const payload: EncashmentActionPayload[] =
+            selectedRequests.map((request) => ({
+                requestId: request.requestId,
+                leaveType: request.leaveType,
+                employeeId: request.employeeId,
+                employeeName: request.employeeName,
+                encashDate: request.encashDate,
+                encashDays: request.encashDays,
+                reason: request.reason,
+                forwardedBy: request.forwardedBy,
+                forwardedDate: request.forwardedDate.split("T")[0],
+                modifiedBy: user?.userId,
+                status: "FORWARDED_TO_HR",
+            }));
 
-            {
-                accessorKey: "employeeName",
-                header: "Employee Name",
-                cell: ({ getValue }) => (
-                    <span className="font-semibold text-slate-800">
-                        {getValue<string>()}
-                    </span>
-                ),
-            },
+        try {
+            console.log("Approve payload:", payload);
 
-            {
-                accessorKey: "department",
-                header: "Department",
-            },
+            await api.put(
+                API_ROUTES.LEAVE_ENCASHMENT_REQUESTS,
+                payload
+            );
 
-            {
-                accessorKey: "designation",
-                header: "Designation",
-            },
+            setSelectedIds(new Set());
 
-            {
-                accessorKey: "appliedOn",
-                header: "Applied On",
-            },
+            await refetch();
+        } catch (error) {
+            console.error(
+                "Failed to approve selected requests:",
+                error,
+            );
+        }
+    };
 
-            {
-                accessorKey: "status",
-                header: "Status",
-                cell: ({ getValue }) => {
-                    const status =
-                        getValue<
-                            EarnedLeaveEncashmentRequest["status"]
-                        >();
+    /* ----------------------------------------------------------------------
+     * REJECT SELECTED
+     * ---------------------------------------------------------------------- */
 
-                    return (
-                        <span
-                            className={`
-                                inline-flex
-                                rounded-md
-                                px-2.5
-                                py-1
-                                text-xs
-                                font-semibold
-                                ${
-                                    status ===
-                                    "Pending"
-                                        ? "bg-orange-50 text-orange-600"
-                                        : status ===
-                                            "Approved"
-                                          ? "bg-green-50 text-green-600"
-                                          : "bg-red-50 text-red-600"
-                                }
-                            `}
-                        >
-                            {status}
-                        </span>
-                    );
-                },
-            },
+    const handleRejectSelected = async () => {
+        if (selectedRequests.length === 0) {
+            return;
+        }
 
-            {
-                accessorKey: "forwardedBy",
-                header: "Forwarded By",
-            },
+        const payload: EncashmentActionPayload[] =
+            selectedRequests.map((request) => ({
+                requestId: request.requestId,
+                leaveType: request.leaveType,
+                employeeId: request.employeeId,
+                employeeName: request.employeeName,
+                encashDate: request.encashDate,
+                encashDays: request.encashDays,
+                reason: request.reason,
+                forwardedBy: request.forwardedBy,
+                forwardedDate: request.forwardedDate,
+                modifiedBy: user?.userId,
+                status: "REJECTED",
+            }));
 
-            {
-                id: "action",
-                header: "Action",
-                cell: ({ row }) => (
-                    <button
-                        type="button"
-                        onClick={() =>
-                            handleViewDetails(
-                                row.original,
-                            )
-                        }
-                        className="
-                            inline-flex
-                            items-center
-                            gap-1.5
-                            rounded-md
-                            border
-                            border-blue-200
-                            bg-white
-                            px-3
-                            py-1.5
-                            text-xs
-                            font-semibold
-                            text-blue-600
-                            transition
-                            hover:bg-blue-50
-                        "
-                    >
-                        <Eye size={14} />
-                        View Details
-                    </button>
-                ),
-            },
-        ],
-        [pageNumber, pageSize],
-    );
+        try {
+            console.log("Reject payload:", payload);
+
+            await api.put(
+                API_ROUTES.LEAVE_ENCASHMENT_REQUESTS,
+                payload
+            );
+
+            setSelectedIds(new Set());
+
+            await refetch();
+        } catch (error) {
+            console.error(
+                "Failed to reject selected requests:",
+                error,
+            );
+        }
+    };
+
+    /* ----------------------------------------------------------------------
+     * CLEAR SELECTION
+     * ---------------------------------------------------------------------- */
+
+    const handleClearSelection = () => {
+        setSelectedIds(new Set());
+    };
+
+    /* ----------------------------------------------------------------------
+     * PAGE NUMBER LIST
+     * ---------------------------------------------------------------------- */
+
+    const pageNumbers = useMemo(() => {
+        const pages: number[] = [];
+
+        for (
+            let page = 1;
+            page <= totalPages;
+            page++
+        ) {
+            pages.push(page);
+        }
+
+        return pages;
+    }, [totalPages]);
 
     /* ==========================================================================
      * UI
@@ -539,12 +405,14 @@ const EarnedLeaveEncashmentList: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-slate-50 p-4 md:p-6">
+
             {/* ==================================================================
                 PAGE HEADER
             ================================================================== */}
 
             <div className="mb-4 rounded-xl border border-blue-100 bg-white px-5 py-4 shadow-sm">
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+
                     <div>
                         <div className="flex items-center gap-2">
                             <CalendarDays
@@ -558,18 +426,16 @@ const EarnedLeaveEncashmentList: React.FC = () => {
                         </div>
 
                         <p className="mt-1 text-sm text-slate-500">
-                            Showing earned leave encashment
-                            requests forwarded to Attendance
-                            Cell.
+                            Review forwarded earned leave
+                            encashment requests and take
+                            action on selected requests.
                         </p>
                     </div>
 
                     <button
                         type="button"
-                        onClick={
-                            loadEncashmentRequests
-                        }
-                        disabled={loading}
+                        onClick={() => refetch()}
+                        disabled={isLoading}
                         className="
                             inline-flex
                             items-center
@@ -593,7 +459,7 @@ const EarnedLeaveEncashmentList: React.FC = () => {
                         <RefreshCw
                             size={15}
                             className={
-                                loading
+                                isLoading
                                     ? "animate-spin"
                                     : ""
                             }
@@ -616,264 +482,643 @@ const EarnedLeaveEncashmentList: React.FC = () => {
 
                 <div>
                     <p className="text-sm font-semibold text-blue-700">
-                        Earned Leave Encashment Request List
+                        Encashment Request List
                     </p>
 
                     <p className="text-xs text-blue-600">
-                        Select an encashment request from
-                        the table to view details and
-                        perform an action.
+                        Select one or more requests using
+                        the checkboxes, then use the action
+                        buttons below the table.
                     </p>
                 </div>
             </div>
 
             {/* ==================================================================
-                TABLE + ACTION PANEL
+                TABLE CARD
             ================================================================== */}
 
-            <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_280px]">
-                {/* TABLE */}
+            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
 
-                <div className="min-w-0">
-                    <ReportTable<EarnedLeaveEncashmentRequest>
-                        data={data}
-                        columns={columns}
-                        loading={loading}
-                        pageNumber={pageNumber}
-                        pageSize={pageSize}
-                        totalCount={totalCount}
-                        onPageChange={
-                            handlePageChange
-                        }
-                        onPageSizeChange={
-                            handlePageSizeChange
-                        }
-                        pageSizeOptions={[
-                            5,
-                            10,
-                            20,
-                            50,
-                        ]}
-                    />
-                </div>
+                {/* ----------------------------------------------------------------
+                    TABLE HEADER
+                ---------------------------------------------------------------- */}
 
-                {/* ACTION PANEL */}
+                <div className="flex flex-col gap-3 border-b border-slate-100 px-5 py-4 md:flex-row md:items-center md:justify-between">
 
-                <div className="h-fit overflow-hidden rounded-xl border border-slate-200 bg-white">
-                    <div className="border-b border-slate-200 bg-blue-50 px-4 py-3">
-                        <h2 className="text-sm font-bold uppercase tracking-wide text-blue-800">
-                            Actions
+                    <div>
+                        <h2 className="text-sm font-bold text-slate-800">
+                            Requests
                         </h2>
 
                         <p className="mt-1 text-xs text-slate-500">
-                            {selectedRequest
-                                ? "Selected encashment request"
-                                : "Select a request to view details and take action."}
+                            {totalCount} request
+                            {totalCount !== 1
+                                ? "s"
+                                : ""}{" "}
+                            found
                         </p>
                     </div>
 
-                    <div className="space-y-2 p-4">
-                        {/* Forward */}
+                    {selectedIds.size > 0 && (
+                        <div className="flex items-center gap-3">
+                            <span className="rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700">
+                                {selectedIds.size} selected
+                            </span>
+
+                            <button
+                                type="button"
+                                onClick={
+                                    handleClearSelection
+                                }
+                                className="text-xs font-semibold text-slate-500 hover:text-slate-800"
+                            >
+                                Clear selection
+                            </button>
+                        </div>
+                    )}
+                </div>
+
+                {/* ----------------------------------------------------------------
+                    TABLE
+                ---------------------------------------------------------------- */}
+
+                <div className="overflow-x-auto">
+
+                    <table className="w-full min-w-[1250px] border-collapse">
+
+                        <thead>
+                            <tr className="bg-slate-50 text-left">
+
+                                {/* Select all */}
+
+                                <th className="w-12 px-4 py-3">
+                                    <input
+                                        type="checkbox"
+                                        checked={
+                                            allCurrentPageSelected
+                                        }
+                                        ref={(element) => {
+                                            if (element) {
+                                                element.indeterminate =
+                                                    !allCurrentPageSelected &&
+                                                    someCurrentPageSelected;
+                                            }
+                                        }}
+                                        onChange={
+                                            handleSelectCurrentPage
+                                        }
+                                        className="
+                                            h-4
+                                            w-4
+                                            cursor-pointer
+                                            rounded
+                                            border-slate-300
+                                            text-blue-600
+                                            focus:ring-blue-500
+                                        "
+                                    />
+                                </th>
+
+                                <th className="whitespace-nowrap px-4 py-3 text-xs font-bold uppercase tracking-wide text-slate-500">
+                                    #
+                                </th>
+
+                                <th className="whitespace-nowrap px-4 py-3 text-xs font-bold uppercase tracking-wide text-slate-500">
+                                    Request ID
+                                </th>
+
+                                <th className="whitespace-nowrap px-4 py-3 text-xs font-bold uppercase tracking-wide text-slate-500">
+                                    Employee
+                                </th>
+
+                                <th className="whitespace-nowrap px-4 py-3 text-xs font-bold uppercase tracking-wide text-slate-500">
+                                    Department
+                                </th>
+
+                                <th className="whitespace-nowrap px-4 py-3 text-xs font-bold uppercase tracking-wide text-slate-500">
+                                    Encash Date
+                                </th>
+
+                                <th className="whitespace-nowrap px-4 py-3 text-xs font-bold uppercase tracking-wide text-slate-500">
+                                    Days
+                                </th>
+
+                                <th className="whitespace-nowrap px-4 py-3 text-xs font-bold uppercase tracking-wide text-slate-500">
+                                    Leave Balance
+                                </th>
+
+                                <th className="whitespace-nowrap px-4 py-3 text-xs font-bold uppercase tracking-wide text-slate-500">
+                                    Applied
+                                </th>
+
+                                <th className="whitespace-nowrap px-4 py-3 text-xs font-bold uppercase tracking-wide text-slate-500">
+                                    Status
+                                </th>
+
+                                <th className="whitespace-nowrap px-4 py-3 text-right text-xs font-bold uppercase tracking-wide text-slate-500">
+                                    Action
+                                </th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            {/* ----------------------------------------------------
+                                LOADING
+                            ---------------------------------------------------- */}
+
+                            {isLoading && (
+                                <tr>
+                                    <td
+                                        colSpan={11}
+                                        className="px-4 py-12 text-center"
+                                    >
+                                        <div className="flex items-center justify-center gap-2 text-sm text-slate-500">
+                                            <RefreshCw
+                                                size={16}
+                                                className="animate-spin"
+                                            />
+
+                                            Loading requests...
+                                        </div>
+                                    </td>
+                                </tr>
+                            )}
+
+                            {/* ----------------------------------------------------
+                                EMPTY
+                            ---------------------------------------------------- */}
+
+                            {!isLoading &&
+                                paginatedRequests.length ===
+                                0 && (
+                                    <tr>
+                                        <td
+                                            colSpan={11}
+                                            className="px-4 py-12 text-center text-sm text-slate-500"
+                                        >
+                                            No earned leave
+                                            encashment
+                                            requests found.
+                                        </td>
+                                    </tr>
+                                )}
+
+                            {/* ----------------------------------------------------
+                                DATA
+                            ---------------------------------------------------- */}
+
+                            {!isLoading &&
+                                paginatedRequests.map(
+                                    (
+                                        request,
+                                        index,
+                                    ) => {
+                                        const serial =
+                                            (pageNumber -
+                                                1) *
+                                            pageSize +
+                                            index +
+                                            1;
+
+                                        const isSelected =
+                                            selectedIds.has(
+                                                request.requestId,
+                                            );
+
+                                        return (
+                                            <tr
+                                                key={
+                                                    request.requestId
+                                                }
+                                                className={`
+                                                    transition
+                                                    hover:bg-slate-50
+                                                    ${isSelected
+                                                        ? "bg-blue-50/50"
+                                                        : "bg-white"
+                                                    }
+                                                `}
+                                            >
+
+                                                {/* Checkbox */}
+
+                                                <td className="px-4 py-4">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={
+                                                            isSelected
+                                                        }
+                                                        onChange={() =>
+                                                            handleSelectRow(
+                                                                request.requestId,
+                                                            )
+                                                        }
+                                                        className="
+                                                            h-4
+                                                            w-4
+                                                            cursor-pointer
+                                                            rounded
+                                                            border-slate-300
+                                                            text-blue-600
+                                                            focus:ring-blue-500
+                                                        "
+                                                    />
+                                                </td>
+
+                                                {/* Serial */}
+
+                                                <td className="whitespace-nowrap px-4 py-4 text-sm text-slate-500">
+                                                    {serial}
+                                                </td>
+
+                                                {/* Request ID */}
+
+                                                <td className="whitespace-nowrap px-4 py-4">
+                                                    <span className="font-mono text-xs font-semibold text-slate-700">
+                                                        {
+                                                            request.requestId
+                                                        }
+                                                    </span>
+                                                </td>
+
+                                                {/* Employee */}
+
+                                                <td className="px-4 py-4">
+                                                    <div>
+                                                        <p className="whitespace-nowrap text-sm font-semibold text-slate-800">
+                                                            {
+                                                                request.employeeName
+                                                            }
+                                                        </p>
+
+                                                        <p className="mt-0.5 text-xs text-slate-500">
+                                                            {
+                                                                request.employeeCode
+                                                            }
+                                                        </p>
+                                                    </div>
+                                                </td>
+
+                                                {/* Department */}
+
+                                                <td className="max-w-[220px] px-4 py-4">
+                                                    <span className="text-sm text-slate-600">
+                                                        {
+                                                            request.department
+                                                        }
+                                                    </span>
+                                                </td>
+
+                                                {/* Encash Date */}
+
+                                                <td className="whitespace-nowrap px-4 py-4 text-sm text-slate-600">
+                                                    {formatDate(
+                                                        request.encashDate,
+                                                    )}
+                                                </td>
+
+                                                {/* Days */}
+
+                                                <td className="whitespace-nowrap px-4 py-4">
+                                                    <span className="font-semibold text-slate-700">
+                                                        {
+                                                            request.encashDays
+                                                        }
+                                                    </span>
+                                                </td>
+
+                                                {/* Leave Balance */}
+
+                                                <td className="whitespace-nowrap px-4 py-4">
+                                                    <span className="text-sm font-semibold text-slate-700">
+                                                        {
+                                                            request.leaveBalance
+                                                        }
+                                                    </span>
+                                                </td>
+
+                                                {/* Forwarded Date */}
+
+                                                <td className="whitespace-nowrap px-4 py-4 text-sm text-slate-600">
+                                                    {formatDateTime(
+                                                        request.forwardedDate,
+                                                    )}
+                                                </td>
+
+                                                {/* Status */}
+
+                                                <td className="whitespace-nowrap px-4 py-4">
+                                                    <span className="inline-flex rounded-full bg-orange-50 px-2.5 py-1 text-xs font-semibold text-orange-600">
+                                                        {
+                                                            request.status
+                                                        }
+                                                    </span>
+                                                </td>
+
+                                                {/* View Details */}
+
+                                                <td className="whitespace-nowrap px-4 py-4 text-right">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            handleViewDetails(
+                                                                request,
+                                                            )
+                                                        }
+                                                        className="
+                                                            inline-flex
+                                                            items-center
+                                                            gap-1.5
+                                                            rounded-md
+                                                            bg-blue-50
+                                                            px-3
+                                                            py-2
+                                                            text-xs
+                                                            font-semibold
+                                                            text-blue-600
+                                                            transition
+                                                            hover:bg-blue-100
+                                                        "
+                                                    >
+                                                        <Eye
+                                                            size={
+                                                                14
+                                                            }
+                                                        />
+
+                                                        View Details
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        );
+                                    },
+                                )}
+                        </tbody>
+                    </table>
+                </div>
+
+                {/* ==================================================================
+                    PAGINATION
+                ================================================================== */}
+
+                <div className="flex flex-col gap-3 border-t border-slate-100 px-5 py-4 md:flex-row md:items-center md:justify-between">
+
+                    {/* Page size */}
+
+                    <div className="flex items-center gap-2">
+                        <span className="text-xs text-slate-500">
+                            Rows per page
+                        </span>
+
+                        <select
+                            value={pageSize}
+                            onChange={(event) =>
+                                handlePageSizeChange(
+                                    Number(
+                                        event.target
+                                            .value,
+                                    ),
+                                )
+                            }
+                            className="
+                                rounded-md
+                                border
+                                border-slate-200
+                                bg-white
+                                px-2
+                                py-1.5
+                                text-xs
+                                text-slate-700
+                                outline-none
+                                focus:border-blue-400
+                            "
+                        >
+                            <option value={5}>
+                                5
+                            </option>
+
+                            <option value={10}>
+                                10
+                            </option>
+
+                            <option value={20}>
+                                20
+                            </option>
+
+                            <option value={50}>
+                                50
+                            </option>
+
+                            <option value={100}>
+                                100
+                            </option>
+                        </select>
+
+                        <span className="text-xs text-slate-500">
+                            {totalCount === 0
+                                ? "0"
+                                : `${(pageNumber - 1) * pageSize + 1}-${Math.min(
+                                    pageNumber *
+                                    pageSize,
+                                    totalCount,
+                                )}`}{" "}
+                            of {totalCount}
+                        </span>
+                    </div>
+
+                    {/* Page controls */}
+
+                    <div className="flex items-center gap-1">
 
                         <button
                             type="button"
                             disabled={
-                                !selectedRequest
+                                pageNumber === 1
                             }
-                            onClick={handleForward}
+                            onClick={() =>
+                                handlePageChange(
+                                    pageNumber - 1,
+                                )
+                            }
                             className="
-                                flex
-                                w-full
-                                items-center
-                                gap-2
                                 rounded-md
                                 border
-                                border-green-200
+                                border-slate-200
+                                bg-white
                                 px-3
-                                py-2
-                                text-left
-                                text-sm
+                                py-1.5
+                                text-xs
                                 font-semibold
-                                text-green-600
-                                transition
-                                hover:bg-green-50
+                                text-slate-600
+                                hover:bg-slate-50
                                 disabled:cursor-not-allowed
                                 disabled:opacity-40
+                            "
+                        >
+                            Previous
+                        </button>
+
+                        {pageNumbers.map(
+                            (page) => (
+                                <button
+                                    key={page}
+                                    type="button"
+                                    onClick={() =>
+                                        handlePageChange(
+                                            page,
+                                        )
+                                    }
+                                    className={`
+                                        min-w-8
+                                        rounded-md
+                                        px-2.5
+                                        py-1.5
+                                        text-xs
+                                        font-semibold
+                                        transition
+                                        ${page ===
+                                            pageNumber
+                                            ? "bg-blue-600 text-white"
+                                            : "text-slate-600 hover:bg-slate-100"
+                                        }
+                                    `}
+                                >
+                                    {page}
+                                </button>
+                            ),
+                        )}
+
+                        <button
+                            type="button"
+                            disabled={
+                                pageNumber ===
+                                totalPages
+                            }
+                            onClick={() =>
+                                handlePageChange(
+                                    pageNumber + 1,
+                                )
+                            }
+                            className="
+                                rounded-md
+                                border
+                                border-slate-200
+                                bg-white
+                                px-3
+                                py-1.5
+                                text-xs
+                                font-semibold
+                                text-slate-600
+                                hover:bg-slate-50
+                                disabled:cursor-not-allowed
+                                disabled:opacity-40
+                            "
+                        >
+                            Next
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {/* ==================================================================
+                BOTTOM ACTION BAR
+            ================================================================== */}
+
+            <div className="mt-4 rounded-xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
+
+                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+
+                    {/* Selection information */}
+
+                    <div>
+                        <p className="text-sm font-semibold text-slate-800">
+                            {selectedIds.size > 0
+                                ? `${selectedIds.size} request${selectedIds.size !==
+                                    1
+                                    ? "s"
+                                    : ""
+                                } selected`
+                                : "No requests selected"}
+                        </p>
+
+                        <p className="mt-1 text-xs text-slate-500">
+                            Select requests from the table
+                            to perform bulk actions.
+                        </p>
+                    </div>
+
+                    {/* Actions */}
+
+                    <div className="flex flex-col gap-2 sm:flex-row">
+
+                        <button
+                            type="button"
+                            disabled={
+                                selectedIds.size ===
+                                0
+                            }
+                            onClick={
+                                handleForwardSelected
+                            }
+                            className="
+                                inline-flex
+                                items-center
+                                justify-center
+                                gap-2
+                                rounded-lg
+                                bg-green-600
+                                px-5
+                                py-2.5
+                                text-sm
+                                font-semibold
+                                text-white
+                                transition
+                                hover:bg-green-700
+                                disabled:cursor-not-allowed
+                                disabled:bg-slate-200
+                                disabled:text-slate-400
                             "
                         >
                             <CheckCircle2
-                                size={16}
+                                size={17}
                             />
 
-                            Forward to HR Manager
+                            Forward Selected
                         </button>
-
-                        {/* Reject */}
 
                         <button
                             type="button"
                             disabled={
-                                !selectedRequest
-                            }
-                            onClick={handleReject}
-                            className="
-                                flex
-                                w-full
-                                items-center
-                                gap-2
-                                rounded-md
-                                border
-                                border-red-200
-                                px-3
-                                py-2
-                                text-left
-                                text-sm
-                                font-semibold
-                                text-red-600
-                                transition
-                                hover:bg-red-50
-                                disabled:cursor-not-allowed
-                                disabled:opacity-40
-                            "
-                        >
-                            <XCircle size={16} />
-
-                            Reject Request
-                        </button>
-
-                        {/* Request More Information */}
-
-                        <button
-                            type="button"
-                            disabled={
-                                !selectedRequest
+                                selectedIds.size ===
+                                0
                             }
                             onClick={
-                                handleRequestInformation
+                                handleRejectSelected
                             }
                             className="
-                                flex
-                                w-full
+                                inline-flex
                                 items-center
+                                justify-center
                                 gap-2
-                                rounded-md
-                                border
-                                border-blue-200
-                                px-3
-                                py-2
-                                text-left
+                                rounded-lg
+                                bg-red-600
+                                px-5
+                                py-2.5
                                 text-sm
                                 font-semibold
-                                text-blue-600
+                                text-white
                                 transition
-                                hover:bg-blue-50
+                                hover:bg-red-700
                                 disabled:cursor-not-allowed
-                                disabled:opacity-40
+                                disabled:bg-slate-200
+                                disabled:text-slate-400
                             "
                         >
-                            <CircleHelp
-                                size={16}
-                            />
+                            <XCircle size={17} />
 
-                            Request More Information
+                            Reject Selected
                         </button>
-                    </div>
-
-                    {/* Selected Request */}
-
-                    {selectedRequest && (
-                        <div className="border-t border-slate-200 bg-slate-50 p-4">
-                            <p className="mb-3 text-xs font-bold uppercase tracking-wide text-slate-500">
-                                Selected Request
-                            </p>
-
-                            <div className="space-y-2 text-xs">
-                                <div className="flex justify-between gap-3">
-                                    <span className="text-slate-500">
-                                        Request ID
-                                    </span>
-
-                                    <span className="font-semibold text-slate-700">
-                                        {
-                                            selectedRequest.id
-                                        }
-                                    </span>
-                                </div>
-
-                                <div className="flex justify-between gap-3">
-                                    <span className="text-slate-500">
-                                        Employee
-                                    </span>
-
-                                    <span className="font-semibold text-slate-700">
-                                        {
-                                            selectedRequest.employeeName
-                                        }
-                                    </span>
-                                </div>
-
-                                <div className="flex justify-between gap-3">
-                                    <span className="text-slate-500">
-                                        Department
-                                    </span>
-
-                                    <span className="font-semibold text-slate-700">
-                                        {
-                                            selectedRequest.department
-                                        }
-                                    </span>
-                                </div>
-
-                                <div className="flex justify-between gap-3">
-                                    <span className="text-slate-500">
-                                        Status
-                                    </span>
-
-                                    <span className="font-semibold text-slate-700">
-                                        {
-                                            selectedRequest.status
-                                        }
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Notes */}
-
-                    <div className="border-t border-slate-200 p-4">
-                        <p className="text-xs font-bold text-slate-700">
-                            Note:
-                        </p>
-
-                        <ul className="mt-2 space-y-2 text-[11px] leading-4 text-slate-500">
-                            <li>
-                                <strong className="text-slate-700">
-                                    Forward:
-                                </strong>{" "}
-                                Encashment request will be
-                                forwarded to HR Manager for
-                                further processing.
-                            </li>
-
-                            <li>
-                                <strong className="text-slate-700">
-                                    Reject:
-                                </strong>{" "}
-                                Encashment request will be
-                                rejected and employee will
-                                be informed.
-                            </li>
-
-                            <li>
-                                <strong className="text-slate-700">
-                                    Request More
-                                    Information:
-                                </strong>{" "}
-                                Additional information will
-                                be requested from employee.
-                            </li>
-                        </ul>
                     </div>
                 </div>
             </div>
