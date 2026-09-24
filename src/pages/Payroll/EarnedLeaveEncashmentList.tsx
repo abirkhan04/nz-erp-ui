@@ -7,6 +7,7 @@ import {
     Info,
     RefreshCw,
     XCircle,
+    UsersRound
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -403,12 +404,100 @@ const EarnedLeaveEncashmentList: React.FC = () => {
      * UI
      * ========================================================================== */
 
+        const currentDate = new Date();
+    const formattedDate =
+        currentDate.toLocaleDateString(
+            "en-GB",
+            {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+            }
+        );
+
+    const currentDay =
+        currentDate.toLocaleDateString(
+            "en-US",
+            {
+                weekday: "long",
+            }
+        );
+
     return (
         <div className="min-h-screen bg-slate-50 p-4 md:p-6">
 
             {/* ==================================================================
                 PAGE HEADER
             ================================================================== */}
+                        <header className="flex h-[66px] items-center justify-between bg-gradient-to-r from-[#063bb8] to-[#07379d] px-7 text-white">
+
+                <div className="flex items-center gap-4">
+
+                    <div className="flex items-center gap-3">
+
+                        <span className="text-[42px] font-bold leading-none">
+                            S
+                        </span>
+
+                        <div>
+                            <h1 className="text-[20px] font-bold leading-none">
+                                SYNEXIS
+                            </h1>
+
+                            <p className="mt-1 text-[8px]">
+                                Creating Enterprise Synergy
+                            </p>
+                        </div>
+
+                    </div>
+
+                    <div className="h-10 w-px bg-white/30" />
+
+                    <div>
+                        <h2 className="text-[16px] font-bold leading-tight">
+                            PAYROLL &amp; WORKFORCE MOVEMENT SECTION – ATTENDANCE CELL
+                        </h2>
+
+                        <p className="mt-1 text-[12px]">
+                            Dashboard &gt; Attendance &gt; Section
+                        </p>
+                    </div>
+
+                </div>
+
+                <div className="flex items-center gap-4">
+
+                    <div className="flex items-center gap-2 rounded-md bg-white px-3 py-2 text-[11px] font-semibold text-[#10245c]">
+
+                        <CalendarDays size={15} />
+
+                        <span>
+                            {formattedDate} | {currentDay}
+                        </span>
+
+                    </div>
+
+                    <div className="flex items-center gap-2 border-l border-white/30 pl-4">
+
+                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[#0a48c7]">
+                            <UsersRound size={20} />
+                        </div>
+
+                        <div>
+                            <p className="text-[11px] font-semibold">
+                                Nusrat Jahan
+                            </p>
+
+                            <p className="text-[9px]">
+                                Section Incharge
+                            </p>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </header>
 
             <div className="mb-4 rounded-xl border border-blue-100 bg-white px-5 py-4 shadow-sm">
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
