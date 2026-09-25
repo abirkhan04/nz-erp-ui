@@ -73,8 +73,8 @@ interface EarnedLeaveEncashmentResponse {
  * ========================================================================== */
 
 const ACTIONS = {
-    APPROVE: "APPROVE",
-    REJECT: "REJECT",
+    FORWARD_TO_HR: "FORWARD-TO-HR",
+    REJECT: "REJECTED",
     REQUEST_INFORMATION: "REQUEST_INFORMATION",
 } as const;
 
@@ -670,7 +670,7 @@ const EarnedLeaveEncashmentDetails: React.FC = () => {
                                         !isActionable || isSubmitting
                                     }
                                     onClick={() =>
-                                        handleAction(ACTIONS.APPROVE)
+                                        handleAction(ACTIONS.FORWARD_TO_HR)
                                     }
                                     className="
                                         flex
@@ -696,12 +696,11 @@ const EarnedLeaveEncashmentDetails: React.FC = () => {
 
                                     <span>
                                         <span className="block text-xs font-bold text-green-700">
-                                            Approve Request
+                                            Forward to HR
                                         </span>
 
                                         <span className="block text-[10px] text-slate-500">
-                                            Approve the earned leave
-                                            encashment request.
+                                           Forward request to next higher authority
                                         </span>
                                     </span>
                                 </button>
