@@ -510,7 +510,7 @@ const MaternityLeaveEncashmentList: React.FC = () => {
                             />
 
                             <h1 className="text-lg font-bold text-blue-800">
-                                Earned Leave Encashment Requests
+                                Maternity Leave Encashment Requests
                             </h1>
                         </div>
 

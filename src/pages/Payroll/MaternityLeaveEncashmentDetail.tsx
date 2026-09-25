@@ -1,7 +1,6 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import {
     ArrowLeft,
-    ArrowRight,
     CalendarDays,
     CheckCircle2,
     Clock3,
@@ -14,235 +13,120 @@ import {
     Users,
     XCircle,
 } from "lucide-react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { API_ROUTES } from "../../api/routes";
+import { api } from "../../api/client";
+import { useGet } from "../../hooks/useGet";
 
 /* ==========================================================================
  * TYPES
  * ========================================================================== */
 
 interface Attachment {
-    id: string;
-    fileName: string;
-    fileType: "PDF" | "DOC" | "DOCX";
-    uploadedOn: string;
-    fileSize: string;
+    id?: string;
+    fileName?: string;
+    fileType?: string;
+    uploadedOn?: string;
+    fileSize?: string;
+    url?: string;
 }
 
-interface MaternityLeaveEncashmentRequest {
-    requestId: string;
-
+interface Employee {
     employeeId: string;
     employeeName: string;
     department: string;
     designation: string;
     dateOfJoining: string;
-    reportingManager: string;
+    reportingManager: string | null;
+}
 
-    requestPart: string;
-    requestPartLabel: string;
+interface Workflow {
+    forwardedByDepartment: string | null;
+    forwardedBySection: string | null;
+    forwardedOn: string | null;
+}
 
-    appliedOn: string;
-    status: "Pending" | "Approved" | "Rejected";
-    forwardedBy: string;
-    forwardedOn: string;
-
-    maternityLeaveEntitlement: string;
-    leaveStructure: string;
-    expectedDeliveryDate: string;
-    maternityLeavePeriod: string;
-
-    encashmentDaysRequested: string;
+interface EncashmentDetails {
+    encashmentDaysRequested: number;
     encashmentRate: string;
-    encashmentAmount: string;
-    remarksByEmployee: string;
+    estimatedAmount: number;
+    remarksByEmployee: string | null;
+}
 
+interface MaternityLeaveInfo {
+    requestPart: string;
+    maternityLeaveEntitlement: number;
+    leaveStructure: string;
+    expectedDeliveryDate: string | null;
+    maternityLeaveStartDate: string | null;
+    maternityLeaveEndDate: string | null;
+    encashmentDaysRequested: number;
+    remarksByEmployee: string | null;
+    note: string | null;
+}
+
+interface MaternityLeaveEncashmentResponse {
+    requestId: string;
+    requestType: string;
+    status: string;
+    appliedOn: string;
+    employee: Employee;
+    workflow: Workflow;
+    encashmentDetails: EncashmentDetails;
+    earnedLeaveInfo: unknown | null;
+    maternityLeaveInfo: MaternityLeaveInfo | null;
     attachments: Attachment[];
+    importantRules: string[];
 }
 
 /* ==========================================================================
- * MOCK REQUESTS
- *
- * In production, replace this with your API response.
- *
- * The order of this array determines Previous / Next Request.
+ * HELPERS
  * ========================================================================== */
 
-const MATERNITY_REQUESTS: MaternityLeaveEncashmentRequest[] = [
-    {
-        requestId: "MLENC2505001",
-        employeeId: "10102",
-        employeeName: "Sabina Akter",
-        department: "Dyeing",
-        designation: "Dyeing Operator",
-        dateOfJoining: "05-Jun-2019",
-        reportingManager: "Mostafa Kamal (10056)",
+const formatDate = (value?: string | null) => {
+    if (!value) return "N/A";
 
-        requestPart: "Part-1",
-        requestPartLabel: "Part-1 (Pre-Delivery)",
+    const date = new Date(value);
 
-        appliedOn: "14-May-2025 02:35 PM",
-        status: "Pending",
-        forwardedBy: "Production Floor Dyeing Floor",
-        forwardedOn: "14-May-2025 03:10 PM",
+    if (Number.isNaN(date.getTime())) {
+        return value;
+    }
 
-        maternityLeaveEntitlement: "128 Days",
-        leaveStructure:
-            "64 Days Pre-Delivery + 64 Days Post-Delivery",
-        expectedDeliveryDate: "30-Jun-2025",
-        maternityLeavePeriod:
-            "02-May-2025 to 27-Sep-2025",
+    return date.toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+    });
+};
 
-        encashmentDaysRequested:
-            "64 Days (Pre-Delivery)",
-        encashmentRate: "As per Company Policy",
-        encashmentAmount: "78,400.00 BDT",
-        remarksByEmployee:
-            "For personal financial requirement.",
+const formatDateTime = (value?: string | null) => {
+    if (!value) return "N/A";
 
-        attachments: [
-            {
-                id: "ATT-001",
-                fileName: "Doctor_Certificate_Sabina.pdf",
-                fileType: "PDF",
-                uploadedOn: "14-May-2025 02:30 PM",
-                fileSize: "245 KB",
-            },
-            {
-                id: "ATT-002",
-                fileName: "Recommendation_Letter.pdf",
-                fileType: "PDF",
-                uploadedOn: "14-May-2025 02:32 PM",
-                fileSize: "186 KB",
-            },
-        ],
-    },
+    const date = new Date(value);
 
-    {
-        requestId: "MLENC2505002",
-        employeeId: "10245",
-        employeeName: "Nusrat Jahan",
-        department: "HR",
-        designation: "Executive",
-        dateOfJoining: "12-Aug-2020",
-        reportingManager: "Rahim Uddin (10023)",
+    if (Number.isNaN(date.getTime())) {
+        return value;
+    }
 
-        requestPart: "Part-1",
-        requestPartLabel: "Part-1 (Pre-Delivery)",
+    return date.toLocaleString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+    });
+};
 
-        appliedOn: "14-May-2025 02:40 PM",
-        status: "Pending",
-        forwardedBy: "HR Department",
-        forwardedOn: "14-May-2025 03:15 PM",
+const formatAmount = (amount?: number | null) => {
+    if (amount === null || amount === undefined) {
+        return "0.00 BDT";
+    }
 
-        maternityLeaveEntitlement: "128 Days",
-        leaveStructure:
-            "64 Days Pre-Delivery + 64 Days Post-Delivery",
-        expectedDeliveryDate: "05-Jul-2025",
-        maternityLeavePeriod:
-            "10-May-2025 to 05-Oct-2025",
-
-        encashmentDaysRequested:
-            "64 Days (Pre-Delivery)",
-        encashmentRate: "As per Company Policy",
-        encashmentAmount: "82,500.00 BDT",
-        remarksByEmployee:
-            "Requested for personal financial requirement.",
-
-        attachments: [
-            {
-                id: "ATT-003",
-                fileName: "Medical_Certificate.pdf",
-                fileType: "PDF",
-                uploadedOn: "14-May-2025 02:38 PM",
-                fileSize: "210 KB",
-            },
-        ],
-    },
-
-    {
-        requestId: "MLENC2505003",
-        employeeId: "10321",
-        employeeName: "Farzana Yasmin",
-        department: "Finishing",
-        designation: "Operator",
-        dateOfJoining: "21-Jan-2021",
-        reportingManager: "Abdul Karim (10087)",
-
-        requestPart: "Part-2",
-        requestPartLabel: "Part-2 (Post-Delivery)",
-
-        appliedOn: "14-May-2025 02:45 PM",
-        status: "Pending",
-        forwardedBy: "Finishing Floor",
-        forwardedOn: "14-May-2025 03:20 PM",
-
-        maternityLeaveEntitlement: "128 Days",
-        leaveStructure:
-            "64 Days Pre-Delivery + 64 Days Post-Delivery",
-        expectedDeliveryDate: "15-Apr-2025",
-        maternityLeavePeriod:
-            "15-Mar-2025 to 12-Aug-2025",
-
-        encashmentDaysRequested:
-            "64 Days (Post-Delivery)",
-        encashmentRate: "As per Company Policy",
-        encashmentAmount: "75,600.00 BDT",
-        remarksByEmployee:
-            "Post-delivery encashment request.",
-
-        attachments: [
-            {
-                id: "ATT-004",
-                fileName: "Delivery_Certificate.pdf",
-                fileType: "PDF",
-                uploadedOn: "14-May-2025 02:43 PM",
-                fileSize: "198 KB",
-            },
-        ],
-    },
-
-    {
-        requestId: "MLENC2505004",
-        employeeId: "10456",
-        employeeName: "Sumaiya Akter",
-        department: "Accounts",
-        designation: "Accounts Executive",
-        dateOfJoining: "18-Mar-2018",
-        reportingManager: "Mostafa Kamal (10056)",
-
-        requestPart: "Part-1",
-        requestPartLabel: "Part-1 (Pre-Delivery)",
-
-        appliedOn: "14-May-2025 02:50 PM",
-        status: "Pending",
-        forwardedBy: "Accounts Department",
-        forwardedOn: "14-May-2025 03:25 PM",
-
-        maternityLeaveEntitlement: "128 Days",
-        leaveStructure:
-            "64 Days Pre-Delivery + 64 Days Post-Delivery",
-        expectedDeliveryDate: "25-Jul-2025",
-        maternityLeavePeriod:
-            "27-May-2025 to 21-Oct-2025",
-
-        encashmentDaysRequested:
-            "64 Days (Pre-Delivery)",
-        encashmentRate: "As per Company Policy",
-        encashmentAmount: "80,200.00 BDT",
-        remarksByEmployee:
-            "For personal financial requirement.",
-
-        attachments: [
-            {
-                id: "ATT-005",
-                fileName: "Doctor_Certificate.pdf",
-                fileType: "PDF",
-                uploadedOn: "14-May-2025 02:48 PM",
-                fileSize: "220 KB",
-            },
-        ],
-    },
-];
+    return `${amount.toLocaleString("en-BD", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    })} BDT`;
+};
 
 /* ==========================================================================
  * REUSABLE COMPONENTS
@@ -257,13 +141,13 @@ const InfoRow: React.FC<InfoRowProps> = ({
     label,
     value,
 }) => (
-    <div className="grid grid-cols-[150px_minmax(0,1fr)] gap-3 border-b border-slate-100 py-2 last:border-b-0">
+    <div className="grid grid-cols-[170px_minmax(0,1fr)] gap-3 border-b border-slate-100 py-2 last:border-b-0">
         <span className="text-xs font-medium text-slate-500">
             {label}
         </span>
 
         <span className="text-xs font-semibold text-slate-800">
-            {value}
+            {value || "N/A"}
         </span>
     </div>
 );
@@ -272,122 +156,116 @@ const InfoRow: React.FC<InfoRowProps> = ({
  * PAGE
  * ========================================================================== */
 
-const MaternityLeaveEncashmentDetails: React.FC =
-    () => {
-        const navigate = useNavigate();
-        const location = useLocation();
+const MaternityLeaveEncashmentDetails: React.FC = () => {
+    const navigate = useNavigate();
+    const { requestId } = useParams();
 
-        const { requestId } = useParams<{
-            requestId: string;
-        }>();
+    const [remarks, setRemarks] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [actionError, setActionError] = useState("");
 
-        const [remarks, setRemarks] =
-            useState("");
+    /* ======================================================================
+     * GET REQUEST DETAILS
+     * ====================================================================== */
 
-        /*
-         * First try to use the request passed from the list page.
-         * If the page is refreshed/directly opened, find it from
-         * the request collection.
-         */
+    const {
+        data: request,
+        isLoading,
+        isError,
+        refetch,
+    } = useGet<MaternityLeaveEncashmentResponse>({
+        key: ["MaternityLeaveEncashmentRequest", requestId],
+        url: `${API_ROUTES.LEAVE_ENCASHMENT_REQUESTS}/${requestId}`,
+        enabled: !!requestId,
+    });
 
-        const request =
-            (location.state as {
-                request?: MaternityLeaveEncashmentRequest;
-            } | null)?.request ??
-            MATERNITY_REQUESTS.find(
-                (item) =>
-                    item.requestId === requestId,
-            ) ??
-            MATERNITY_REQUESTS[0];
+    /* ======================================================================
+     * ACTION
+     *
+     * POST PAYLOAD:
+     *
+     * {
+     *     requestId: "...",
+     *     action: "...",
+     *     remarks: "..."
+     * }
+     * ====================================================================== */
 
-        /* ======================================================================
-         * PREVIOUS / NEXT REQUEST
-         * ====================================================================== */
+    const handleAction = async (action: string) => {
+        if (!requestId) {
+            setActionError("Request ID is missing.");
+            return;
+        }
 
-        const currentIndex = useMemo(() => {
-            return MATERNITY_REQUESTS.findIndex(
-                (item) =>
-                    item.requestId ===
-                    request.requestId,
+        try {
+            setIsSubmitting(true);
+            setActionError("");
+
+            const payload = {
+                requestId,
+                action,
+                remarks: remarks.trim(),
+            };
+
+            await api.post(
+                `${API_ROUTES.LEAVE_ENCASHMENT_REQUESTS}/action`,
+                payload,
             );
-        }, [request.requestId]);
 
-        const previousRequest =
-            currentIndex > 0
-                ? MATERNITY_REQUESTS[
-                      currentIndex - 1
-                  ]
-                : null;
+            await refetch();
 
-        const nextRequest =
-            currentIndex <
-            MATERNITY_REQUESTS.length - 1
-                ? MATERNITY_REQUESTS[
-                      currentIndex + 1
-                  ]
-                : null;
+            setRemarks("");
+        } catch (error: any) {
+            console.error("Maternity leave encashment action failed:", error);
 
-        const navigateToRequest = (
-            target: MaternityLeaveEncashmentRequest,
-        ) => {
-            navigate(
-                `/payroll-and-workforce-movement/attendance-cell/maternity-leave-encashment-requests/${target.requestId}`,
-                {
-                    state: {
-                        request: target,
-                    },
-                },
+            setActionError(
+                error?.response?.data?.message ||
+                    error?.response?.data?.error ||
+                    "Failed to process the request action.",
             );
-        };
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
-        /* ======================================================================
-         * ACTIONS
-         * ====================================================================== */
+    /* ======================================================================
+     * ATTACHMENT DOWNLOAD
+     * ====================================================================== */
 
-        const handleForward = () => {
-            console.log(
-                "Forward request:",
-                request.requestId,
-                remarks,
-            );
-        };
+    const handleDownload = (attachment: Attachment) => {
+        if (attachment.url) {
+            window.open(attachment.url, "_blank");
+            return;
+        }
 
-        const handleReject = () => {
-            console.log(
-                "Reject request:",
-                request.requestId,
-                remarks,
-            );
-        };
+        console.log("Download attachment:", attachment);
+    };
 
-        const handleRequestInformation = () => {
-            console.log(
-                "Request more information:",
-                request.requestId,
-                remarks,
-            );
-        };
+    /* ======================================================================
+     * LOADING
+     * ====================================================================== */
 
-        const handleDownload = (
-            attachment: Attachment,
-        ) => {
-            console.log(
-                "Download attachment:",
-                attachment.fileName,
-            );
-        };
+    if (isLoading) {
+        return (
+            <div className="flex min-h-screen items-center justify-center bg-slate-50">
+                <div className="rounded-lg border border-slate-200 bg-white px-6 py-5 text-center shadow-sm">
+                    <div className="mx-auto mb-3 h-6 w-6 animate-spin rounded-full border-2 border-blue-200 border-t-blue-600" />
 
-        /* ======================================================================
-         * RENDER
-         * ====================================================================== */
+                    <p className="text-xs font-semibold text-slate-600">
+                        Loading request details...
+                    </p>
+                </div>
+            </div>
+        );
+    }
 
+    /* ======================================================================
+     * ERROR
+     * ====================================================================== */
+
+    if (isError || !request) {
         return (
             <div className="min-h-screen bg-slate-50 p-4 md:p-6">
-
-                {/* ==============================================================
-                    BACK TO LIST
-                ============================================================== */}
-
                 <button
                     type="button"
                     onClick={() =>
@@ -403,445 +281,498 @@ const MaternityLeaveEncashmentDetails: React.FC =
                     Encashment Requests
                 </button>
 
-                {/* ==============================================================
-                    TITLE
-                ============================================================== */}
+                <div className="rounded-lg border border-red-200 bg-white p-6 text-center">
+                    <XCircle
+                        size={32}
+                        className="mx-auto mb-3 text-red-500"
+                    />
 
-                <div className="mb-4">
-
-                    <h1 className="text-lg font-bold uppercase text-blue-900">
-                        Maternity Leave Encashment
-                        Request Details
-                    </h1>
+                    <h2 className="text-sm font-bold text-red-700">
+                        Unable to load request
+                    </h2>
 
                     <p className="mt-1 text-xs text-slate-500">
-                        Review full details of the
-                        maternity leave encashment
-                        request and take appropriate
-                        action.
+                        The maternity leave encashment request could not
+                        be loaded.
                     </p>
-
                 </div>
+            </div>
+        );
+    }
 
-                {/* ==============================================================
-                    SUMMARY CARDS
-                ============================================================== */}
+    const maternityInfo = request.maternityLeaveInfo;
+    const employee = request.employee;
+    const workflow = request.workflow;
+    const encashment = request.encashmentDetails;
 
-                <div className="mb-4 overflow-hidden rounded-lg border border-slate-200 bg-white">
+    const requestPartLabel =
+        maternityInfo?.requestPart === "1ST"
+            ? "1st Part"
+            : maternityInfo?.requestPart === "2ND"
+              ? "2nd Part"
+              : maternityInfo?.requestPart || "N/A";
 
-                    <div className="grid grid-cols-1 divide-y divide-slate-100 md:grid-cols-2 lg:grid-cols-6 lg:divide-x lg:divide-y-0">
+    return (
+        <div className="min-h-screen bg-slate-50 p-4 md:p-6">
+            {/* ==================================================================
+                BACK TO LIST
+            ================================================================== */}
 
-                        {/* Request ID */}
+            <button
+                type="button"
+                onClick={() =>
+                    navigate(
+                        "/payroll-and-workforce-movement/attendance-cell/maternity-leave-encashment-requests",
+                    )
+                }
+                className="mb-4 inline-flex items-center gap-2 text-xs font-semibold text-blue-600 hover:text-blue-800"
+            >
+                <ArrowLeft size={15} />
 
-                        <div className="flex items-center gap-3 p-4">
+                Back to Maternity Leave
+                Encashment Requests
+            </button>
 
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-purple-50 text-purple-600">
-                                <FileText size={19} />
-                            </div>
+            {/* ==================================================================
+                TITLE
+            ================================================================== */}
 
-                            <div>
-                                <p className="text-[11px] text-slate-500">
-                                    Request ID
-                                </p>
+            <div className="mb-4">
+                <h1 className="text-lg font-bold uppercase text-blue-900">
+                    Maternity Leave Encashment
+                    Request Details
+                </h1>
 
-                                <p className="text-xs font-bold text-slate-800">
-                                    {request.requestId}
-                                </p>
-                            </div>
+                <p className="mt-1 text-xs text-slate-500">
+                    Review full details of the maternity leave
+                    encashment request and take appropriate action.
+                </p>
+            </div>
 
+            {/* ==================================================================
+                SUMMARY CARDS
+            ================================================================== */}
+
+            <div className="mb-4 overflow-hidden rounded-lg border border-slate-200 bg-white">
+                <div className="grid grid-cols-1 divide-y divide-slate-100 md:grid-cols-2 lg:grid-cols-6 lg:divide-x lg:divide-y-0">
+                    {/* Request ID */}
+
+                    <div className="flex items-center gap-3 p-4">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-purple-50 text-purple-600">
+                            <FileText size={19} />
                         </div>
 
-                        {/* Employee */}
+                        <div className="min-w-0">
+                            <p className="text-[11px] text-slate-500">
+                                Request ID
+                            </p>
 
-                        <div className="flex items-center gap-3 p-4">
-
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-purple-50 text-purple-600">
-                                <Users size={19} />
-                            </div>
-
-                            <div>
-                                <p className="text-[11px] text-slate-500">
-                                    Employee
-                                </p>
-
-                                <p className="text-xs font-bold text-slate-800">
-                                    {request.employeeName}{" "}
-                                    ({request.employeeId})
-                                </p>
-
-                                <p className="text-[10px] text-slate-500">
-                                    {request.department} Dept.
-                                </p>
-                            </div>
-
+                            <p className="truncate text-xs font-bold text-slate-800">
+                                {request.requestId}
+                            </p>
                         </div>
-
-                        {/* Request Part */}
-
-                        <div className="flex items-center gap-3 p-4">
-
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-50 text-green-600">
-                                <CalendarDays
-                                    size={19}
-                                />
-                            </div>
-
-                            <div>
-                                <p className="text-[11px] text-slate-500">
-                                    Request Part
-                                </p>
-
-                                <p className="text-xs font-bold text-slate-800">
-                                    {
-                                        request.requestPartLabel
-                                    }
-                                </p>
-
-                                <span className="mt-1 inline-flex rounded bg-purple-50 px-2 py-0.5 text-[9px] font-semibold text-purple-700">
-                                    First Installment
-                                </span>
-                            </div>
-
-                        </div>
-
-                        {/* Applied On */}
-
-                        <div className="flex items-center gap-3 p-4">
-
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-50 text-orange-600">
-                                <CalendarDays
-                                    size={19}
-                                />
-                            </div>
-
-                            <div>
-                                <p className="text-[11px] text-slate-500">
-                                    Applied On
-                                </p>
-
-                                <p className="text-xs font-bold text-slate-800">
-                                    {request.appliedOn}
-                                </p>
-                            </div>
-
-                        </div>
-
-                        {/* Status */}
-
-                        <div className="flex items-center gap-3 p-4">
-
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-50 text-orange-600">
-                                <Clock3 size={19} />
-                            </div>
-
-                            <div>
-                                <p className="text-[11px] text-slate-500">
-                                    Status
-                                </p>
-
-                                <span className="mt-1 inline-flex rounded bg-orange-50 px-2 py-1 text-[10px] font-semibold text-orange-700">
-                                    {request.status}
-                                </span>
-                            </div>
-
-                        </div>
-
-                        {/* Forwarded By */}
-
-                        <div className="flex items-center gap-3 p-4">
-
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
-                                <User size={19} />
-                            </div>
-
-                            <div>
-                                <p className="text-[11px] text-slate-500">
-                                    Forwarded By
-                                </p>
-
-                                <p className="text-xs font-bold text-slate-800">
-                                    {
-                                        request.forwardedBy
-                                    }
-                                </p>
-
-                                <p className="text-[10px] text-slate-500">
-                                    {
-                                        request.forwardedOn
-                                    }
-                                </p>
-                            </div>
-
-                        </div>
-
                     </div>
 
-                </div>
+                    {/* Employee */}
 
-                {/* ==============================================================
-                    MAIN CONTENT
-                ============================================================== */}
-
-                <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_370px]">
-
-                    {/* ==========================================================
-                        LEFT SIDE
-                    ========================================================== */}
-
-                    <div className="space-y-4">
-
-                        {/* Employee Information */}
-
-                        <div className="rounded-lg border border-slate-200 bg-white">
-
-                            <div className="border-b border-slate-200 px-4 py-3">
-
-                                <h2 className="text-xs font-bold uppercase text-purple-700">
-                                    Employee Information
-                                </h2>
-
-                            </div>
-
-                            <div className="px-4 py-2">
-
-                                <InfoRow
-                                    label="Employee ID"
-                                    value={
-                                        request.employeeId
-                                    }
-                                />
-
-                                <InfoRow
-                                    label="Employee Name"
-                                    value={
-                                        request.employeeName
-                                    }
-                                />
-
-                                <InfoRow
-                                    label="Department"
-                                    value={
-                                        request.department
-                                    }
-                                />
-
-                                <InfoRow
-                                    label="Designation"
-                                    value={
-                                        request.designation
-                                    }
-                                />
-
-                                <InfoRow
-                                    label="Date of Joining"
-                                    value={
-                                        request.dateOfJoining
-                                    }
-                                />
-
-                                <InfoRow
-                                    label="Reporting Manager"
-                                    value={
-                                        request.reportingManager
-                                    }
-                                />
-
-                            </div>
-
+                    <div className="flex items-center gap-3 p-4">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-purple-50 text-purple-600">
+                            <Users size={19} />
                         </div>
 
-                        {/* Maternity Leave Information */}
+                        <div className="min-w-0">
+                            <p className="text-[11px] text-slate-500">
+                                Employee
+                            </p>
 
-                        <div className="rounded-lg border border-slate-200 bg-white">
+                            <p className="truncate text-xs font-bold text-slate-800">
+                                {employee.employeeName}
+                            </p>
 
-                            <div className="border-b border-slate-200 px-4 py-3">
+                            <p className="text-[10px] text-slate-500">
+                                {employee.employeeId}
+                            </p>
+                        </div>
+                    </div>
 
-                                <h2 className="text-xs font-bold uppercase text-purple-700">
-                                    Maternity Leave
-                                    Information
-                                </h2>
+                    {/* Request Part */}
 
-                            </div>
+                    <div className="flex items-center gap-3 p-4">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-50 text-green-600">
+                            <CalendarDays size={19} />
+                        </div>
 
-                            <div className="px-4 py-2">
+                        <div>
+                            <p className="text-[11px] text-slate-500">
+                                Request Part
+                            </p>
 
-                                <InfoRow
-                                    label="Maternity Leave Entitlement"
-                                    value={
-                                        request.maternityLeaveEntitlement
-                                    }
-                                />
+                            <p className="text-xs font-bold text-slate-800">
+                                {requestPartLabel}
+                            </p>
 
-                                <InfoRow
-                                    label="Leave Structure"
-                                    value={
-                                        request.leaveStructure
-                                    }
-                                />
+                            <span className="mt-1 inline-flex rounded bg-purple-50 px-2 py-0.5 text-[9px] font-semibold text-purple-700">
+                                {maternityInfo?.requestPart || "N/A"}
+                            </span>
+                        </div>
+                    </div>
 
-                                <InfoRow
-                                    label="Expected Delivery Date (EDD)"
-                                    value={
-                                        request.expectedDeliveryDate
-                                    }
-                                />
+                    {/* Applied On */}
 
-                                <InfoRow
-                                    label="Maternity Leave Period"
-                                    value={
-                                        request.maternityLeavePeriod
-                                    }
-                                />
+                    <div className="flex items-center gap-3 p-4">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-50 text-orange-600">
+                            <CalendarDays size={19} />
+                        </div>
 
-                            </div>
+                        <div>
+                            <p className="text-[11px] text-slate-500">
+                                Applied On
+                            </p>
 
-                            {/* Encashment section */}
+                            <p className="text-xs font-bold text-slate-800">
+                                {formatDateTime(request.appliedOn)}
+                            </p>
+                        </div>
+                    </div>
 
-                            <div className="mx-4 mb-3 rounded-md bg-purple-50 px-3 py-2">
+                    {/* Status */}
 
-                                <p className="text-[11px] font-bold uppercase text-purple-700">
-                                    Encashment Request —
-                                    {` ${request.requestPartLabel}`}
-                                </p>
+                    <div className="flex items-center gap-3 p-4">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-50 text-orange-600">
+                            <Clock3 size={19} />
+                        </div>
 
-                            </div>
+                        <div>
+                            <p className="text-[11px] text-slate-500">
+                                Status
+                            </p>
 
-                            <div className="px-4 pb-3">
+                            <span className="mt-1 inline-flex rounded bg-orange-50 px-2 py-1 text-[10px] font-semibold text-orange-700">
+                                {request.status}
+                            </span>
+                        </div>
+                    </div>
 
-                                <InfoRow
-                                    label="Encashment Days Requested"
-                                    value={
-                                        request.encashmentDaysRequested
-                                    }
-                                />
+                    {/* Forwarded By */}
 
-                                <InfoRow
-                                    label="Encashment Rate"
-                                    value={
-                                        request.encashmentRate
-                                    }
-                                />
+                    <div className="flex items-center gap-3 p-4">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+                            <User size={19} />
+                        </div>
 
-                                <InfoRow
-                                    label="Encashment Amount (Est.)"
-                                    value={
-                                        request.encashmentAmount
-                                    }
-                                />
+                        <div className="min-w-0">
+                            <p className="text-[11px] text-slate-500">
+                                Forwarded By
+                            </p>
 
-                                <InfoRow
-                                    label="Remarks by Employee"
-                                    value={
-                                        request.remarksByEmployee
-                                    }
-                                />
+                            <p className="truncate text-xs font-bold text-slate-800">
+                                {workflow?.forwardedByDepartment ||
+                                    "N/A"}
+                            </p>
 
-                            </div>
+                            <p className="truncate text-[10px] text-slate-500">
+                                {workflow?.forwardedBySection ||
+                                    "N/A"}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                            {/* Note */}
+            {/* ==================================================================
+                MAIN CONTENT
+            ================================================================== */}
 
+            <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_370px]">
+                {/* ==============================================================
+                    LEFT SIDE
+                ============================================================== */}
+
+                <div className="space-y-4">
+                    {/* Employee Information */}
+
+                    <div className="rounded-lg border border-slate-200 bg-white">
+                        <div className="border-b border-slate-200 px-4 py-3">
+                            <h2 className="text-xs font-bold uppercase text-purple-700">
+                                Employee Information
+                            </h2>
+                        </div>
+
+                        <div className="px-4 py-2">
+                            <InfoRow
+                                label="Employee ID"
+                                value={employee.employeeId}
+                            />
+
+                            <InfoRow
+                                label="Employee Name"
+                                value={employee.employeeName}
+                            />
+
+                            <InfoRow
+                                label="Department"
+                                value={employee.department}
+                            />
+
+                            <InfoRow
+                                label="Designation"
+                                value={employee.designation}
+                            />
+
+                            <InfoRow
+                                label="Date of Joining"
+                                value={formatDate(
+                                    employee.dateOfJoining,
+                                )}
+                            />
+
+                            <InfoRow
+                                label="Reporting Manager"
+                                value={
+                                    employee.reportingManager ||
+                                    "N/A"
+                                }
+                            />
+                        </div>
+                    </div>
+
+                    {/* Workflow Information */}
+
+                    <div className="rounded-lg border border-slate-200 bg-white">
+                        <div className="border-b border-slate-200 px-4 py-3">
+                            <h2 className="text-xs font-bold uppercase text-purple-700">
+                                Workflow Information
+                            </h2>
+                        </div>
+
+                        <div className="px-4 py-2">
+                            <InfoRow
+                                label="Forwarded By Department"
+                                value={
+                                    workflow?.forwardedByDepartment ||
+                                    "N/A"
+                                }
+                            />
+
+                            <InfoRow
+                                label="Forwarded By Section"
+                                value={
+                                    workflow?.forwardedBySection ||
+                                    "N/A"
+                                }
+                            />
+
+                            <InfoRow
+                                label="Forwarded On"
+                                value={formatDateTime(
+                                    workflow?.forwardedOn,
+                                )}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Maternity Leave Information */}
+
+                    <div className="rounded-lg border border-slate-200 bg-white">
+                        <div className="border-b border-slate-200 px-4 py-3">
+                            <h2 className="text-xs font-bold uppercase text-purple-700">
+                                Maternity Leave Information
+                            </h2>
+                        </div>
+
+                        <div className="px-4 py-2">
+                            <InfoRow
+                                label="Request Part"
+                                value={maternityInfo?.requestPart}
+                            />
+
+                            <InfoRow
+                                label="Maternity Leave Entitlement"
+                                value={
+                                    maternityInfo
+                                        ? `${maternityInfo.maternityLeaveEntitlement} Days`
+                                        : "N/A"
+                                }
+                            />
+
+                            <InfoRow
+                                label="Leave Structure"
+                                value={
+                                    maternityInfo?.leaveStructure
+                                }
+                            />
+
+                            <InfoRow
+                                label="Expected Delivery Date"
+                                value={formatDate(
+                                    maternityInfo?.expectedDeliveryDate,
+                                )}
+                            />
+
+                            <InfoRow
+                                label="Leave Start Date"
+                                value={formatDate(
+                                    maternityInfo?.maternityLeaveStartDate,
+                                )}
+                            />
+
+                            <InfoRow
+                                label="Leave End Date"
+                                value={formatDate(
+                                    maternityInfo?.maternityLeaveEndDate,
+                                )}
+                            />
+                        </div>
+
+                        {/* Encashment Section */}
+
+                        <div className="mx-4 mb-3 rounded-md bg-purple-50 px-3 py-2">
+                            <p className="text-[11px] font-bold uppercase text-purple-700">
+                                Encashment Request —{" "}
+                                {requestPartLabel}
+                            </p>
+                        </div>
+
+                        <div className="px-4 pb-3">
+                            <InfoRow
+                                label="Encashment Days Requested"
+                                value={
+                                    encashment
+                                        ? `${encashment.encashmentDaysRequested} Days`
+                                        : "N/A"
+                                }
+                            />
+
+                            <InfoRow
+                                label="Encashment Rate"
+                                value={
+                                    encashment?.encashmentRate
+                                }
+                            />
+
+                            <InfoRow
+                                label="Estimated Amount"
+                                value={
+                                    <span className="font-bold text-green-700">
+                                        {formatAmount(
+                                            encashment?.estimatedAmount,
+                                        )}
+                                    </span>
+                                }
+                            />
+
+                            <InfoRow
+                                label="Remarks by Employee"
+                                value={
+                                    encashment?.remarksByEmployee ||
+                                    "N/A"
+                                }
+                            />
+                        </div>
+
+                        {/* Backend Note */}
+
+                        {maternityInfo?.note && (
                             <div className="mx-4 mb-4 flex items-start gap-2 rounded-md bg-amber-50 px-3 py-2">
-
                                 <Info
                                     size={14}
                                     className="mt-0.5 shrink-0 text-amber-600"
                                 />
 
                                 <p className="text-[10px] leading-4 text-amber-800">
-
-                                    <strong>
-                                        Note:
-                                    </strong>{" "}
-
-                                    Part 2 (Post-Delivery
-                                    – 64 Days) can be
-                                    requested after
-                                    delivery.
-
+                                    <strong>Note:</strong>{" "}
+                                    {maternityInfo.note}
                                 </p>
+                            </div>
+                        )}
+                    </div>
 
+                    {/* Important Rules */}
+
+                    {request.importantRules?.length > 0 && (
+                        <div className="rounded-lg border border-slate-200 bg-white">
+                            <div className="border-b border-slate-200 px-4 py-3">
+                                <h2 className="text-xs font-bold uppercase text-purple-700">
+                                    Important Rules
+                                </h2>
                             </div>
 
+                            <div className="px-4 py-3">
+                                <ul className="list-disc space-y-2 pl-4 text-[10px] leading-4 text-slate-600">
+                                    {request.importantRules.map(
+                                        (rule, index) => (
+                                            <li key={index}>
+                                                {rule}
+                                            </li>
+                                        ),
+                                    )}
+                                </ul>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Attachments */}
+
+                    <div className="rounded-lg border border-slate-200 bg-white">
+                        <div className="border-b border-slate-200 px-4 py-3">
+                            <div className="flex items-center gap-2">
+                                <Paperclip
+                                    size={15}
+                                    className="text-purple-700"
+                                />
+
+                                <h2 className="text-xs font-bold uppercase text-purple-700">
+                                    Attachments
+                                </h2>
+                            </div>
+
+                            <p className="mt-1 pl-5 text-[10px] text-slate-500">
+                                {request.attachments?.length || 0}{" "}
+                                attachments uploaded
+                            </p>
                         </div>
 
-                        {/* Attachments */}
-
-                        <div className="rounded-lg border border-slate-200 bg-white">
-
-                            <div className="border-b border-slate-200 px-4 py-3">
-
-                                <div className="flex items-center gap-2">
-
-                                    <Paperclip
-                                        size={15}
-                                        className="text-purple-700"
-                                    />
-
-                                    <h2 className="text-xs font-bold uppercase text-purple-700">
-                                        Attachments
-                                    </h2>
-
-                                </div>
-
-                                <p className="mt-1 pl-5 text-[10px] text-slate-500">
-                                    {
-                                        request
-                                            .attachments
-                                            ?.length
-                                    }{" "}
-                                    attachments
-                                    uploaded
-                                </p>
-
-                            </div>
-
+                        {request.attachments?.length > 0 ? (
                             <div className="divide-y divide-slate-100 px-4">
-
-                                {request.attachments?.map(
-                                    (
-                                        attachment,
-                                    ) => (
+                                {request.attachments.map(
+                                    (attachment, index) => (
                                         <div
                                             key={
-                                                attachment.id
+                                                attachment.id ||
+                                                index
                                             }
                                             className="flex items-center justify-between gap-3 py-3"
                                         >
-
                                             <div className="flex min-w-0 items-center gap-3">
-
                                                 <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded bg-red-50 text-red-500">
                                                     <FileText
-                                                        size={
-                                                            17
-                                                        }
+                                                        size={17}
                                                     />
                                                 </div>
 
                                                 <div className="min-w-0">
-
                                                     <p className="truncate text-xs font-semibold text-slate-800">
-                                                        {
-                                                            attachment.fileName
-                                                        }
+                                                        {attachment.fileName ||
+                                                            "Attachment"}
                                                     </p>
 
                                                     <p className="text-[10px] text-slate-500">
-                                                        Uploaded
-                                                        on{" "}
-                                                        {
-                                                            attachment.uploadedOn
-                                                        }
+                                                        {attachment.uploadedOn
+                                                            ? `Uploaded on ${formatDateTime(
+                                                                  attachment.uploadedOn,
+                                                              )}`
+                                                            : attachment.fileType ||
+                                                              ""}
                                                     </p>
 
-                                                    <p className="text-[10px] text-slate-500">
-                                                        {
-                                                            attachment.fileSize
-                                                        }
-                                                    </p>
-
+                                                    {attachment.fileSize && (
+                                                        <p className="text-[10px] text-slate-500">
+                                                            {
+                                                                attachment.fileSize
+                                                            }
+                                                        </p>
+                                                    )}
                                                 </div>
-
                                             </div>
 
                                             <button
@@ -855,388 +786,282 @@ const MaternityLeaveEncashmentDetails: React.FC =
                                                 title="Download"
                                             >
                                                 <Download
-                                                    size={
-                                                        15
-                                                    }
+                                                    size={15}
                                                 />
                                             </button>
-
                                         </div>
                                     ),
                                 )}
-
                             </div>
-
-                        </div>
-
-                    </div>
-
-                    {/* ==========================================================
-                        RIGHT SIDE - ACTIONS
-                    ========================================================== */}
-
-                    <div>
-
-                        <div className="sticky top-4 rounded-lg border border-slate-200 bg-white">
-
-                            {/* Actions */}
-
-                            <div className="border-b border-slate-200 px-4 py-3">
-
-                                <h2 className="text-xs font-bold uppercase text-slate-800">
-                                    Actions
-                                </h2>
-
-                                <p className="mt-1 text-[10px] text-slate-500">
-                                    Review the request
-                                    and take
-                                    appropriate
-                                    action.
-                                </p>
-
-                            </div>
-
-                            <div className="space-y-2 p-4">
-
-                                {/* Forward */}
-
-                                <button
-                                    type="button"
-                                    onClick={
-                                        handleForward
-                                    }
-                                    className="
-                                        flex
-                                        w-full
-                                        items-center
-                                        gap-3
-                                        rounded-md
-                                        border
-                                        border-green-200
-                                        bg-white
-                                        px-3
-                                        py-3
-                                        text-left
-                                        transition
-                                        hover:bg-green-50
-                                    "
-                                >
-
-                                    <CheckCircle2
-                                        size={19}
-                                        className="shrink-0 text-green-600"
-                                    />
-
-                                    <div>
-                                        <p className="text-xs font-bold text-green-700">
-                                            Forward to HR
-                                            Manager
-                                        </p>
-
-                                        <p className="mt-0.5 text-[10px] text-slate-500">
-                                            Forward request
-                                            to next higher
-                                            authority.
-                                        </p>
-                                    </div>
-
-                                </button>
-
-                                {/* Reject */}
-
-                                <button
-                                    type="button"
-                                    onClick={
-                                        handleReject
-                                    }
-                                    className="
-                                        flex
-                                        w-full
-                                        items-center
-                                        gap-3
-                                        rounded-md
-                                        border
-                                        border-red-200
-                                        bg-white
-                                        px-3
-                                        py-3
-                                        text-left
-                                        transition
-                                        hover:bg-red-50
-                                    "
-                                >
-
-                                    <XCircle
-                                        size={19}
-                                        className="shrink-0 text-red-500"
-                                    />
-
-                                    <div>
-                                        <p className="text-xs font-bold text-red-600">
-                                            Reject Request
-                                        </p>
-
-                                        <p className="mt-0.5 text-[10px] text-slate-500">
-                                            Reject and
-                                            inform
-                                            employee.
-                                        </p>
-                                    </div>
-
-                                </button>
-
-                                {/* More Information */}
-
-                                <button
-                                    type="button"
-                                    onClick={
-                                        handleRequestInformation
-                                    }
-                                    className="
-                                        flex
-                                        w-full
-                                        items-center
-                                        gap-3
-                                        rounded-md
-                                        border
-                                        border-blue-200
-                                        bg-white
-                                        px-3
-                                        py-3
-                                        text-left
-                                        transition
-                                        hover:bg-blue-50
-                                    "
-                                >
-
-                                    <MessageSquare
-                                        size={19}
-                                        className="shrink-0 text-blue-600"
-                                    />
-
-                                    <div>
-                                        <p className="text-xs font-bold text-blue-600">
-                                            Request More
-                                            Information
-                                        </p>
-
-                                        <p className="mt-0.5 text-[10px] text-slate-500">
-                                            Ask for
-                                            additional
-                                            information
-                                            from
-                                            employee.
-                                        </p>
-                                    </div>
-
-                                </button>
-
-                            </div>
-
-                            {/* Remarks */}
-
-                            <div className="border-t border-slate-200 p-4">
-
-                                <label className="mb-2 block text-[10px] font-bold uppercase text-blue-800">
-                                    Remarks{" "}
-                                    <span className="font-normal text-slate-500">
-                                        (Optional)
-                                    </span>
-                                </label>
-
-                                <textarea
-                                    value={remarks}
-                                    onChange={(event) =>
-                                        setRemarks(
-                                            event
-                                                .target
-                                                .value,
-                                        )
-                                    }
-                                    maxLength={500}
-                                    rows={4}
-                                    placeholder="Enter remarks (visible to next authority)..."
-                                    className="
-                                        w-full
-                                        resize-none
-                                        rounded-md
-                                        border
-                                        border-slate-200
-                                        px-3
-                                        py-2
-                                        text-xs
-                                        text-slate-700
-                                        outline-none
-                                        placeholder:text-slate-400
-                                        focus:border-blue-400
-                                        focus:ring-1
-                                        focus:ring-blue-100
-                                    "
+                        ) : (
+                            <div className="px-4 py-6 text-center">
+                                <Paperclip
+                                    size={22}
+                                    className="mx-auto mb-2 text-slate-300"
                                 />
 
-                                <p className="mt-1 text-[9px] text-slate-400">
-                                    {remarks.length}/500
-                                    characters
+                                <p className="text-xs text-slate-400">
+                                    No attachments uploaded
                                 </p>
-
                             </div>
-
-                            {/* Note */}
-
-                            <div className="mx-4 mb-4 rounded-md bg-blue-50 p-3">
-
-                                <div className="flex items-start gap-2">
-
-                                    <Info
-                                        size={14}
-                                        className="mt-0.5 shrink-0 text-blue-600"
-                                    />
-
-                                    <div>
-
-                                        <p className="text-[10px] font-bold text-blue-700">
-                                            Note:
-                                        </p>
-
-                                        <ul className="mt-1 list-disc space-y-1 pl-3 text-[9px] leading-4 text-blue-700">
-
-                                            <li>
-                                                This is
-                                                Part 1
-                                                (Pre-Delivery)
-                                                encashment
-                                                request.
-                                            </li>
-
-                                            <li>
-                                                After
-                                                delivery,
-                                                employee
-                                                can request
-                                                Part 2
-                                                (Post-Delivery
-                                                – 64 Days).
-                                            </li>
-
-                                            <li>
-                                                Encashment
-                                                amount will
-                                                be paid with
-                                                salary as
-                                                per Payroll
-                                                schedule.
-                                            </li>
-
-                                        </ul>
-
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
+                        )}
                     </div>
-
                 </div>
 
                 {/* ==============================================================
-                    PREVIOUS / NEXT REQUEST
+                    RIGHT SIDE - ACTIONS
                 ============================================================== */}
 
-                <div className="mt-4 flex items-center justify-between border-t border-slate-200 pt-4">
+                <div>
+                    <div className="sticky top-4 rounded-lg border border-slate-200 bg-white">
+                        {/* Actions Header */}
 
-                    <button
-                        type="button"
-                        disabled={!previousRequest}
-                        onClick={() => {
-                            if (
-                                previousRequest
-                            ) {
-                                navigateToRequest(
-                                    previousRequest,
-                                );
-                            }
-                        }}
-                        className="
-                            inline-flex
-                            items-center
-                            gap-2
-                            rounded-md
-                            border
-                            border-blue-200
-                            bg-white
-                            px-4
-                            py-2
-                            text-xs
-                            font-semibold
-                            text-blue-600
-                            transition
-                            hover:bg-blue-50
-                            disabled:cursor-not-allowed
-                            disabled:opacity-40
-                        "
-                    >
+                        <div className="border-b border-slate-200 px-4 py-3">
+                            <h2 className="text-xs font-bold uppercase text-slate-800">
+                                Actions
+                            </h2>
 
-                        <ArrowLeft size={14} />
+                            <p className="mt-1 text-[10px] text-slate-500">
+                                Review the request and take appropriate
+                                action.
+                            </p>
+                        </div>
 
-                        Previous Request
+                        {/* Action Buttons */}
 
-                    </button>
+                        <div className="space-y-2 p-4">
+                            {/* Forward */}
 
-                    {/* Request Counter */}
+                            <button
+                                type="button"
+                                disabled={isSubmitting}
+                                onClick={() =>
+                                    handleAction("FORWARD-TO-HR")
+                                }
+                                className="
+                                    flex
+                                    w-full
+                                    items-center
+                                    gap-3
+                                    rounded-md
+                                    border
+                                    border-green-200
+                                    bg-white
+                                    px-3
+                                    py-3
+                                    text-left
+                                    transition
+                                    hover:bg-green-50
+                                    disabled:cursor-not-allowed
+                                    disabled:opacity-50
+                                "
+                            >
+                                <CheckCircle2
+                                    size={19}
+                                    className="shrink-0 text-green-600"
+                                />
 
-                    <div className="text-center">
+                                <div>
+                                    <p className="text-xs font-bold text-green-700">
+                                        Forward Request
+                                    </p>
 
-                        <p className="text-xs font-semibold text-slate-700">
-                            Request{" "}
-                            {currentIndex + 1} of{" "}
-                            {MATERNITY_REQUESTS.length}
-                        </p>
+                                    <p className="mt-0.5 text-[10px] text-slate-500">
+                                        Forward request to the next
+                                        authority.
+                                    </p>
+                                </div>
+                            </button>
 
+                            {/* Reject */}
+
+                            <button
+                                type="button"
+                                disabled={isSubmitting}
+                                onClick={() =>
+                                    handleAction("REJECTED")
+                                }
+                                className="
+                                    flex
+                                    w-full
+                                    items-center
+                                    gap-3
+                                    rounded-md
+                                    border
+                                    border-red-200
+                                    bg-white
+                                    px-3
+                                    py-3
+                                    text-left
+                                    transition
+                                    hover:bg-red-50
+                                    disabled:cursor-not-allowed
+                                    disabled:opacity-50
+                                "
+                            >
+                                <XCircle
+                                    size={19}
+                                    className="shrink-0 text-red-500"
+                                />
+
+                                <div>
+                                    <p className="text-xs font-bold text-red-600">
+                                        Reject Request
+                                    </p>
+
+                                    <p className="mt-0.5 text-[10px] text-slate-500">
+                                        Reject and inform employee.
+                                    </p>
+                                </div>
+                            </button>
+
+                            {/* Request Information */}
+
+                            <button
+                                type="button"
+                                disabled={isSubmitting}
+                                onClick={() =>
+                                    handleAction(
+                                        "REQUEST_INFORMATION",
+                                    )
+                                }
+                                className="
+                                    flex
+                                    w-full
+                                    items-center
+                                    gap-3
+                                    rounded-md
+                                    border
+                                    border-blue-200
+                                    bg-white
+                                    px-3
+                                    py-3
+                                    text-left
+                                    transition
+                                    hover:bg-blue-50
+                                    disabled:cursor-not-allowed
+                                    disabled:opacity-50
+                                "
+                            >
+                                <MessageSquare
+                                    size={19}
+                                    className="shrink-0 text-blue-600"
+                                />
+
+                                <div>
+                                    <p className="text-xs font-bold text-blue-600">
+                                        Request More Information
+                                    </p>
+
+                                    <p className="mt-0.5 text-[10px] text-slate-500">
+                                        Ask for additional information
+                                        from employee.
+                                    </p>
+                                </div>
+                            </button>
+                        </div>
+
+                        {/* Remarks */}
+
+                        <div className="border-t border-slate-200 p-4">
+                            <label className="mb-2 block text-[10px] font-bold uppercase text-blue-800">
+                                Remarks{" "}
+                                <span className="font-normal text-slate-500">
+                                    (Optional)
+                                </span>
+                            </label>
+
+                            <textarea
+                                value={remarks}
+                                onChange={(event) =>
+                                    setRemarks(event.target.value)
+                                }
+                                maxLength={500}
+                                rows={4}
+                                disabled={isSubmitting}
+                                placeholder="Enter remarks..."
+                                className="
+                                    w-full
+                                    resize-none
+                                    rounded-md
+                                    border
+                                    border-slate-200
+                                    px-3
+                                    py-2
+                                    text-xs
+                                    text-slate-700
+                                    outline-none
+                                    placeholder:text-slate-400
+                                    focus:border-blue-400
+                                    focus:ring-1
+                                    focus:ring-blue-100
+                                    disabled:bg-slate-50
+                                "
+                            />
+
+                            <p className="mt-1 text-[9px] text-slate-400">
+                                {remarks.length}/500 characters
+                            </p>
+                        </div>
+
+                        {/* Error */}
+
+                        {actionError && (
+                            <div className="mx-4 mb-4 rounded-md border border-red-200 bg-red-50 px-3 py-2">
+                                <div className="flex items-start gap-2">
+                                    <XCircle
+                                        size={14}
+                                        className="mt-0.5 shrink-0 text-red-500"
+                                    />
+
+                                    <p className="text-[10px] leading-4 text-red-700">
+                                        {actionError}
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Note */}
+
+                        <div className="mx-4 mb-4 rounded-md bg-blue-50 p-3">
+                            <div className="flex items-start gap-2">
+                                <Info
+                                    size={14}
+                                    className="mt-0.5 shrink-0 text-blue-600"
+                                />
+
+                                <div>
+                                    <p className="text-[10px] font-bold text-blue-700">
+                                        Note:
+                                    </p>
+
+                                    <ul className="mt-1 list-disc space-y-1 pl-3 text-[9px] leading-4 text-blue-700">
+                                        <li>
+                                            Action will be recorded in
+                                            the workflow audit log.
+                                        </li>
+
+                                        <li>
+                                            The remarks entered above
+                                            will be sent with the
+                                            selected action.
+                                        </li>
+
+                                        <li>
+                                            Final amount will be
+                                            verified before payroll
+                                            processing.
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-
-                    <button
-                        type="button"
-                        disabled={!nextRequest}
-                        onClick={() => {
-                            if (nextRequest) {
-                                navigateToRequest(
-                                    nextRequest,
-                                );
-                            }
-                        }}
-                        className="
-                            inline-flex
-                            items-center
-                            gap-2
-                            rounded-md
-                            border
-                            border-blue-200
-                            bg-white
-                            px-4
-                            py-2
-                            text-xs
-                            font-semibold
-                            text-blue-600
-                            transition
-                            hover:bg-blue-50
-                            disabled:cursor-not-allowed
-                            disabled:opacity-40
-                        "
-                    >
-
-                        Next Request
-
-                        <ArrowRight size={14} />
-
-                    </button>
-
                 </div>
-
             </div>
-        );
-    };
+        </div>
+    );
+};
 
 export default MaternityLeaveEncashmentDetails;
+
