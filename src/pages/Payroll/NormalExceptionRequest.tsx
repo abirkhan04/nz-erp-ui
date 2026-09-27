@@ -116,7 +116,7 @@ const NormalExceptionRequests: React.FC = () => {
   const navigate = useNavigate();
 
   const { data: departments = [] } = useGet({ key: ["departments"], url: `${API_ROUTES.DEPARTMENT}` });
-  const departmentOptions = departments.map(i => ({ label: i.departmentName, value: i.departmentId }))
+  const departmentOptions = departments.map((i:any) => ({ label: i.departmentName, value: i.departmentId }))
 
   /* ----------------------------------------------------------
      FILTER FORM
