@@ -23,7 +23,7 @@ import CommonInputField from "../../components/CommonInputFields";
 import { type Option } from "../../components/CommonInputFields";
 
 interface NormalExceptionRequest {
-  requestId: string;
+  id: string;
   attendanceDate: string;
   employeeId: string;
   employeeName: string;
@@ -36,7 +36,7 @@ interface NormalExceptionRequest {
 }
 
 interface FilterForm {
-  requestId: string;
+  id: string;
   employeeIdName: string;
   department: string;
   exceptionType: string;
@@ -46,9 +46,9 @@ interface FilterForm {
 }
 
 interface ApiResponse {
-  data?: NormalExceptionRequest[];
+  items?: NormalExceptionRequest[];
   content?: NormalExceptionRequest[];
-  totalCount?: number;
+  total?: number;
 }
 
 /* ============================================================
@@ -97,7 +97,7 @@ const statusOptions: Option[] = [
 ============================================================ */
 
 const defaultFilters: FilterForm = {
-  requestId: "",
+  id: "",
   employeeIdName: "",
   department: "All",
   exceptionType: "All",
@@ -159,9 +159,10 @@ const NormalExceptionRequests: React.FC = () => {
 
   const getStatusValue = (status: string): string => {
     const statusMap: Record<string, string> = {
-      Pending: "PENDING",
-      Forwarded: "FORWARDED",
-      Rejected: "REJECTED",
+      Pending: "0",
+      Rejected: "1",
+      Forwarded: "2",
+      // Rejected: "REJECTED",
     };
 
     return statusMap[status] ?? "";
@@ -250,8 +251,8 @@ const NormalExceptionRequests: React.FC = () => {
       return response as NormalExceptionRequest[];
     }
 
-    if (Array.isArray(apiResponse.data)) {
-      return apiResponse.data;
+    if (Array.isArray(apiResponse.items)) {
+      return apiResponse.items;
     }
 
     if (Array.isArray(apiResponse.content)) {
@@ -272,11 +273,11 @@ const NormalExceptionRequests: React.FC = () => {
       ------------------------------------------------------- */
 
       const matchesRequestId =
-        !appliedFilters.requestId ||
-        request.requestId
+        !appliedFilters.id ||
+        request.id
           .toLowerCase()
           .includes(
-            appliedFilters.requestId.toLowerCase()
+            appliedFilters.id.toLowerCase()
           );
 
       /* -------------------------------------------------------
@@ -398,7 +399,7 @@ const NormalExceptionRequests: React.FC = () => {
 
   const selectedRequests = useMemo(() => {
     return requests.filter((request) =>
-      selectedRequestIds.includes(request.requestId)
+      selectedRequestIds.includes(request.id)
     );
   }, [requests, selectedRequestIds]);
 
@@ -445,7 +446,7 @@ const NormalExceptionRequests: React.FC = () => {
   ========================================================== */
 
   const visibleRequestIds = paginatedRequests.map(
-    (request) => request.requestId
+    (request) => request.id
   );
 
   const allVisibleSelected =
@@ -536,7 +537,7 @@ const NormalExceptionRequests: React.FC = () => {
   ) => {
     navigate(
       `/attendance-cell/normal-exception-requests/details?requestId=${encodeURIComponent(
-        request.requestId
+        request.id
       )}`
     );
   };
@@ -800,7 +801,7 @@ const NormalExceptionRequests: React.FC = () => {
 
               <CommonInputField<FilterForm>
                 label="Request ID"
-                name="requestId"
+                name="id"
                 register={register}
                 errors={{}}
                 placeholder="Enter Request ID"
@@ -1046,12 +1047,12 @@ const NormalExceptionRequests: React.FC = () => {
                     (request) => {
                       const isSelected =
                         selectedRequestIds.includes(
-                          request.requestId
+                          request.id
                         );
 
                       return (
                         <tr
-                          key={request.requestId}
+                          key={request.id}
                           className={`text-[8px] ${isSelected
                             ? "bg-[#f4f7ff]"
                             : "bg-white"
@@ -1067,7 +1068,7 @@ const NormalExceptionRequests: React.FC = () => {
                               checked={isSelected}
                               onChange={(e) =>
                                 handleSelectRequest(
-                                  request.requestId,
+                                  request.id,
                                   e.target.checked
                                 )
                               }
@@ -1076,7 +1077,7 @@ const NormalExceptionRequests: React.FC = () => {
                           </td>
 
                           <td className="border-b border-[#edf0f5] px-2 py-2 font-semibold text-[#173d9b]">
-                            {request.requestId}
+                            {request.id}
                           </td>
 
                           <td className="border-b border-[#edf0f5] px-2 py-2 whitespace-nowrap">
