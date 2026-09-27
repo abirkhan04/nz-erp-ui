@@ -486,12 +486,10 @@ const NormalExceptionRequests: React.FC = () => {
   };
 
   const handleSelectRequest = (requestId: string, checked: boolean) => {
-    console.log("Toggling:", requestId, checked);
     setSelectedRequestIds((previous) => {
       const next = checked
         ? (previous.includes(requestId) ? previous : [...previous, requestId])
         : previous.filter((id) => id !== requestId);
-      console.log("New selectedRequestIds:", next);
       return next;
     });
   };
@@ -529,7 +527,7 @@ const NormalExceptionRequests: React.FC = () => {
     request: NormalExceptionRequest
   ) => {
     navigate(
-      `/attendance-cell/normal-exception-requests/details?requestId=${encodeURIComponent(
+      `/payroll-and-workforce-movement/attendance-cell/exception-request/normal/${encodeURIComponent(
         request.id
       )}`
     );

@@ -1,10 +1,8 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import {
   ArrowLeft,
   CalendarDays,
   CheckCircle2,
-  ChevronLeft,
-  ChevronRight,
   CircleAlert,
   CircleX,
   Download,
@@ -16,11 +14,12 @@ import {
   Clock3,
   UserCheck,
 } from "lucide-react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
-import {useGet} from "../../hooks/useGet";
-import {usePost} from  "../../hooks/usePost"; // adjust imports above to your project's actual hook location
-// adjust imports above to your project's actual hook location
+import { useGet } from "../../hooks/useGet";
+import { usePost } from "../../hooks/usePost";
+import { API_ROUTES } from "../../api/routes";
+import { usePut } from "../../hooks/usePut";
 
 interface Attachment {
   id: string;
@@ -32,200 +31,136 @@ interface Attachment {
 
 interface ExceptionRequest {
   requestId: string;
-  employeeId: string;
-  employeeName: string;
-  department: string;
-  designation: string;
-  dateOfJoining: string;
-  reportingManager: string;
-
-  exceptionType: string;
-  date: string;
+  status: string;
+  exceptionDate: string;
   shift: string;
 
-  inTimeScheduled: string;
-  inTimeActual: string;
-  outTimeScheduled: string;
-  outTimeActual: string;
+  employee: {
+    employeeId: string;
+    employeeName: string;
+    department: string | null;
+    designation: string | null;
+    dateOfJoining: string | null;
+    reportingManager: string | null;
+  };
 
-  reasonProvided: string;
-  remarksByFloor: string;
+  workflow: {
+    forwardedByDepartment: string | null;
+    forwardedBySection: string | null;
+    forwardedOn: string | null;
+    currentStatus: string;
+  };
 
-  status: "Pending" | "Forwarded" | "Rejected" | "More Information";
-
-  forwardedBy: string;
-  forwardedOn: string;
+  exceptionInformation: {
+    exceptionType: string;
+    exceptionDate: string;
+    shiftName: string;
+    shiftTime: string;
+    scheduledInTime: string;
+    actualInTime: string | null;
+    scheduledOutTime: string;
+    actualOutTime: string | null;
+    reasonProvided: string | null;
+    remarksByFloor: string | null;
+  };
 
   attachments: Attachment[];
 }
 
-/*
- * This is the shape expected from the backend.
- * Change field names here if your API uses different names.
- */
-
 const ExceptionRequestDetails: React.FC = () => {
   const navigate = useNavigate();
-
-  const [searchParams] = useSearchParams();
-
-  /*
-   * Example URL:
-   *
-   * /attendance-cell/normal-exception-requests/details?requestId=EXC250511
-   */
-
-  const requestId = searchParams.get("requestId");
+  const { requestId } = useParams();
 
   const [remarks, setRemarks] = useState("");
 
   /*
    * ------------------------------------------------------------
-   * LOAD ALL REQUESTS
+   * GET EXCEPTION DETAILS
    * ------------------------------------------------------------
-   *
-   * IMPORTANT:
-   * We intentionally load the complete list.
-   *
-   * The Previous / Next navigation works against this list.
    */
 
   const {
     data: response,
     isLoading,
   } = useGet({
-    key: ["normal-exception-requests"],
-    url: "",
+    key: ["attendance-exception-detail", requestId],
+    url: `${API_ROUTES.ATTENDANCE_EXCEPTIONS}/${requestId}`,
+    enabled: !!requestId,
   });
 
   /*
-   * Adjust this depending on your API response.
+   * Backend may return either:
    *
-   * If backend directly returns:
+   * {
+   *   requestId: "...",
+   *   ...
+   * }
    *
-   * [
-   *   {...},
-   *   {...}
-   * ]
+   * or
    *
-   * then use:
-   *
-   * const requests = response ?? [];
+   * {
+   *   data: {
+   *     requestId: "...",
+   *     ...
+   *   }
+   * }
    */
 
-  const requests: ExceptionRequest[] = useMemo(() => {
-    return response?.data ?? response ?? [];
-  }, [response]);
+  const currentRequest: ExceptionRequest | undefined =
+    response?.data ?? response;
 
   /*
    * ------------------------------------------------------------
-   * FIND CURRENT REQUEST
+   * ACTION API
    * ------------------------------------------------------------
+   *
+   * Payload:
+   *
+   * {
+   *   requestId: "string",
+   *   action: "string",
+   *   remarks: "string"
+   * }
+   *
+   * Change only this URL if your backend uses a different
+   * action endpoint.
    */
 
-  const currentIndex = useMemo(() => {
-    if (!requestId) {
-      return 0;
-    }
-
-    return requests.findIndex(
-      (request) => request.requestId === requestId
-    );
-  }, [requests, requestId]);
-
-  const currentRequest =
-    currentIndex >= 0 ? requests[currentIndex] : undefined;
+  const {
+    mutate: submitAction,
+    isPending: actionPending,
+  } = usePut(`${API_ROUTES.ATTENDANCE_EXCEPTIONS}/action`);
 
   /*
    * ------------------------------------------------------------
-   * NAVIGATION
+   * ACTION HANDLER
    * ------------------------------------------------------------
    */
 
-  const hasPrevious = currentIndex > 0;
-
-  const hasNext =
-    currentIndex >= 0 && currentIndex < requests.length - 1;
-
-  const goToRequest = (index: number) => {
-    const request = requests[index];
-
-    if (!request) {
-      return;
-    }
-
-    navigate(
-      `/attendance-cell/normal-exception-requests/details?requestId=${encodeURIComponent(
-        request.requestId
-      )}`
-    );
-
-    setRemarks("");
-  };
-
-  const handlePrevious = () => {
-    if (!hasPrevious) {
-      return;
-    }
-
-    goToRequest(currentIndex - 1);
-  };
-
-  const handleNext = () => {
-    if (!hasNext) {
-      return;
-    }
-
-    goToRequest(currentIndex + 1);
-  };
-
-  /*
-   * ------------------------------------------------------------
-   * ACTIONS
-   * ------------------------------------------------------------
-   */
-
-  const { mutate: submitAction, isPending: actionPending } = usePost('');
-
-  const handleForward = () => {
+  const handleAction = (action: string) => {
     if (!currentRequest) {
       return;
     }
 
     const payload = {
       requestId: currentRequest.requestId,
-      status: "FORWARDED",
+      action,
       remarks,
     };
 
     submitAction(payload);
+  };
+
+  const handleForward = () => {
+    handleAction("FORWARD-TO-HR");
   };
 
   const handleReject = () => {
-    if (!currentRequest) {
-      return;
-    }
-
-    const payload = {
-      requestId: currentRequest.requestId,
-      status: "REJECTED",
-      remarks,
-    };
-
-    submitAction(payload);
+    handleAction("REJECTED");
   };
 
   const handleMoreInformation = () => {
-    if (!currentRequest) {
-      return;
-    }
-
-    const payload = {
-      requestId: currentRequest.requestId,
-      status: "MORE_INFORMATION",
-      remarks,
-    };
-    submitAction(payload);
+    handleAction("MORE_INFORMATION");
   };
 
   /*
@@ -233,6 +168,7 @@ const ExceptionRequestDetails: React.FC = () => {
    * LOADING
    * ------------------------------------------------------------
    */
+
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-white">
@@ -273,6 +209,16 @@ const ExceptionRequestDetails: React.FC = () => {
       </div>
     );
   }
+
+  const employee = currentRequest.employee;
+  const workflow = currentRequest.workflow;
+  const information = currentRequest.exceptionInformation;
+
+  /*
+   * ------------------------------------------------------------
+   * PAGE
+   * ------------------------------------------------------------
+   */
 
   return (
     <div className="min-h-screen bg-white text-[#101b4b]">
@@ -329,7 +275,6 @@ const ExceptionRequestDetails: React.FC = () => {
           <div className="flex items-center gap-4">
             <div className="flex h-[32px] items-center gap-2 rounded bg-white px-3 text-[10px] font-semibold text-[#17275c]">
               <CalendarDays size={15} />
-
               15 May 2025 | Thursday
             </div>
 
@@ -376,8 +321,8 @@ const ExceptionRequestDetails: React.FC = () => {
           </h1>
 
           <p className="mt-1 text-[10px] font-medium text-[#27325b]">
-            Review full details of the exception request and forward to IT
-            if valid.
+            Review full details of the exception request and take the
+            appropriate action.
           </p>
         </div>
 
@@ -405,13 +350,14 @@ const ExceptionRequestDetails: React.FC = () => {
               value={
                 <>
                   <div>
-                    {currentRequest.employeeName} (
-                    {currentRequest.employeeId})
+                    {employee.employeeName} ({employee.employeeId})
                   </div>
 
-                  <div className="mt-1 text-[9px] font-medium">
-                    {currentRequest.department}
-                  </div>
+                  {employee.department && (
+                    <div className="mt-1 text-[9px] font-medium">
+                      {employee.department}
+                    </div>
+                  )}
                 </>
               }
             />
@@ -424,7 +370,7 @@ const ExceptionRequestDetails: React.FC = () => {
               label="Exception Date"
               value={
                 <>
-                  <div>{currentRequest.date}</div>
+                  <div>{currentRequest.exceptionDate}</div>
 
                   <div className="mt-1 text-[9px]">
                     ({currentRequest.shift})
@@ -444,19 +390,27 @@ const ExceptionRequestDetails: React.FC = () => {
               }
             />
 
-            {/* FORWARDED BY */}
+            {/* FORWARDED */}
 
             <SummaryItem
               icon={<UserCheck size={22} />}
               iconClass="bg-[#eaf8f0] text-[#22945c]"
-              label="Forwarded By"
+              label="Forwarded On"
               value={
                 <>
-                  <div>{currentRequest.forwardedBy}</div>
-
-                  <div className="mt-1 text-[8px]">
-                    {currentRequest.forwardedOn}
+                  <div>
+                    {workflow.forwardedOn
+                      ? new Date(
+                          workflow.forwardedOn
+                        ).toLocaleString()
+                      : "-"}
                   </div>
+
+                  {workflow.forwardedByDepartment && (
+                    <div className="mt-1 text-[8px]">
+                      {workflow.forwardedByDepartment}
+                    </div>
+                  )}
                 </>
               }
             />
@@ -475,32 +429,32 @@ const ExceptionRequestDetails: React.FC = () => {
           <DetailCard title="EMPLOYEE INFORMATION">
             <DetailRow
               label="Employee ID"
-              value={currentRequest.employeeId}
+              value={employee.employeeId}
             />
 
             <DetailRow
               label="Employee Name"
-              value={currentRequest.employeeName}
+              value={employee.employeeName}
             />
 
             <DetailRow
               label="Department"
-              value={currentRequest.department}
+              value={employee.department || "-"}
             />
 
             <DetailRow
               label="Designation"
-              value={currentRequest.designation}
+              value={employee.designation || "-"}
             />
 
             <DetailRow
               label="Date of Joining"
-              value={currentRequest.dateOfJoining}
+              value={employee.dateOfJoining || "-"}
             />
 
             <DetailRow
               label="Reporting Manager"
-              value={currentRequest.reportingManager}
+              value={employee.reportingManager || "-"}
             />
           </DetailCard>
 
@@ -511,47 +465,52 @@ const ExceptionRequestDetails: React.FC = () => {
           <DetailCard title="EXCEPTION INFORMATION">
             <DetailRow
               label="Exception Type"
-              value={currentRequest.exceptionType}
+              value={information.exceptionType}
             />
 
             <DetailRow
               label="Date"
-              value={currentRequest.date}
+              value={information.exceptionDate}
             />
 
             <DetailRow
               label="Shift"
-              value={currentRequest.shift}
+              value={information.shiftName}
+            />
+
+            <DetailRow
+              label="Shift Time"
+              value={information.shiftTime}
             />
 
             <DetailRow
               label="In Time (Scheduled)"
-              value={currentRequest.inTimeScheduled}
+              value={information.scheduledInTime}
             />
 
             <DetailRow
               label="In Time (Actual)"
-              value={currentRequest.inTimeActual}
+              value={information.actualInTime || "-"}
             />
 
             <DetailRow
               label="Out Time (Scheduled)"
-              value={currentRequest.outTimeScheduled}
+              value={information.scheduledOutTime}
             />
 
             <DetailRow
               label="Out Time (Actual)"
-              value={currentRequest.outTimeActual}
+              value={information.actualOutTime || "-"}
             />
 
             <DetailRow
               label="Reason Provided"
-              value={currentRequest.reasonProvided}
+              value={information.reasonProvided || "-"}
             />
 
             <DetailRow
               label="Remarks by Floor"
-              value={currentRequest.remarksByFloor}
+              value={information.remarksByFloor || "-"}
             />
           </DetailCard>
 
@@ -579,10 +538,7 @@ const ExceptionRequestDetails: React.FC = () => {
                 subtitle="Forward exception to IT department."
                 className="border-[#aee3ca] text-[#159151] hover:bg-[#f0fbf5]"
                 onClick={handleForward}
-                disabled={
-                  actionPending ||
-                  currentRequest.status !== "Pending"
-                }
+                disabled={actionPending}
               />
 
               {/* REJECT */}
@@ -593,10 +549,7 @@ const ExceptionRequestDetails: React.FC = () => {
                 subtitle="Reject and inform Production Floor."
                 className="border-[#ffb8b8] text-[#ef3737] hover:bg-[#fff5f5]"
                 onClick={handleReject}
-                disabled={
-                  actionPending ||
-                  currentRequest.status !== "Pending"
-                }
+                disabled={actionPending}
               />
 
               {/* MORE INFORMATION */}
@@ -607,10 +560,7 @@ const ExceptionRequestDetails: React.FC = () => {
                 subtitle="Ask for additional information."
                 className="border-[#b6c7ff] text-[#1552df] hover:bg-[#f4f7ff]"
                 onClick={handleMoreInformation}
-                disabled={
-                  actionPending ||
-                  currentRequest.status !== "Pending"
-                }
+                disabled={actionPending}
               />
             </div>
 
@@ -653,8 +603,8 @@ const ExceptionRequestDetails: React.FC = () => {
 
                     <ul className="mt-2 list-disc space-y-1 pl-3 text-[7px] leading-[1.5] text-[#27355e]">
                       <li>
-                        All approved exceptions will be reflected in
-                        attendance after IT verification.
+                        All approved exceptions will be reflected
+                        in attendance after IT verification.
                       </li>
 
                       <li>
@@ -684,94 +634,64 @@ const ExceptionRequestDetails: React.FC = () => {
             </div>
 
             <div className="mt-1 text-[8px]">
-              {currentRequest.attachments.length} attachment
-              {currentRequest.attachments.length !== 1 ? "s" : ""}{" "}
+              {currentRequest.attachments?.length || 0} attachment
+              {currentRequest.attachments?.length !== 1 ? "s" : ""}{" "}
               uploaded
             </div>
           </div>
 
           <div className="p-3">
-            {currentRequest.attachments.map((attachment) => (
-              <div
-                key={attachment.id}
-                className="flex items-center rounded border border-[#e1e7f1] px-3 py-2"
-              >
-                <div className="flex h-7 w-7 items-center justify-center rounded bg-[#edf3ff]">
-                  <FileImage
-                    size={15}
-                    className="text-[#1451df]"
-                  />
-                </div>
-
-                <div className="ml-3">
-                  <div className="text-[9px] font-bold text-[#162653]">
-                    {attachment.fileName}
-                  </div>
-
-                  <div className="mt-1 text-[7px] text-[#526084]">
-                    Uploaded on {attachment.uploadedOn}
-                  </div>
-
-                  <div className="text-[7px] text-[#526084]">
-                    {attachment.fileSize}
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (attachment.url) {
-                      window.open(
-                        attachment.url,
-                        "_blank",
-                        "noopener,noreferrer"
-                      );
-                    }
-                  }}
-                  className="ml-auto flex h-7 w-7 items-center justify-center rounded border border-[#cbd8f0] text-[#1551dc] hover:bg-[#f4f7ff]"
+            {currentRequest.attachments?.length ? (
+              currentRequest.attachments.map((attachment) => (
+                <div
+                  key={attachment.id}
+                  className="flex items-center rounded border border-[#e1e7f1] px-3 py-2"
                 >
-                  <Download size={13} />
-                </button>
+                  <div className="flex h-7 w-7 items-center justify-center rounded bg-[#edf3ff]">
+                    <FileImage
+                      size={15}
+                      className="text-[#1451df]"
+                    />
+                  </div>
+
+                  <div className="ml-3">
+                    <div className="text-[9px] font-bold text-[#162653]">
+                      {attachment.fileName}
+                    </div>
+
+                    <div className="mt-1 text-[7px] text-[#526084]">
+                      Uploaded on {attachment.uploadedOn}
+                    </div>
+
+                    <div className="text-[7px] text-[#526084]">
+                      {attachment.fileSize}
+                    </div>
+                  </div>
+
+                  {attachment.url && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        window.open(
+                          attachment.url,
+                          "_blank",
+                          "noopener,noreferrer"
+                        )
+                      }
+                      className="ml-auto flex h-7 w-7 items-center justify-center rounded border border-[#cbd8f0] text-[#1551dc] hover:bg-[#f4f7ff]"
+                    >
+                      <Download size={13} />
+                    </button>
+                  )}
+                </div>
+              ))
+            ) : (
+              <div className="py-4 text-center text-[8px] text-[#7c88a4]">
+                No attachments uploaded.
               </div>
-            ))}
+            )}
           </div>
         </section>
-
-        {/* ======================================================
-            PREVIOUS / COUNTER / NEXT
-        ====================================================== */}
-
-        <div className="mt-4 flex items-center justify-between">
-          {/* PREVIOUS */}
-
-          <button
-            type="button"
-            disabled={!hasPrevious}
-            onClick={handlePrevious}
-            className="flex h-[27px] items-center gap-2 rounded border border-[#bfd0f1] bg-white px-3 text-[9px] font-bold text-[#0750df] hover:bg-[#f5f8ff] disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            <ChevronLeft size={14} />
-            Previous Request
-          </button>
-
-          {/* COUNTER */}
-
-          <div className="text-[10px] font-bold text-[#101c4e]">
-            Request {currentIndex + 1} of {requests.length}
-          </div>
-
-          {/* NEXT */}
-
-          <button
-            type="button"
-            disabled={!hasNext}
-            onClick={handleNext}
-            className="flex h-[27px] items-center gap-2 rounded border border-[#bfd0f1] bg-white px-3 text-[9px] font-bold text-[#0750df] hover:bg-[#f5f8ff] disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            Next Request
-            <ChevronRight size={14} />
-          </button>
-        </div>
       </main>
     </div>
   );
@@ -838,7 +758,7 @@ const DetailCard: React.FC<{
 
 /* ================================================================
    DETAIL ROW
-  ================================================================== */
+================================================================ */
 
 const DetailRow: React.FC<{
   label: string;
@@ -846,9 +766,13 @@ const DetailRow: React.FC<{
 }> = ({ label, value }) => {
   return (
     <div className="grid grid-cols-[48%_52%] py-1 text-[8px]">
-      <div className="font-medium text-[#27345b]">{label}</div>
+      <div className="font-medium text-[#27345b]">
+        {label}
+      </div>
 
-      <div className="font-bold text-[#162453]">{value}</div>
+      <div className="font-bold text-[#162453]">
+        {value}
+      </div>
     </div>
   );
 };
@@ -858,20 +782,27 @@ const DetailRow: React.FC<{
 ================================================================ */
 
 const StatusBadge: React.FC<{
-  status: ExceptionRequest["status"];
+  status: string;
 }> = ({ status }) => {
-  const classes = {
-    Pending: "bg-[#fff0dd] text-[#d95e00]",
-    Forwarded: "bg-[#e7f7ee] text-[#15804e]",
-    Rejected: "bg-[#ffe9eb] text-[#d53548]",
-    "More Information": "bg-[#edf2ff] text-[#1851d6]",
+  const normalizedStatus = status
+    ?.toUpperCase()
+    .replace(/_/g, " ");
+
+  const classes: Record<string, string> = {
+    PENDING: "bg-[#fff0dd] text-[#d95e00]",
+    FORWARDED: "bg-[#e7f7ee] text-[#15804e]",
+    REJECTED: "bg-[#ffe9eb] text-[#d53548]",
+    "MORE INFORMATION": "bg-[#edf2ff] text-[#1851d6]",
   };
 
   return (
     <span
-      className={`rounded px-2 py-1 text-[8px] font-bold ${classes[status]}`}
+      className={`rounded px-2 py-1 text-[8px] font-bold ${
+        classes[normalizedStatus] ||
+        "bg-[#edf2ff] text-[#1851d6]"
+      }`}
     >
-      {status}
+      {normalizedStatus || status}
     </span>
   );
 };
@@ -907,7 +838,9 @@ const ActionButton: React.FC<ActionButtonProps> = ({
       <div className="shrink-0">{icon}</div>
 
       <div>
-        <div className="text-[9px] font-bold">{title}</div>
+        <div className="text-[9px] font-bold">
+          {title}
+        </div>
 
         <div className="mt-0.5 text-[7px] font-medium text-[#354263]">
           {subtitle}
