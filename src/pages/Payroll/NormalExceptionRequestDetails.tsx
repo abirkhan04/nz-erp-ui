@@ -17,7 +17,6 @@ import {
 import { useNavigate, useParams } from "react-router-dom";
 
 import { useGet } from "../../hooks/useGet";
-import { usePost } from "../../hooks/usePost";
 import { API_ROUTES } from "../../api/routes";
 import { usePut } from "../../hooks/usePut";
 
@@ -152,7 +151,7 @@ const ExceptionRequestDetails: React.FC = () => {
   };
 
   const handleForward = () => {
-    handleAction("FORWARD-TO-HR");
+    handleAction("FORWARD-TO-IT");
   };
 
   const handleReject = () => {
