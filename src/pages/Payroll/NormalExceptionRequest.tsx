@@ -18,9 +18,9 @@ import { useForm } from "react-hook-form";
 
 import { API_ROUTES } from "../../api/routes";
 import { useGet } from "../../hooks/useGet";
-import {usePost} from "../../hooks/usePost";
+import { usePost } from "../../hooks/usePost";
 import CommonInputField from "../../components/CommonInputFields";
-import {type Option} from "../../components/CommonInputFields";
+import { type Option } from "../../components/CommonInputFields";
 
 interface NormalExceptionRequest {
   requestId: string;
@@ -55,15 +55,7 @@ interface ApiResponse {
    OPTIONS
 ============================================================ */
 
-const departmentOptions: Option[] = [
-  { label: "All", value: "All" },
-  { label: "Sewing", value: "Sewing" },
-  { label: "Finishing", value: "Finishing" },
-  { label: "Maintenance", value: "Maintenance" },
-  { label: "Quality", value: "Quality" },
-  { label: "Washing", value: "Washing" },
-  { label: "Cutting", value: "Cutting" },
-];
+
 
 const exceptionTypeOptions: Option[] = [
   { label: "All", value: "All" },
@@ -114,12 +106,17 @@ const defaultFilters: FilterForm = {
   attendanceDateTo: "",
 };
 
+
+
 /* ============================================================
    COMPONENT
 ============================================================ */
 
 const NormalExceptionRequests: React.FC = () => {
   const navigate = useNavigate();
+
+  const { data: departments = [] } = useGet({ key: ["departments"], url: `${API_ROUTES.DEPARTMENT}` });
+  const departmentOptions = departments.map(i => ({ label: i.departmentName, value: i.departmentId }))
 
   /* ----------------------------------------------------------
      FILTER FORM
@@ -159,13 +156,83 @@ const NormalExceptionRequests: React.FC = () => {
   /* ----------------------------------------------------------
      GET REQUESTS
   ---------------------------------------------------------- */
+
+  const getStatusValue = (status: string): string => {
+    const statusMap: Record<string, string> = {
+      Pending: "PENDING",
+      Forwarded: "FORWARDED",
+      Rejected: "REJECTED",
+    };
+
+    return statusMap[status] ?? "";
+  };
+
+  const queryParams = useMemo(() => {
+    const params = new URLSearchParams();
+
+    // Backend pagination
+    params.append("pageNumber", "1");
+    params.append("pageSize", "10000");
+
+    // Employee ID
+    if (appliedFilters.employeeIdName.trim()) {
+      params.append(
+        "employeeId",
+        appliedFilters.employeeIdName.trim()
+      );
+    }
+
+    // Exception Type
+    if (
+      appliedFilters.exceptionType &&
+      appliedFilters.exceptionType !== "All"
+    ) {
+      params.append(
+        "exceptionType",
+        appliedFilters.exceptionType
+      );
+    }
+
+    // Attendance date from
+    if (appliedFilters.attendanceDateFrom) {
+      params.append(
+        "from",
+        appliedFilters.attendanceDateFrom
+      );
+    }
+
+    // Attendance date to
+    if (appliedFilters.attendanceDateTo) {
+      params.append(
+        "to",
+        appliedFilters.attendanceDateTo
+      );
+    }
+
+    // Status
+    if (
+      appliedFilters.status &&
+      appliedFilters.status !== "All"
+    ) {
+      params.append(
+        "status",
+        getStatusValue(appliedFilters.status)
+      );
+    }
+
+    return params.toString();
+  }, [appliedFilters]);
+
   const {
     data: response,
     isLoading,
     refetch,
   } = useGet({
-    key: ["normal-exception-requests"],
-    url: "",
+    key: [
+      "normal-exception-requests",
+      appliedFilters,
+    ],
+    url: `${API_ROUTES.ATTENDANCE_EXCEPTIONS}?${queryParams}`,
   });
 
   /* ----------------------------------------------------------
@@ -245,7 +312,7 @@ const NormalExceptionRequests: React.FC = () => {
       const matchesExceptionType =
         appliedFilters.exceptionType === "All" ||
         request.exceptionType ===
-          appliedFilters.exceptionType;
+        appliedFilters.exceptionType;
 
       /* -------------------------------------------------------
          Status
@@ -985,11 +1052,10 @@ const NormalExceptionRequests: React.FC = () => {
                       return (
                         <tr
                           key={request.requestId}
-                          className={`text-[8px] ${
-                            isSelected
-                              ? "bg-[#f4f7ff]"
-                              : "bg-white"
-                          } hover:bg-[#f8faff]`}
+                          className={`text-[8px] ${isSelected
+                            ? "bg-[#f4f7ff]"
+                            : "bg-white"
+                            } hover:bg-[#f8faff]`}
                         >
                           {/* =================================================
                               INDIVIDUAL CHECKBOX
@@ -1107,8 +1173,8 @@ const NormalExceptionRequests: React.FC = () => {
               {filteredRequests.length === 0
                 ? 0
                 : (safeCurrentPage - 1) *
-                    pageSize +
-                  1}{" "}
+                pageSize +
+                1}{" "}
               to{" "}
               {Math.min(
                 safeCurrentPage * pageSize,
