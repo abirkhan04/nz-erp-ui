@@ -18,9 +18,9 @@ import { useForm } from "react-hook-form";
 
 import { API_ROUTES } from "../../api/routes";
 import { useGet } from "../../hooks/useGet";
-import { usePost } from "../../hooks/usePost";
 import CommonInputField from "../../components/CommonInputFields";
 import { type Option } from "../../components/CommonInputFields";
+import { api } from "../../api/client";
 
 interface NormalExceptionRequest {
   id: string;
@@ -30,8 +30,9 @@ interface NormalExceptionRequest {
   department: string;
   exceptionType: string;
   shift: string;
-  submittedBy: string;
-  submittedOn: string;
+  remarks: string;
+  reviewedBy: string;
+  reviewedOn: string;
   status: string;
 }
 
@@ -116,7 +117,7 @@ const NormalExceptionRequests: React.FC = () => {
   const navigate = useNavigate();
 
   const { data: departments = [] } = useGet({ key: ["departments"], url: `${API_ROUTES.DEPARTMENT}` });
-  const departmentOptions = departments.map((i:any) => ({ label: i.departmentName, value: i.departmentId }))
+  const departmentOptions = departments.map((i: any) => ({ label: i.departmentName, value: i.departmentId }))
 
   /* ----------------------------------------------------------
      FILTER FORM
@@ -484,22 +485,14 @@ const NormalExceptionRequests: React.FC = () => {
     );
   };
 
-  const handleSelectRequest = (
-    requestId: string,
-    checked: boolean
-  ) => {
+  const handleSelectRequest = (requestId: string, checked: boolean) => {
+    console.log("Toggling:", requestId, checked);
     setSelectedRequestIds((previous) => {
-      if (checked) {
-        if (previous.includes(requestId)) {
-          return previous;
-        }
-
-        return [...previous, requestId];
-      }
-
-      return previous.filter(
-        (id) => id !== requestId
-      );
+      const next = checked
+        ? (previous.includes(requestId) ? previous : [...previous, requestId])
+        : previous.filter((id) => id !== requestId);
+      console.log("New selectedRequestIds:", next);
+      return next;
     });
   };
 
@@ -546,9 +539,9 @@ const NormalExceptionRequests: React.FC = () => {
      FORWARD SELECTED
   ========================================================== */
 
-  const { mutate: forwardSelected, isPending: isForwarding } = usePost("dummy url");
+  //const { mutate: forwardSelected, isPending: isForwarding } = usePost("dummy url");
 
-  const handleForwardSelected = () => {
+  const handleForwardSelected = async () => {
     if (!selectedRequestIds.length) {
       return;
     }
@@ -563,19 +556,22 @@ const NormalExceptionRequests: React.FC = () => {
     const payload = selectedRequestIds.map(
       (requestId) => ({
         requestId,
-        remarks,
+        action: "FORWARD-TO-IT",
+        remarks: requests.find((i: any) => i.id === requestId)?.remarks,
       })
     );
 
-    forwardSelected({
-      url: API_ROUTES.NORMAL_EXCEPTION_REQUESTS_FORWARD,
-      data: payload,
-      onSuccess: () => {
-        setSelectedRequestIds([]);
-        setRemarks("");
-        refetch();
-      },
-    });
+    // forwardSelected({
+    //   url: API_ROUTES.NORMAL_EXCEPTION_REQUESTS_FORWARD,
+    //   data: payload,
+    //   onSuccess: () => {
+    //     setSelectedRequestIds([]);
+    //     setRemarks("");
+    //     refetch();
+    //   },
+    // });
+    await api.put(`${API_ROUTES.ATTENDANCE_EXCEPTIONS}/action-selected`, payload);
+    refetch();
   };
 
   /* ==========================================================
@@ -723,8 +719,7 @@ const NormalExceptionRequests: React.FC = () => {
             <button
               type="button"
               disabled={
-                selectedRequestIds.length === 0 ||
-                isForwarding
+                selectedRequestIds.length === 0
               }
               onClick={handleForwardSelected}
               className="flex h-[25px] items-center gap-1.5 rounded bg-[#0752e6] px-4 text-[9px] font-bold text-white hover:bg-[#0644c5] disabled:cursor-not-allowed disabled:opacity-50"
@@ -1015,11 +1010,11 @@ const NormalExceptionRequests: React.FC = () => {
                   </th>
 
                   <th className="border-b border-[#e1e6ef] px-2 py-2 text-left">
-                    Submitted By
+                    Reviewed By
                   </th>
 
                   <th className="border-b border-[#e1e6ef] px-2 py-2 text-left">
-                    Submitted On
+                    Reviewed On
                   </th>
 
                   <th className="border-b border-[#e1e6ef] px-2 py-2 text-center">
@@ -1107,11 +1102,11 @@ const NormalExceptionRequests: React.FC = () => {
                           </td>
 
                           <td className="border-b border-[#edf0f5] px-2 py-2">
-                            {request.submittedBy}
+                            {request.reviewedBy}
                           </td>
 
                           <td className="border-b border-[#edf0f5] px-2 py-2 whitespace-nowrap">
-                            {request.submittedOn}
+                            {request.reviewedOn}
                           </td>
 
                           <td className="border-b border-[#edf0f5] px-2 py-2 text-center">
@@ -1266,18 +1261,13 @@ const NormalExceptionRequests: React.FC = () => {
           <button
             type="button"
             disabled={
-              selectedRequestIds.length === 0 ||
-              isForwarding
+              selectedRequestIds.length === 0
             }
             onClick={handleForwardSelected}
             className="flex h-[27px] items-center gap-1.5 rounded bg-[#0752e6] px-5 text-[9px] font-bold text-white hover:bg-[#0644c5] disabled:cursor-not-allowed disabled:opacity-50"
           >
             <Send size={11} />
-
-            {isForwarding
-              ? "Forwarding..."
-              : "Forward Selected to Factory IT"}
-
+            "Forward Selected to Factory IT"
             <ArrowRight size={12} />
           </button>
         </div>
