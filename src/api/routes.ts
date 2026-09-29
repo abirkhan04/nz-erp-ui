@@ -56,6 +56,7 @@ export const API_ROUTES = {
 
   // Payroll
   PAYROLL: "payroll",
+  PAYROLL_ADJUSTMENTS: "PayrollAdjustments",
   LEARNERS: "Learners",
   ATTENDANCE_EXCEPTIONS: "AttendanceExceptions",
   

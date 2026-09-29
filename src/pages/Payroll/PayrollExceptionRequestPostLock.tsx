@@ -2,9 +2,9 @@ import React, { useMemo, useState } from "react";
 import {
   CalendarDays,
   Check,
+  CircleCheck,
   ChevronLeft,
   ChevronRight,
-  CircleCheck,
   CircleX,
   Clock3,
   Download,
@@ -21,6 +21,9 @@ import { useNavigate } from "react-router-dom";
 import CommonInputField, {
   type Option,
 } from "../../components/CommonInputFields";
+import { useGet } from "../../hooks/useGet";
+import { API_ROUTES } from "../../api/routes";
+import { api } from "../../api/client";
 
 /* ============================================================
    TYPES
@@ -29,15 +32,25 @@ import CommonInputField, {
 interface PayrollExceptionRequest {
   requestId: string;
   attendanceDate: string;
-  employeeId: string;
-  employeeName: string;
-  department: string;
+  employee: {
+    employeeId: string;
+    employeeName: string;
+    department: string;
+  };
   adjustmentType: string;
-  shift: string;
-  impact: number;
+  shift: string | null;
+  shiftTime: string | null;
+  impactAmount: number | null;
   submittedBy: string;
   submittedOn: string;
-  status: "Pending" | "Forwarded" | "Rejected";
+  status: "PENDING" | "FORWARDED" | "REJECTED";
+}
+
+interface PayrollSummary {
+  totalRequests: number;
+  pendingWithMe: number;
+  forwardedToHoIT: number;
+  rejected: number;
 }
 
 interface PayrollFilterForm {
@@ -49,287 +62,6 @@ interface PayrollFilterForm {
   attendanceDateFrom: string;
   attendanceDateTo: string;
 }
-
-/* ============================================================
-   MOCK DATA
-============================================================ */
-
-const MOCK_REQUESTS: PayrollExceptionRequest[] = [
-  {
-    requestId: "PAY2505012",
-    attendanceDate: "2025-05-10",
-    employeeId: "102346",
-    employeeName: "Md. Rahman",
-    department: "Spinning",
-    adjustmentType: "Post-Lock Correction",
-    shift: "B (02:00 PM - 10:00 PM)",
-    impact: 700,
-    submittedBy: "Attendance Cell",
-    submittedOn: "15 May 2025 09:25 AM",
-    status: "Pending",
-  },
-  {
-    requestId: "PA-2025-0515-0002",
-    attendanceDate: "2025-05-08",
-    employeeId: "102512",
-    employeeName: "Jannatul Ferdous",
-    department: "Weaving",
-    adjustmentType: "Post-Lock OT Addition",
-    shift: "A (06:00 AM - 02:00 PM)",
-    impact: 1250,
-    submittedBy: "Attendance Cell",
-    submittedOn: "15 May 2025 09:40 AM",
-    status: "Pending",
-  },
-  {
-    requestId: "PA-2025-0515-0003",
-    attendanceDate: "2025-05-07",
-    employeeId: "102789",
-    employeeName: "Kamrul Hasan",
-    department: "Maintenance",
-    adjustmentType: "Post-Lock Correction",
-    shift: "C (10:00 PM - 06:00 AM)",
-    impact: 550,
-    submittedBy: "Attendance Cell",
-    submittedOn: "15 May 2025 10:00 AM",
-    status: "Pending",
-  },
-  {
-    requestId: "PA-2025-0515-0004",
-    attendanceDate: "2025-05-09",
-    employeeId: "103045",
-    employeeName: "Akter Hossain",
-    department: "Finishing",
-    adjustmentType: "Post-Lock Leave Adj.",
-    shift: "A (06:00 AM - 02:00 PM)",
-    impact: 375,
-    submittedBy: "Attendance Cell",
-    submittedOn: "15 May 2025 10:20 AM",
-    status: "Pending",
-  },
-  {
-    requestId: "PA-2025-0515-0005",
-    attendanceDate: "2025-05-06",
-    employeeId: "101223",
-    employeeName: "Rasheda Akter",
-    department: "Cutting",
-    adjustmentType: "Post-Lock OT Addition",
-    shift: "B (02:00 PM - 10:00 PM)",
-    impact: 950,
-    submittedBy: "Attendance Cell",
-    submittedOn: "15 May 2025 10:35 AM",
-    status: "Pending",
-  },
-  {
-    requestId: "PA-2025-0515-0006",
-    attendanceDate: "2025-05-05",
-    employeeId: "103678",
-    employeeName: "Pushpa Rani",
-    department: "Cutting",
-    adjustmentType: "Post-Lock Correction",
-    shift: "A (06:00 AM - 02:00 PM)",
-    impact: 300,
-    submittedBy: "Attendance Cell",
-    submittedOn: "15 May 2025 10:45 AM",
-    status: "Pending",
-  },
-  {
-    requestId: "PA-2025-0515-0007",
-    attendanceDate: "2025-05-08",
-    employeeId: "102913",
-    employeeName: "Shofiul Islam",
-    department: "Dyeing",
-    adjustmentType: "Post-Lock Shift Change",
-    shift: "C (10:00 PM - 06:00 AM)",
-    impact: 0,
-    submittedBy: "Attendance Cell",
-    submittedOn: "15 May 2025 10:55 AM",
-    status: "Pending",
-  },
-
-  {
-    requestId: "PA-2025-0515-0008",
-    attendanceDate: "2025-05-04",
-    employeeId: "104211",
-    employeeName: "Mizanur Rahman",
-    department: "Spinning",
-    adjustmentType: "Post-Lock Correction",
-    shift: "A (06:00 AM - 02:00 PM)",
-    impact: 450,
-    submittedBy: "Attendance Cell",
-    submittedOn: "15 May 2025 11:00 AM",
-    status: "Pending",
-  },
-  {
-    requestId: "PA-2025-0515-0009",
-    attendanceDate: "2025-05-03",
-    employeeId: "103211",
-    employeeName: "Shahana Akter",
-    department: "Quality",
-    adjustmentType: "Post-Lock OT Addition",
-    shift: "B (02:00 PM - 10:00 PM)",
-    impact: 800,
-    submittedBy: "Attendance Cell",
-    submittedOn: "15 May 2025 11:05 AM",
-    status: "Pending",
-  },
-  {
-    requestId: "PA-2025-0515-0010",
-    attendanceDate: "2025-05-02",
-    employeeId: "102345",
-    employeeName: "Jamal Uddin",
-    department: "Washing",
-    adjustmentType: "Post-Lock Correction",
-    shift: "C (10:00 PM - 06:00 AM)",
-    impact: 250,
-    submittedBy: "Attendance Cell",
-    submittedOn: "15 May 2025 11:10 AM",
-    status: "Pending",
-  },
-  {
-    requestId: "PA-2025-0515-0011",
-    attendanceDate: "2025-05-01",
-    employeeId: "103876",
-    employeeName: "Nusrat Jahan",
-    department: "Finishing",
-    adjustmentType: "Post-Lock Leave Adj.",
-    shift: "A (06:00 AM - 02:00 PM)",
-    impact: 400,
-    submittedBy: "Attendance Cell",
-    submittedOn: "15 May 2025 11:15 AM",
-    status: "Pending",
-  },
-  {
-    requestId: "PA-2025-0515-0012",
-    attendanceDate: "2025-05-04",
-    employeeId: "101876",
-    employeeName: "Abdul Karim",
-    department: "Sewing",
-    adjustmentType: "Post-Lock Correction",
-    shift: "B (02:00 PM - 10:00 PM)",
-    impact: 600,
-    submittedBy: "Attendance Cell",
-    submittedOn: "15 May 2025 11:20 AM",
-    status: "Pending",
-  },
-  {
-    requestId: "PA-2025-0515-0013",
-    attendanceDate: "2025-05-05",
-    employeeId: "102123",
-    employeeName: "Rina Parvin",
-    department: "Sewing",
-    adjustmentType: "Post-Lock OT Addition",
-    shift: "C (10:00 PM - 06:00 AM)",
-    impact: 1100,
-    submittedBy: "Attendance Cell",
-    submittedOn: "15 May 2025 11:25 AM",
-    status: "Pending",
-  },
-  {
-    requestId: "PA-2025-0515-0014",
-    attendanceDate: "2025-05-06",
-    employeeId: "102678",
-    employeeName: "Md. Salim",
-    department: "Maintenance",
-    adjustmentType: "Post-Lock Correction",
-    shift: "A (06:00 AM - 02:00 PM)",
-    impact: 500,
-    submittedBy: "Attendance Cell",
-    submittedOn: "15 May 2025 11:30 AM",
-    status: "Pending",
-  },
-  {
-    requestId: "PA-2025-0515-0015",
-    attendanceDate: "2025-05-07",
-    employeeId: "103456",
-    employeeName: "Farhana Yasmin",
-    department: "Quality",
-    adjustmentType: "Post-Lock OT Addition",
-    shift: "B (02:00 PM - 10:00 PM)",
-    impact: 900,
-    submittedBy: "Attendance Cell",
-    submittedOn: "15 May 2025 11:35 AM",
-    status: "Forwarded",
-  },
-  {
-    requestId: "PA-2025-0515-0016",
-    attendanceDate: "2025-05-08",
-    employeeId: "104567",
-    employeeName: "Sohel Rana",
-    department: "Dyeing",
-    adjustmentType: "Post-Lock Correction",
-    shift: "C (10:00 PM - 06:00 AM)",
-    impact: 350,
-    submittedBy: "Attendance Cell",
-    submittedOn: "15 May 2025 11:40 AM",
-    status: "Forwarded",
-  },
-  {
-    requestId: "PA-2025-0515-0017",
-    attendanceDate: "2025-05-09",
-    employeeId: "102456",
-    employeeName: "Mousumi Akter",
-    department: "Weaving",
-    adjustmentType: "Post-Lock Leave Adj.",
-    shift: "A (06:00 AM - 02:00 PM)",
-    impact: 275,
-    submittedBy: "Attendance Cell",
-    submittedOn: "15 May 2025 11:45 AM",
-    status: "Forwarded",
-  },
-  {
-    requestId: "PA-2025-0515-0018",
-    attendanceDate: "2025-05-10",
-    employeeId: "101567",
-    employeeName: "Ruhul Amin",
-    department: "Spinning",
-    adjustmentType: "Post-Lock Correction",
-    shift: "B (02:00 PM - 10:00 PM)",
-    impact: 725,
-    submittedBy: "Attendance Cell",
-    submittedOn: "15 May 2025 11:50 AM",
-    status: "Forwarded",
-  },
-  {
-    requestId: "PA-2025-0515-0019",
-    attendanceDate: "2025-05-08",
-    employeeId: "103567",
-    employeeName: "Tania Sultana",
-    department: "Cutting",
-    adjustmentType: "Post-Lock OT Addition",
-    shift: "C (10:00 PM - 06:00 AM)",
-    impact: 650,
-    submittedBy: "Attendance Cell",
-    submittedOn: "15 May 2025 11:55 AM",
-    status: "Forwarded",
-  },
-  {
-    requestId: "PA-2025-0515-0020",
-    attendanceDate: "2025-05-07",
-    employeeId: "102987",
-    employeeName: "Hasan Mahmud",
-    department: "Finishing",
-    adjustmentType: "Post-Lock Correction",
-    shift: "A (06:00 AM - 02:00 PM)",
-    impact: 425,
-    submittedBy: "Attendance Cell",
-    submittedOn: "15 May 2025 12:00 PM",
-    status: "Rejected",
-  },
-  {
-    requestId: "PA-2025-0515-0021",
-    attendanceDate: "2025-05-06",
-    employeeId: "101987",
-    employeeName: "Shamima Begum",
-    department: "Sewing",
-    adjustmentType: "Post-Lock Shift Change",
-    shift: "B (02:00 PM - 10:00 PM)",
-    impact: 0,
-    submittedBy: "Attendance Cell",
-    submittedOn: "15 May 2025 12:05 PM",
-    status: "Pending",
-  },
-];
 
 /* ============================================================
    OPTIONS
@@ -370,9 +102,9 @@ const adjustmentTypeOptions: Option[] = [
 
 const statusOptions: Option[] = [
   { label: "All", value: "All" },
-  { label: "Pending", value: "Pending" },
-  { label: "Forwarded", value: "Forwarded" },
-  { label: "Rejected", value: "Rejected" },
+  { label: "Pending", value: "PENDING" },
+  { label: "Forwarded", value: "FORWARDED" },
+  { label: "Rejected", value: "REJECTED" },
 ];
 
 /* ============================================================
@@ -384,7 +116,7 @@ const defaultFilters: PayrollFilterForm = {
   employeeIdName: "",
   department: "All",
   adjustmentType: "All",
-  status: "Pending",
+  status: "PENDING",
   attendanceDateFrom: "",
   attendanceDateTo: "",
 };
@@ -396,10 +128,13 @@ const defaultFilters: PayrollFilterForm = {
 const PayrollExceptionRequestPostLock: React.FC = () => {
   const navigate = useNavigate();
 
+   const [remarks, setRemarks] = useState("");
+
+   const [isForwarding,] = useState(false);
+
   /* ----------------------------------------------------------
      FORM
   ---------------------------------------------------------- */
-
   const {
     register,
     control,
@@ -412,12 +147,88 @@ const PayrollExceptionRequestPostLock: React.FC = () => {
   const [appliedFilters, setAppliedFilters] =
     useState<PayrollFilterForm>(defaultFilters);
 
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const filterParams = new URLSearchParams();
+
+  filterParams.append("pageNumber", "1");
+  filterParams.append("pageSize", "10000");
+
+  if (appliedFilters.requestId.trim()) {
+    filterParams.append("requestId", appliedFilters.requestId.trim());
+  }
+
+  if (appliedFilters.employeeIdName.trim()) {
+    filterParams.append(
+      "employeeIdName",
+      appliedFilters.employeeIdName.trim()
+    );
+  }
+
+  if (appliedFilters.department !== "All") {
+    filterParams.append("department", appliedFilters.department);
+  }
+
+  if (appliedFilters.adjustmentType !== "All") {
+    filterParams.append("adjustmentType", appliedFilters.adjustmentType);
+  }
+
+  if (appliedFilters.status !== "All") {
+    filterParams.append("status", appliedFilters.status);
+  }
+
+  if (appliedFilters.attendanceDateFrom) {
+    filterParams.append(
+      "attendanceDateFrom",
+      appliedFilters.attendanceDateFrom
+    );
+  }
+
+  if (appliedFilters.attendanceDateTo) {
+    filterParams.append(
+      "attendanceDateTo",
+      appliedFilters.attendanceDateTo
+    );
+  }
+
+  const queryString = filterParams.toString();
+
+  const { data: response, refetch } = useGet({
+    key: [
+      "payroll_adjustment_requests",
+      appliedFilters,
+      refreshKey,
+    ],
+    url: `${API_ROUTES.PAYROLL_ADJUSTMENTS}/exceptions${queryString ? `?${queryString}` : ""}`,
+  });
+
+  const requests: PayrollExceptionRequest[] = response?.items ?? [];
+  const summary: PayrollSummary = response?.summary ?? {
+    totalRequests: 0,
+    pendingWithMe: 0,
+    forwardedToHoIT: 0,
+    rejected: 0,
+  };
+
   /* ----------------------------------------------------------
      PAGINATION
   ---------------------------------------------------------- */
 
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(requests.length / pageSize)
+  );
+
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+
+  const paginatedRequests = useMemo(() => {
+    const start = (safeCurrentPage - 1) * pageSize;
+
+    return requests.slice(start, start + pageSize);
+  }, [requests, safeCurrentPage, pageSize]);
 
   /* ----------------------------------------------------------
      SELECTION
@@ -426,141 +237,21 @@ const PayrollExceptionRequestPostLock: React.FC = () => {
   const [selectedRequestIds, setSelectedRequestIds] =
     useState<string[]>([]);
 
-  /* ----------------------------------------------------------
-     REMARKS
-  ---------------------------------------------------------- */
-
-  const [remarks, setRemarks] = useState("");
-
-  /* ----------------------------------------------------------
-     FORWARDING STATE
-  ---------------------------------------------------------- */
-
-  const [isForwarding, setIsForwarding] =
-    useState(false);
-
-  /* ==========================================================
-     FILTER DATA
-  ========================================================== */
-
-  const filteredRequests = useMemo(() => {
-    return MOCK_REQUESTS.filter((request) => {
-      const requestIdSearch =
-        appliedFilters.requestId
-          .trim()
-          .toLowerCase();
-
-      const employeeSearch =
-        appliedFilters.employeeIdName
-          .trim()
-          .toLowerCase();
-
-      const matchesRequestId =
-        !requestIdSearch ||
-        request.requestId
-          .toLowerCase()
-          .includes(requestIdSearch);
-
-      const matchesEmployee =
-        !employeeSearch ||
-        request.employeeId
-          .toLowerCase()
-          .includes(employeeSearch) ||
-        request.employeeName
-          .toLowerCase()
-          .includes(employeeSearch);
-
-      const matchesDepartment =
-        appliedFilters.department === "All" ||
-        request.department ===
-          appliedFilters.department;
-
-      const matchesAdjustmentType =
-        appliedFilters.adjustmentType === "All" ||
-        request.adjustmentType ===
-          appliedFilters.adjustmentType;
-
-      const matchesStatus =
-        appliedFilters.status === "All" ||
-        request.status ===
-          appliedFilters.status;
-
-      const matchesDateFrom =
-        !appliedFilters.attendanceDateFrom ||
-        request.attendanceDate >=
-          appliedFilters.attendanceDateFrom;
-
-      const matchesDateTo =
-        !appliedFilters.attendanceDateTo ||
-        request.attendanceDate <=
-          appliedFilters.attendanceDateTo;
-
-      return (
-        matchesRequestId &&
-        matchesEmployee &&
-        matchesDepartment &&
-        matchesAdjustmentType &&
-        matchesStatus &&
-        matchesDateFrom &&
-        matchesDateTo
-      );
-    });
-  }, [appliedFilters]);
-
-  /* ==========================================================
-     PAGINATION
-  ========================================================== */
-
-  const totalPages = Math.max(
-    1,
-    Math.ceil(
-      filteredRequests.length / pageSize
-    )
-  );
-
-  const safeCurrentPage = Math.min(
-    currentPage,
-    totalPages
-  );
-
-  const paginatedRequests = useMemo(() => {
-    const start =
-      (safeCurrentPage - 1) * pageSize;
-
-    return filteredRequests.slice(
-      start,
-      start + pageSize
-    );
-  }, [
-    filteredRequests,
-    safeCurrentPage,
-    pageSize,
-  ]);
-
-  /* ==========================================================
-     SELECTION
-  ========================================================== */
-
   const selectedRequests = useMemo(() => {
-    return MOCK_REQUESTS.filter((request) =>
-      selectedRequestIds.includes(
-        request.requestId
-      )
+    return requests.filter((request) =>
+      selectedRequestIds.includes(request.requestId)
     );
-  }, [selectedRequestIds]);
+  }, [requests, selectedRequestIds]);
 
   const selectedEmployeeCount = useMemo(() => {
     return new Set(
-      selectedRequests.map(
-        (request) => request.employeeId
-      )
+      selectedRequests.map((request) => request.employee.employeeId)
     ).size;
   }, [selectedRequests]);
 
   const totalImpact = useMemo(() => {
     return selectedRequests.reduce(
-      (sum, request) =>
-        sum + request.impact,
+      (sum, request) => sum + (request.impactAmount ?? 0),
       0
     );
   }, [selectedRequests]);
@@ -571,12 +262,9 @@ const PayrollExceptionRequestPostLock: React.FC = () => {
     }
 
     return formatDisplayDate(
-      [...selectedRequests]
-        .sort((a, b) =>
-          a.attendanceDate.localeCompare(
-            b.attendanceDate
-          )
-        )[0].attendanceDate
+      [...selectedRequests].sort((a, b) =>
+        a.attendanceDate.localeCompare(b.attendanceDate)
+      )[0].attendanceDate
     );
   }, [selectedRequests]);
 
@@ -586,12 +274,9 @@ const PayrollExceptionRequestPostLock: React.FC = () => {
     }
 
     return formatDisplayDate(
-      [...selectedRequests]
-        .sort((a, b) =>
-          b.attendanceDate.localeCompare(
-            a.attendanceDate
-          )
-        )[0].attendanceDate
+      [...selectedRequests].sort((a, b) =>
+        b.attendanceDate.localeCompare(a.attendanceDate)
+      )[0].attendanceDate
     );
   }, [selectedRequests]);
 
@@ -701,27 +386,17 @@ const PayrollExceptionRequestPostLock: React.FC = () => {
      FORWARD
   ========================================================== */
 
-  const handleForwardSelected = () => {
+  const handleForwardSelected =async () => {
     if (!selectedRequestIds.length) {
       return;
     }
-
-    setIsForwarding(true);
-
-    /*
-     * Mock API delay
-     */
-
-    setTimeout(() => {
-      setIsForwarding(false);
-
-      setSelectedRequestIds([]);
-      setRemarks("");
-
-      alert(
-        `${selectedRequestIds.length} request(s) forwarded to Head Office IT.`
-      );
-    }, 700);
+    const payload = {
+      requestIds: selectedRequestIds,
+      remarks
+    }
+    
+   await api.put(`${API_ROUTES.PAYROLL_ADJUSTMENTS}/forward-to-it`,payload);
+   refetch();
   };
 
   /* ==========================================================
@@ -741,13 +416,7 @@ const PayrollExceptionRequestPostLock: React.FC = () => {
   ========================================================== */
 
   const handleRefresh = () => {
-    /*
-     * Mock data doesn't require a real API call.
-     * This is intentionally left as a refresh action.
-     */
-    setAppliedFilters((previous) => ({
-      ...previous,
-    }));
+    setRefreshKey((previous) => previous + 1);
   };
 
   /* ==========================================================
@@ -890,7 +559,7 @@ const PayrollExceptionRequestPostLock: React.FC = () => {
           <StatCard
             title="TOTAL REQUESTS"
             value={
-              MOCK_REQUESTS.length
+              summary.totalRequests
             }
             icon={
               <FileOutput size={18} />
@@ -901,11 +570,7 @@ const PayrollExceptionRequestPostLock: React.FC = () => {
           <StatCard
             title="PENDING WITH ME"
             value={
-              MOCK_REQUESTS.filter(
-                (request) =>
-                  request.status ===
-                  "Pending"
-              ).length
+              summary.pendingWithMe
             }
             icon={
               <Clock3 size={18} />
@@ -916,11 +581,7 @@ const PayrollExceptionRequestPostLock: React.FC = () => {
           <StatCard
             title="FORWARDED TO HO IT"
             value={
-              MOCK_REQUESTS.filter(
-                (request) =>
-                  request.status ===
-                  "Forwarded"
-              ).length
+              summary.forwardedToHoIT
             }
             icon={
               <Send size={18} />
@@ -931,11 +592,7 @@ const PayrollExceptionRequestPostLock: React.FC = () => {
           <StatCard
             title="REJECTED"
             value={
-              MOCK_REQUESTS.filter(
-                (request) =>
-                  request.status ===
-                  "Rejected"
-              ).length
+              summary.rejected
             }
             icon={
               <CircleX size={18} />
@@ -1085,7 +742,7 @@ const PayrollExceptionRequestPostLock: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <span className="text-[8px] text-[#586582]">
                     {
-                      filteredRequests.length
+                      requests.length
                     }{" "}
                     record(s) found
                   </span>
@@ -1223,7 +880,7 @@ const PayrollExceptionRequestPostLock: React.FC = () => {
 
                   <tbody>
                     {paginatedRequests.length ===
-                    0 ? (
+                      0 ? (
                       <tr>
                         <td
                           colSpan={13}
@@ -1246,11 +903,10 @@ const PayrollExceptionRequestPostLock: React.FC = () => {
                               key={
                                 request.requestId
                               }
-                              className={`text-[8px] ${
-                                selected
-                                  ? "bg-[#fff8f3]"
-                                  : "bg-white"
-                              } hover:bg-[#fffaf6]`}
+                              className={`text-[8px] ${selected
+                                ? "bg-[#fff8f3]"
+                                : "bg-white"
+                                } hover:bg-[#fffaf6]`}
                             >
                               {/* INDIVIDUAL CHECKBOX */}
 
@@ -1287,19 +943,19 @@ const PayrollExceptionRequestPostLock: React.FC = () => {
 
                               <td className="border-b border-[#edf0f5] px-2 py-2">
                                 {
-                                  request.employeeId
+                                  request.employee.employeeId
                                 }
                               </td>
 
                               <td className="border-b border-[#edf0f5] px-2 py-2 font-medium">
                                 {
-                                  request.employeeName
+                                  request.employee.employeeName
                                 }
                               </td>
 
                               <td className="border-b border-[#edf0f5] px-2 py-2">
                                 {
-                                  request.department
+                                  request.employee.department
                                 }
                               </td>
 
@@ -1317,7 +973,7 @@ const PayrollExceptionRequestPostLock: React.FC = () => {
 
                               <td className="border-b border-[#edf0f5] px-2 py-2 text-right font-semibold">
                                 {formatCurrency(
-                                  request.impact
+                                  request.impactAmount
                                 )}
                               </td>
 
@@ -1328,9 +984,7 @@ const PayrollExceptionRequestPostLock: React.FC = () => {
                               </td>
 
                               <td className="border-b border-[#edf0f5] px-2 py-2 whitespace-nowrap">
-                                {
-                                  request.submittedOn
-                                }
+                                {formatSubmittedOn(request.submittedOn)}
                               </td>
 
                               <td className="border-b border-[#edf0f5] px-2 py-2 text-center">
@@ -1399,20 +1053,20 @@ const PayrollExceptionRequestPostLock: React.FC = () => {
 
                 <div className="text-[8px] text-[#68728c]">
                   Showing{" "}
-                  {filteredRequests.length ===
-                  0
+                  {requests.length ===
+                    0
                     ? 0
                     : (safeCurrentPage - 1) *
-                        pageSize +
-                      1}{" "}
+                    pageSize +
+                    1}{" "}
                   to{" "}
                   {Math.min(
                     safeCurrentPage *
-                      pageSize,
-                    filteredRequests.length
+                    pageSize,
+                    requests.length
                   )}{" "}
                   of{" "}
-                  {filteredRequests.length}
+                  {requests.length}
                 </div>
               </div>
             </section>
@@ -1515,7 +1169,7 @@ const PayrollExceptionRequestPostLock: React.FC = () => {
                 type="button"
                 disabled={
                   selectedRequestIds.length ===
-                    0 ||
+                  0 ||
                   isForwarding
                 }
                 onClick={
@@ -1692,7 +1346,7 @@ const StatCard: React.FC<StatCardProps> = ({
 const StatusBadge: React.FC<{
   status: PayrollExceptionRequest["status"];
 }> = ({ status }) => {
-  if (status === "Pending") {
+  if (status === "PENDING") {
     return (
       <span className="inline-flex rounded bg-[#fff0dc] px-2 py-1 text-[7px] font-bold text-[#d96100]">
         Pending
@@ -1700,7 +1354,7 @@ const StatusBadge: React.FC<{
     );
   }
 
-  if (status === "Forwarded") {
+  if (status === "FORWARDED") {
     return (
       <span className="inline-flex rounded bg-[#e7f7ee] px-2 py-1 text-[7px] font-bold text-[#15804e]">
         Forwarded
@@ -1820,51 +1474,50 @@ const WorkflowStep: React.FC<
   last = false,
   icon,
 }) => {
-  return (
-    <div className="relative flex gap-2 pb-4">
-      {!last && (
-        <div className="absolute left-[10px] top-[22px] h-[38px] w-px bg-[#d8dfeb]" />
-      )}
+    return (
+      <div className="relative flex gap-2 pb-4">
+        {!last && (
+          <div className="absolute left-[10px] top-[22px] h-[38px] w-px bg-[#d8dfeb]" />
+        )}
 
-      <div
-        className={`relative z-10 flex h-[21px] w-[21px] shrink-0 items-center justify-center rounded-full ${
-          completed
+        <div
+          className={`relative z-10 flex h-[21px] w-[21px] shrink-0 items-center justify-center rounded-full ${completed
             ? "bg-[#20955b] text-white"
             : active
-            ? "bg-[#ff6900] text-white"
-            : "bg-[#edf0f5] text-[#8b95a8]"
-        }`}
-      >
-        {icon}
-      </div>
-
-      <div className="min-w-0">
-        <div className="text-[8px] font-bold text-[#17275c]">
-          {number} {title}
+              ? "bg-[#ff6900] text-white"
+              : "bg-[#edf0f5] text-[#8b95a8]"
+            }`}
+        >
+          {icon}
         </div>
 
-        <div className="mt-0.5 text-[7px] text-[#52607f]">
-          {subtitle}
+        <div className="min-w-0">
+          <div className="text-[8px] font-bold text-[#17275c]">
+            {number} {title}
+          </div>
+
+          <div className="mt-0.5 text-[7px] text-[#52607f]">
+            {subtitle}
+          </div>
         </div>
+
+        {completed && (
+          <CircleCheck
+            size={12}
+            className="ml-auto mt-1 text-[#20955b]"
+          />
+        )}
+
+        {active && !completed && (
+          <div className="ml-auto mt-1 h-2.5 w-2.5 rounded-full bg-[#0752df]" />
+        )}
+
+        {!active && !completed && (
+          <div className="ml-auto mt-1 h-2.5 w-2.5 rounded-full border-2 border-[#cbd2df]" />
+        )}
       </div>
-
-      {completed && (
-        <CircleCheck
-          size={12}
-          className="ml-auto mt-1 text-[#20955b]"
-        />
-      )}
-
-      {active && !completed && (
-        <div className="ml-auto mt-1 h-2.5 w-2.5 rounded-full bg-[#0752df]" />
-      )}
-
-      {!active && !completed && (
-        <div className="ml-auto mt-1 h-2.5 w-2.5 rounded-full border-2 border-[#cbd2df]" />
-      )}
-    </div>
-  );
-};
+    );
+  };
 
 /* ================================================================
    DATE
@@ -1895,9 +1548,8 @@ const formatDisplayDate = (
     "Dec",
   ];
 
-  return `${Number(day)} ${
-    months[Number(month) - 1]
-  } ${year}`;
+  return `${Number(day)} ${months[Number(month) - 1]
+    } ${year}`;
 };
 
 /* ================================================================
@@ -1905,11 +1557,31 @@ const formatDisplayDate = (
 ================================================================ */
 
 const formatCurrency = (
-  value: number
+  value: number | null | undefined
 ): string => {
+  if (value == null) {
+    return "-";
+  }
+
   return value.toLocaleString("en-US", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
+  });
+};
+
+const formatSubmittedOn = (
+  value: string
+): string => {
+  if (!value) {
+    return "-";
+  }
+
+  return new Date(value).toLocaleString("en-US", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 };
 
