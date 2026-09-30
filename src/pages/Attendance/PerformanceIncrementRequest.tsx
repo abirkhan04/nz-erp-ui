@@ -48,6 +48,7 @@ interface Employee {
 interface PerformanceIncrementRequest {
     employeeId: string;
     employeeName: string;
+    employeeCode: string;
     departmentSection: string;
 
     fivePercentEffectiveDate: string;
@@ -282,6 +283,7 @@ const PerformanceIncrementRequest: React.FC = () => {
             employeeId:
                 String(selectedEmployee.id),
 
+            employeeCode: selectedEmployee.employeeCode,
             employeeName:
                 selectedEmployee.employeeName,
 
@@ -1185,7 +1187,7 @@ const PerformanceIncrementRequest: React.FC = () => {
 
                                                     <td className="px-2 py-2 font-semibold text-[#174bd4]">
                                                         {
-                                                            request.employeeId
+                                                            request.employeeCode
                                                         }
                                                     </td>
 
