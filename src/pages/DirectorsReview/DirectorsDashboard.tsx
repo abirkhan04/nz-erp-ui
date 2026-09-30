@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                     */
@@ -32,6 +33,7 @@ interface RequestCardConfig {
   btnClass: string;
   softBgClass: string;
   Icon: React.FC<IconProps>;
+  uri: string;
 }
 
 interface FlowStep {
@@ -168,6 +170,7 @@ const CARDS: RequestCardConfig[] = [
     btnClass: "bg-[#178a30] focus-visible:ring-[#178a30]/40",
     softBgClass: "bg-[#e8f5ec]",
     Icon: TrendIcon,
+    uri: "performance-increment" 
   },
   {
     type: "adjustment",
@@ -176,6 +179,7 @@ const CARDS: RequestCardConfig[] = [
     btnClass: "bg-[#f97316] focus-visible:ring-[#f97316]/40",
     softBgClass: "bg-[#fdeee0]",
     Icon: CalculatorIcon,
+    uri: "adjustment"
   },
   {
     type: "promotion",
@@ -184,6 +188,7 @@ const CARDS: RequestCardConfig[] = [
     btnClass: "bg-[#4a12c9] focus-visible:ring-[#4a12c9]/40",
     softBgClass: "bg-[#efe9fb]",
     Icon: PromotionIcon,
+    uri: "promotion"
   },
 ];
 
@@ -219,8 +224,9 @@ const DirectorDashboard: React.FC<DirectorDashboardProps> = ({
   counts = DEFAULT_COUNTS,
   date = new Date(),
   role = "Director",
-  onViewRequests,
 }) => {
+
+  const navigate = useNavigate();
   return (
     <div className="min-h-screen bg-white font-sans text-gray-700 antialiased">
       {/* Header */}
@@ -262,7 +268,7 @@ const DirectorDashboard: React.FC<DirectorDashboardProps> = ({
 
         {/* Request cards */}
         <section aria-label="Request types" className="grid grid-cols-1 gap-[22px] lg:grid-cols-3">
-          {CARDS.map(({ type, title, textClass, btnClass, softBgClass, Icon }) => (
+          {CARDS.map(({ type, title, textClass, btnClass, softBgClass, Icon , uri}) => (
             <article
               key={type}
               className="flex flex-col items-center rounded-[10px] border border-[#e8eaf0] bg-white px-7 pb-[30px] pt-[34px] text-center shadow-[0_1px_4px_rgba(20,30,90,0.06)]"
@@ -275,7 +281,7 @@ const DirectorDashboard: React.FC<DirectorDashboardProps> = ({
               <p className="mt-3.5 text-[12.5px] text-gray-700">Requests Received</p>
               <button
                 type="button"
-                onClick={() => onViewRequests?.(type)}
+                onClick={() => navigate(uri)}
                 className={`mt-[22px] w-[165px] rounded-[5px] py-2.5 text-[13.5px] font-bold text-white transition hover:brightness-110 active:translate-y-px focus:outline-none focus-visible:ring-4 motion-reduce:transition-none ${btnClass}`}
               >
                 View Requests

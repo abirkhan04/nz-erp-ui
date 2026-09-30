@@ -68,6 +68,7 @@ const PayrollAdjustmentPostLock = lazy(() => import("./pages/Attendance/PayrollA
    Directors Review
 */
 const DirectorsDashboard = lazy(()=>import("./pages/DirectorsReview/DirectorsDashboard"));
+const DirectorsPerformanceIncrement = lazy(()=> import("./pages/DirectorsReview/PerformanceIncrementRequests"));
 /**
  * 🔐 Auth Check
  */
@@ -498,6 +499,13 @@ export default function App() {
             path="/director-dashboard"
             element={<ProtectedRoute>
               <DirectorsDashboard />
+            </ProtectedRoute>}
+          />
+
+          <Route
+            path="/director-dashboard/performance-increment"
+            element={<ProtectedRoute>
+              <DirectorsPerformanceIncrement />
             </ProtectedRoute>}
           />
 
