@@ -1,975 +1,687 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import {
-  ArrowLeft,
-  ArrowRight,
-  CalendarDays,
-  CheckCircle2,
-  Download,
-  FileText,
-  Info,
-  MessageSquare,
-  Paperclip,
-  UserRound,
-  XCircle,
+    ArrowLeft,
+    CalendarDays,
+    CheckCircle2,
+    FileText,
+    Info,
+    User,
+    XCircle,
 } from "lucide-react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
-import {
-  mockRequests,
-  type LeaveWithoutPayRequest,
-} from "./LeaveWithoutPayRequest";
+import { API_ROUTES } from "../../api/routes";
+import { useGet } from "../../hooks/useGet";
+import { api } from "../../api/client";
+import { useAuth } from "../../context/AuthContext";
 
-type LocationState = {
-  requestId?: string;
+type LeaveRequestDetails = {
+    requestId: string;
+    status: string;
+    appliedOn: string | null;
+    forwardedBy: string | null;
+
+    employee: {
+        employeeId: string;
+        employeeName: string;
+        department: string | null;
+        designation: string;
+        dateOfJoining: string | null;
+        reportingManager: string | null;
+    };
+
+    leave: {
+        leaveType: string;
+        leaveCode: string;
+        startDate: string;
+        endDate: string;
+        totalDays: number;
+        session: string;
+        reason: string;
+        contactNumber: string;
+    };
 };
 
 const LeaveWithoutPayRequestsDetails: React.FC = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
+    const navigate = useNavigate();
+    const { requestId } = useParams<{ requestId: string }>();
 
-  const state = location.state as LocationState | null;
+    const [isApproving, setIsApproving] = useState(false);
+    const [isRejecting, setIsRejecting] = useState(false);
+    const [remarks, setRemarks] = useState("");
 
-  const initialRequestId =
-    state?.requestId || mockRequests[0]?.requestId;
+    /*
+     * GET REQUEST
+     *
+     * The requestId comes directly from the route:
+     *
+     * /leave-without-pay-request/:requestId
+     */
 
-  const [currentRequestId, setCurrentRequestId] =
-    useState(initialRequestId);
+    const {
+        data: leaveRequest,
+        isLoading,
+        refetch,
+        } = useGet({
+        key: ["leaveWithoutPayRequest", requestId],
+        url: `${API_ROUTES.LEAVE}/leave-request/${requestId}`,
+        enabled: !!requestId,
+    });
 
-  const [remarks, setRemarks] = useState("");
+    /*
+     * The API returns the request object directly:
+     *
+     * {
+     *   requestId,
+     *   status,
+     *   appliedOn,
+     *   employee: {...},
+     *   leave: {...}
+     * }
+     */
+    const request =
+        leaveRequest as LeaveRequestDetails | undefined;
 
-  /* -------------------------------------------------------------------------- */
-  /* CURRENT REQUEST                                                            */
-  /* -------------------------------------------------------------------------- */
+    /*
+     * APPROVE / REJECT
+     */
 
-  const currentIndex = useMemo(() => {
-    return mockRequests.findIndex(
-      (request) =>
-        request.requestId === currentRequestId
-    );
-  }, [currentRequestId]);
+    const {user} = useAuth();
 
-  const currentRequest: LeaveWithoutPayRequest =
-    mockRequests[
-      currentIndex >= 0 ? currentIndex : 0
-    ];
+    const handleApproval = async (
+        approvalStatus: "APPROVED" | "REJECTED"
+    ) => {
+        if (!request) {
+            return;
+        }
 
-  if (!currentRequest) {
+        if (approvalStatus === "APPROVED") {
+            setIsApproving(true);
+        } else {
+            setIsRejecting(true);
+        }
+
+        try {
+            const payload = 
+                {
+                    requestId: request.requestId,
+                    leaveType: request.leave.leaveType,
+                    fromDate: request.leave.startDate,
+                    toDate: request.leave.endDate,
+                    reason: request.leave.reason,
+                    forwardedBy: request.forwardedBy ?? "",
+                    forwardedDate: request.appliedOn?.split("T")[0] ?? "",
+                    approvedBy: user?.userName,
+                    approvStatus: approvalStatus,
+                };
+
+             await api.put(
+                `${API_ROUTES.LEAVE}/${request.requestId}`,
+                payload
+            );
+
+            await refetch();
+        } catch (error) {
+            console.error(
+                "Leave request approval/rejection failed:",
+                error
+            );
+
+            alert(
+                approvalStatus === "APPROVED"
+                    ? "Failed to approve the leave request."
+                    : "Failed to reject the leave request."
+            );
+        } finally {
+            setIsApproving(false);
+            setIsRejecting(false);
+        }
+    };
+
+    /*
+     * LOADING
+     */
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-white px-4 py-4 text-[#17245B]">
+                <div className="flex min-h-[400px] items-center justify-center">
+                    <div className="text-sm font-semibold text-gray-500">
+                        Loading leave request...
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    /*
+     * NO DATA
+     */
+    if (!request) {
+        return (
+            <div className="min-h-screen bg-white px-4 py-4 text-[#17245B]">
+                <div className="rounded-lg border border-red-200 bg-red-50 p-5 text-center">
+                    <p className="text-sm font-semibold text-red-700">
+                        Leave request could not be loaded.
+                    </p>
+
+                    <button
+                        type="button"
+                        onClick={() => navigate(-1)}
+                        className="mt-4 rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+                    >
+                        Go Back
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    const isForwarded = request.status === "FORWARDED";
+    const isApproved = request.status === "APPROVED";
+    const isRejected = request.status === "REJECTED";
+
     return (
-      <div className="flex min-h-[400px] items-center justify-center">
-        <p className="text-sm text-gray-500">
-          No leave without pay request found.
-        </p>
-      </div>
-    );
-  }
+        <div className="min-h-screen bg-white px-4 py-4 text-[#17245B]">
 
-  const isFirstRequest = currentIndex <= 0;
+            {/* HEADER */}
+            <header className="h-[59px] bg-[#082b87] px-5 text-white">
+                <div className="flex h-full items-center justify-between">
 
-  const isLastRequest =
-    currentIndex >= mockRequests.length - 1;
+                    <div className="flex h-full items-center">
 
-  /* -------------------------------------------------------------------------- */
-  /* PREVIOUS / NEXT                                                            */
-  /* -------------------------------------------------------------------------- */
+                        <div className="flex items-center gap-2 pr-5">
+                            <div className="flex h-[38px] w-[38px] items-center justify-center rounded bg-white">
+                                <span className="text-[32px] font-bold leading-none text-[#173e98]">
+                                    S
+                                </span>
+                            </div>
 
-  const handlePrevious = () => {
-    if (isFirstRequest) return;
+                            <div>
+                                <div className="text-[18px] font-bold leading-none">
+                                    SYNEXIS
+                                </div>
 
-    const previousRequest =
-      mockRequests[currentIndex - 1];
+                                <div className="mt-1 text-[7px]">
+                                    Creating Enterprise Synergy
+                                </div>
+                            </div>
+                        </div>
 
-    setCurrentRequestId(
-      previousRequest.requestId
-    );
+                        <div className="h-[38px] w-px bg-white/30" />
 
-    setRemarks("");
-  };
+                        <div className="pl-5">
+                            <div className="text-[13px] font-bold">
+                                PAYROLL &amp; WORKFORCE MOVEMENT SECTION –
+                                ATTENDANCE CELL
+                            </div>
 
-  const handleNext = () => {
-    if (isLastRequest) return;
+                            <div className="mt-1 text-[10px]">
+                                Dashboard
+                                <span className="mx-2">&gt;</span>
+                                Leave Without Pay Requests
+                                <span className="mx-2">&gt;</span>
+                                Details
+                            </div>
+                        </div>
+                    </div>
 
-    const nextRequest =
-      mockRequests[currentIndex + 1];
+                    <div className="flex items-center gap-4">
 
-    setCurrentRequestId(nextRequest.requestId);
+                        <div className="flex h-[32px] items-center gap-2 rounded bg-white px-3 text-[10px] font-semibold text-[#17275c]">
+                            <CalendarDays size={14} />
+                            30 September 2026
+                        </div>
 
-    setRemarks("");
-  };
+                        <div className="flex items-center gap-2 border-l border-white/30 pl-4">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white">
+                                <User
+                                    size={18}
+                                    className="text-[#173e98]"
+                                />
+                            </div>
 
-  /* -------------------------------------------------------------------------- */
-  /* BACK                                                                       */
-  /* -------------------------------------------------------------------------- */
-
-  const handleBack = () => {
-    navigate("/leave-without-pay-requests");
-  };
-
-  /* -------------------------------------------------------------------------- */
-  /* ACTIONS                                                                    */
-  /* -------------------------------------------------------------------------- */
-
-  const handleApprove = () => {
-    console.log("Approve LWOP Request", {
-      requestId: currentRequest.requestId,
-      remarks,
-    });
-
-    alert(
-      `Leave Without Pay request ${currentRequest.requestId} approved.`
-    );
-  };
-
-  const handleReject = () => {
-    console.log("Reject LWOP Request", {
-      requestId: currentRequest.requestId,
-      remarks,
-    });
-
-    alert(
-      `Leave Without Pay request ${currentRequest.requestId} rejected.`
-    );
-  };
-
-  const handleRequestInformation = () => {
-    console.log(
-      "Request More Information",
-      {
-        requestId: currentRequest.requestId,
-        remarks,
-      }
-    );
-
-    alert(
-      `More information requested for ${currentRequest.requestId}.`
-    );
-  };
-
-  /* -------------------------------------------------------------------------- */
-  /* RENDER                                                                     */
-  /* -------------------------------------------------------------------------- */
-
-  return (
-    <div className="min-h-screen bg-white px-4 py-4 text-[#17245B]">
-      {/* ====================================================================== */}
-      {/* BACK                                                                    */}
-      {/* ====================================================================== */}
-
-      <button
-        type="button"
-        onClick={handleBack}
-        className="mb-5 flex items-center gap-2 text-sm font-semibold text-blue-700 hover:text-blue-900"
-      >
-        <ArrowLeft size={16} />
-        Back to Leave Without Pay Requests
-      </button>
-
-      {/* ====================================================================== */}
-      {/* PAGE TITLE                                                               */}
-      {/* ====================================================================== */}
-
-      <div className="mb-4">
-        <h1 className="text-xl font-bold text-[#07185C]">
-          LEAVE WITHOUT PAY REQUEST DETAILS
-        </h1>
-
-        <p className="mt-1 text-sm text-gray-600">
-          Review full details of the leave without pay
-          request and take appropriate action.
-        </p>
-      </div>
-
-      {/* ====================================================================== */}
-      {/* TOP SUMMARY                                                             */}
-      {/* ====================================================================== */}
-
-      <div className="mb-5 rounded-lg border border-blue-100 bg-white">
-        <div className="grid grid-cols-1 divide-y divide-gray-100 md:grid-cols-2 md:divide-x md:divide-y-0 lg:grid-cols-5">
-          {/* Request ID */}
-          <TopSummaryItem
-            icon={
-              <FileText
-                size={23}
-                className="text-orange-500"
-              />
-            }
-            label="Request ID"
-            value={currentRequest.requestId}
-          />
-
-          {/* Employee */}
-          <TopSummaryItem
-            icon={
-              <UserRound
-                size={23}
-                className="text-purple-600"
-              />
-            }
-            label="Employee"
-            value={`${currentRequest.employeeName} (${currentRequest.employeeId})`}
-            secondaryValue={
-              currentRequest.department
-            }
-          />
-
-          {/* Applied On */}
-          <TopSummaryItem
-            icon={
-              <CalendarDays
-                size={23}
-                className="text-green-600"
-              />
-            }
-            label="Applied On"
-            value={formatAppliedDate(
-              currentRequest.appliedOn
-            )}
-            secondaryValue={formatAppliedTime(
-              currentRequest.appliedOn
-            )}
-          />
-
-          {/* Status */}
-          <TopSummaryItem
-            icon={
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-orange-50">
-                <span className="h-3 w-3 rounded-full bg-orange-500" />
-              </span>
-            }
-            label="Status"
-            customValue={
-              <StatusBadge
-                status={currentRequest.status}
-              />
-            }
-          />
-
-          {/* Forwarded By */}
-          <TopSummaryItem
-            icon={
-              <UserRound
-                size={23}
-                className="text-blue-600"
-              />
-            }
-            label="Forwarded By"
-            value={currentRequest.forwardedBy}
-            secondaryValue={formatAppliedDate(
-              currentRequest.appliedOn
-            )}
-          />
-        </div>
-      </div>
-
-      {/* ====================================================================== */}
-      {/* MAIN CONTENT                                                            */}
-      {/* ====================================================================== */}
-
-      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
-        {/* ==================================================================== */}
-        {/* LEFT SIDE                                                             */}
-        {/* ==================================================================== */}
-
-        <div className="space-y-5">
-          {/* ------------------------------------------------------------------ */}
-          {/* EMPLOYEE INFORMATION                                                */}
-          {/* ------------------------------------------------------------------ */}
-
-          <SectionCard title="EMPLOYEE INFORMATION">
-            <div className="grid grid-cols-1 gap-x-10 md:grid-cols-2">
-              <InfoRow
-                label="Employee ID"
-                value={currentRequest.employeeId}
-              />
-
-              <InfoRow
-                label="Employee Name"
-                value={currentRequest.employeeName}
-              />
-
-              <InfoRow
-                label="Department"
-                value={currentRequest.department}
-              />
-
-              <InfoRow
-                label="Designation"
-                value={getDesignation(
-                  currentRequest
-                )}
-              />
-
-              <InfoRow
-                label="Date of Joining"
-                value={getJoiningDate(
-                  currentRequest
-                )}
-              />
-
-              <InfoRow
-                label="Reporting Manager"
-                value={getReportingManager(
-                  currentRequest
-                )}
-              />
-            </div>
-          </SectionCard>
-
-          {/* ------------------------------------------------------------------ */}
-          {/* LWOP DETAILS                                                        */}
-          {/* ------------------------------------------------------------------ */}
-
-          <SectionCard title="LEAVE WITHOUT PAY DETAILS">
-            <div className="grid grid-cols-1 gap-x-10 md:grid-cols-2">
-              <InfoRow
-                label="Leave Without Pay Type"
-                value={
-                  currentRequest.leaveWithoutPayType
-                }
-              />
-
-              <InfoRow
-                label="Total Days"
-                value={`${currentRequest.totalDays} ${
-                  currentRequest.totalDays === 1
-                    ? "Day"
-                    : "Days"
-                }`}
-              />
-
-              <InfoRow
-                label="Leave From"
-                value={currentRequest.leaveFrom}
-              />
-
-              <InfoRow
-                label="Leave To"
-                value={currentRequest.leaveTo}
-              />
-
-              <InfoRow
-                label="Reason"
-                value={currentRequest.reason}
-                fullWidth
-              />
-
-              <InfoRow
-                label="Contact During Leave"
-                value={
-                  currentRequest.contactDuringLeave
-                }
-              />
-
-              <InfoRow
-                label="Remarks by Employee"
-                value={getEmployeeRemarks(
-                  currentRequest
-                )}
-                fullWidth
-              />
-            </div>
-          </SectionCard>
-
-          {/* ------------------------------------------------------------------ */}
-          {/* IMPORTANT INFORMATION                                               */}
-          {/* ------------------------------------------------------------------ */}
-
-          <div className="rounded-lg border border-blue-100 bg-blue-50/40">
-            <div className="border-b border-blue-100 px-4 py-3">
-              <h2 className="flex items-center gap-2 text-sm font-bold text-blue-800">
-                <Info size={16} />
-                IMPORTANT INFORMATION
-              </h2>
-            </div>
-
-            <div className="px-5 py-4">
-              <ul className="space-y-2 text-xs text-[#17245B]">
-                <li className="flex gap-2">
-                  <span>•</span>
-                  <span>
-                    Leave Without Pay (LWOP) will not
-                    be counted as paid leave.
-                  </span>
-                </li>
-
-                <li className="flex gap-2">
-                  <span>•</span>
-                  <span>
-                    No salary will be paid for the
-                    approved LWOP days.
-                  </span>
-                </li>
-
-                <li className="flex gap-2">
-                  <span>•</span>
-                  <span>
-                    LWOP is applicable only when no
-                    earned leave balance is available
-                    or employee chooses unpaid leave.
-                  </span>
-                </li>
-
-                <li className="flex gap-2">
-                  <span>•</span>
-                  <span>
-                    Approved LWOP days will be reflected
-                    in attendance and payroll.
-                  </span>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          {/* ------------------------------------------------------------------ */}
-          {/* ATTACHMENTS                                                         */}
-          {/* ------------------------------------------------------------------ */}
-
-          <SectionCard
-            title="ATTACHMENTS"
-            icon={
-              <Paperclip
-                size={15}
-                className="text-blue-600"
-              />
-            }
-            subtitle="1 attachment uploaded"
-          >
-            <div className="flex items-center justify-between rounded-md border border-gray-100 bg-white px-4 py-3">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-md bg-red-50">
-                  <FileText
-                    size={20}
-                    className="text-red-500"
-                  />
+                            <div className="text-[8px] leading-[1.35]">
+                                <div className="font-bold">
+                                    Nusrat Jahan
+                                </div>
+                                <div>Section Incharge</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+            </header>
+
+            {/* TITLE */}
+            <div className="mb-5 mt-5 flex items-start justify-between">
 
                 <div>
-                  <p className="text-sm font-semibold text-[#17245B]">
-                    Application_LWOP.pdf
-                  </p>
+                    <div className="flex items-center gap-3">
 
-                  <p className="mt-1 text-[11px] text-gray-500">
-                    Uploaded on{" "}
-                    {formatAppliedDate(
-                      currentRequest.appliedOn
-                    )}
-                  </p>
+                        <button
+                            type="button"
+                            onClick={() => navigate(-1)}
+                            className="flex h-9 w-9 items-center justify-center rounded-md border border-blue-200 bg-white text-blue-700 hover:bg-blue-50"
+                        >
+                            <ArrowLeft size={17} />
+                        </button>
 
-                  <p className="text-[11px] text-gray-500">
-                    156 KB
-                  </p>
+                        <div>
+                            <h1 className="text-xl font-bold text-[#07185C]">
+                                LEAVE WITHOUT PAY REQUEST DETAILS
+                            </h1>
+
+                            <p className="mt-1 text-sm text-gray-600">
+                                View and manage leave without pay request
+                                details.
+                            </p>
+                        </div>
+                    </div>
                 </div>
-              </div>
 
-              <button
-                type="button"
-                onClick={() =>
-                  console.log(
-                    "Download attachment"
-                  )
-                }
-                className="flex h-9 w-9 items-center justify-center rounded-md border border-blue-200 text-blue-600 hover:bg-blue-50"
-              >
-                <Download size={17} />
-              </button>
+                {/* STATUS */}
+                <StatusBadge status={request.status} />
             </div>
-          </SectionCard>
+
+            {/* REQUEST INFORMATION */}
+            <div className="mb-5 rounded-lg border border-blue-100 bg-white">
+
+                <div className="flex items-center justify-between border-b border-blue-100 px-5 py-4">
+
+                    <div className="flex items-center gap-2">
+                        <FileText
+                            size={18}
+                            className="text-blue-600"
+                        />
+
+                        <h2 className="text-sm font-bold text-[#17245B]">
+                            Request Information
+                        </h2>
+                    </div>
+
+                    <div className="text-xs text-gray-500">
+                        Request ID:
+                        <span className="ml-1 font-bold text-blue-700">
+                            {request.requestId}
+                        </span>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 p-5 md:grid-cols-2 lg:grid-cols-4">
+
+                    <InfoItem
+                        label="Request ID"
+                        value={request.requestId}
+                    />
+
+                    <InfoItem
+                        label="Status"
+                        value={
+                            <StatusBadge
+                                status={request.status}
+                            />
+                        }
+                    />
+
+                    <InfoItem
+                        label="Applied On"
+                        value={formatDateTime(
+                            request.appliedOn
+                        )}
+                    />
+
+                    <InfoItem
+                        label="Forwarded By"
+                        value={
+                            request.forwardedBy || "-"
+                        }
+                    />
+                </div>
+            </div>
+
+            {/* EMPLOYEE INFORMATION */}
+            <div className="mb-5 rounded-lg border border-blue-100 bg-white">
+
+                <div className="flex items-center gap-2 border-b border-blue-100 px-5 py-4">
+
+                    <User
+                        size={18}
+                        className="text-blue-600"
+                    />
+
+                    <h2 className="text-sm font-bold text-[#17245B]">
+                        Employee Information
+                    </h2>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 p-5 md:grid-cols-2 lg:grid-cols-3">
+
+                    <InfoItem
+                        label="Employee ID"
+                        value={request.employee.employeeId}
+                    />
+
+                    <InfoItem
+                        label="Employee Name"
+                        value={request.employee.employeeName}
+                    />
+
+                    <InfoItem
+                        label="Department"
+                        value={
+                            request.employee.department || "-"
+                        }
+                    />
+
+                    <InfoItem
+                        label="Designation"
+                        value={
+                            request.employee.designation || "-"
+                        }
+                    />
+
+                    <InfoItem
+                        label="Date of Joining"
+                        value={
+                            request.employee.dateOfJoining
+                                ? formatDate(
+                                    request.employee.dateOfJoining
+                                )
+                                : "-"
+                        }
+                    />
+
+                    <InfoItem
+                        label="Reporting Manager"
+                        value={
+                            request.employee.reportingManager ||
+                            "-"
+                        }
+                    />
+                </div>
+            </div>
+
+            {/* LEAVE INFORMATION */}
+            <div className="mb-5 rounded-lg border border-blue-100 bg-white">
+
+                <div className="flex items-center gap-2 border-b border-blue-100 px-5 py-4">
+
+                    <CalendarDays
+                        size={18}
+                        className="text-blue-600"
+                    />
+
+                    <h2 className="text-sm font-bold text-[#17245B]">
+                        Leave Information
+                    </h2>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 p-5 md:grid-cols-2 lg:grid-cols-4">
+
+                    <InfoItem
+                        label="Leave Type"
+                        value={request.leave.leaveType}
+                    />
+
+                    <InfoItem
+                        label="Leave Code"
+                        value={request.leave.leaveCode}
+                    />
+
+                    <InfoItem
+                        label="From Date"
+                        value={formatDate(
+                            request.leave.startDate
+                        )}
+                    />
+
+                    <InfoItem
+                        label="To Date"
+                        value={formatDate(
+                            request.leave.endDate
+                        )}
+                    />
+
+                    <InfoItem
+                        label="Total Days"
+                        value={`${request.leave.totalDays} day${
+                            request.leave.totalDays === 1
+                                ? ""
+                                : "s"
+                        }`}
+                    />
+
+                    <InfoItem
+                        label="Session"
+                        value={request.leave.session}
+                    />
+
+                    <InfoItem
+                        label="Contact Number"
+                        value={
+                            request.leave.contactNumber || "-"
+                        }
+                    />
+                </div>
+
+                {/* REASON */}
+                <div className="border-t border-gray-100 px-5 py-4">
+
+                    <p className="mb-2 text-xs font-bold text-gray-500">
+                        Reason
+                    </p>
+
+                    <div className="rounded-md bg-gray-50 p-3 text-sm text-gray-700">
+                        {request.leave.reason || "-"}
+                    </div>
+                </div>
+            </div>
+
+            {/* REMARKS */}
+            <div className="mb-5 rounded-lg border border-blue-100 bg-white">
+
+                <div className="border-b border-blue-100 px-5 py-4">
+                    <h2 className="text-sm font-bold text-[#17245B]">
+                        Remarks (Optional)
+                    </h2>
+                </div>
+
+                <div className="p-5">
+
+                    <textarea
+                        value={remarks}
+                        onChange={(event) =>
+                            setRemarks(
+                                event.target.value.slice(0, 250)
+                            )
+                        }
+                        maxLength={250}
+                        rows={3}
+                        disabled={!isForwarded}
+                        placeholder="Enter remarks..."
+                        className="w-full resize-none rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100"
+                    />
+
+                    <div className="mt-1 flex justify-between text-[11px] text-gray-500">
+                        <span>
+                            Maximum 250 characters allowed
+                        </span>
+
+                        <span>
+                            {remarks.length}/250
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            {/* INFORMATION */}
+            <div className="mb-5 rounded-md border border-blue-100 bg-blue-50/40 p-3">
+
+                <div className="flex gap-2">
+
+                    <Info
+                        size={16}
+                        className="mt-0.5 shrink-0 text-blue-600"
+                    />
+
+                    <div>
+                        <p className="text-xs font-bold text-blue-800">
+                            Note
+                        </p>
+
+                        <p className="mt-1 text-xs text-gray-600">
+                            Approved Leave Without Pay requests will
+                            be reflected in attendance and payroll.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            {/* ACTION BUTTONS */}
+            <div className="flex justify-end gap-3">
+
+                <button
+                    type="button"
+                    onClick={() => navigate(-1)}
+                    className="rounded-md border border-gray-300 bg-white px-6 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+                >
+                    Back
+                </button>
+
+                {isForwarded && (
+                    <>
+                        <button
+                            type="button"
+                            onClick={() =>
+                                handleApproval("REJECTED")
+                            }
+                            disabled={
+                                isApproving ||
+                                isRejecting
+                            }
+                            className="flex items-center gap-2 rounded-md bg-red-600 px-6 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                            <XCircle size={16} />
+
+                            {isRejecting
+                                ? "Rejecting..."
+                                : "Reject"}
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() =>
+                                handleApproval("APPROVED")
+                            }
+                            disabled={
+                                isApproving ||
+                                isRejecting
+                            }
+                            className="flex items-center gap-2 rounded-md bg-green-600 px-6 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                            <CheckCircle2 size={16} />
+
+                            {isApproving
+                                ? "Approving..."
+                                : "Approve"}
+                        </button>
+                    </>
+                )}
+
+                {isApproved && (
+                    <div className="flex items-center gap-2 rounded-md bg-green-50 px-5 py-2 text-sm font-semibold text-green-700">
+                        <CheckCircle2 size={16} />
+                        Request Approved
+                    </div>
+                )}
+
+                {isRejected && (
+                    <div className="flex items-center gap-2 rounded-md bg-red-50 px-5 py-2 text-sm font-semibold text-red-700">
+                        <XCircle size={16} />
+                        Request Rejected
+                    </div>
+                )}
+            </div>
         </div>
+    );
+};
 
-        {/* ==================================================================== */}
-        {/* RIGHT SIDE                                                            */}
-        {/* ==================================================================== */}
+/* -------------------------------------------------------------------------- */
+/* INFO ITEM                                                                  */
+/* -------------------------------------------------------------------------- */
 
+const InfoItem: React.FC<{
+    label: string;
+    value: React.ReactNode;
+}> = ({ label, value }) => {
+    return (
         <div>
-          <div className="rounded-lg border border-blue-100 bg-white">
-            {/* ---------------------------------------------------------------- */}
-            {/* ACTIONS                                                           */}
-            {/* ---------------------------------------------------------------- */}
-
-            <div className="border-b border-blue-100 px-4 py-4">
-              <h2 className="text-sm font-bold text-[#17245B]">
-                ACTIONS
-              </h2>
-
-              <p className="mt-1 text-xs text-gray-500">
-                Review the request and take appropriate
-                action.
-              </p>
-            </div>
-
-            <div className="space-y-3 px-4 py-4">
-              {/* Approve */}
-              <button
-                type="button"
-                onClick={handleApprove}
-                disabled={
-                  currentRequest.status !==
-                  "Pending"
-                }
-                className="w-full rounded-md border border-green-300 bg-white px-4 py-3 text-left transition hover:bg-green-50 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <div className="flex items-start gap-3">
-                  <CheckCircle2
-                    size={21}
-                    className="mt-0.5 shrink-0 text-green-600"
-                  />
-
-                  <div>
-                    <p className="text-sm font-bold text-green-700">
-                      Approve Leave Without Pay
-                    </p>
-
-                    <p className="mt-0.5 text-xs text-gray-600">
-                      Approve and record LWOP.
-                    </p>
-                  </div>
-                </div>
-              </button>
-
-              {/* Reject */}
-              <button
-                type="button"
-                onClick={handleReject}
-                disabled={
-                  currentRequest.status !==
-                  "Pending"
-                }
-                className="w-full rounded-md border border-red-300 bg-white px-4 py-3 text-left transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <div className="flex items-start gap-3">
-                  <XCircle
-                    size={21}
-                    className="mt-0.5 shrink-0 text-red-600"
-                  />
-
-                  <div>
-                    <p className="text-sm font-bold text-red-600">
-                      Reject Request
-                    </p>
-
-                    <p className="mt-0.5 text-xs text-gray-600">
-                      Reject and inform employee.
-                    </p>
-                  </div>
-                </div>
-              </button>
-
-              {/* Request More Information */}
-              <button
-                type="button"
-                onClick={
-                  handleRequestInformation
-                }
-                disabled={
-                  currentRequest.status !==
-                  "Pending"
-                }
-                className="w-full rounded-md border border-indigo-300 bg-white px-4 py-3 text-left transition hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <div className="flex items-start gap-3">
-                  <MessageSquare
-                    size={21}
-                    className="mt-0.5 shrink-0 text-indigo-600"
-                  />
-
-                  <div>
-                    <p className="text-sm font-bold text-indigo-700">
-                      Request More Information
-                    </p>
-
-                    <p className="mt-0.5 text-xs text-gray-600">
-                      Ask for additional information
-                      from employee.
-                    </p>
-                  </div>
-                </div>
-              </button>
-            </div>
-
-            {/* ---------------------------------------------------------------- */}
-            {/* REMARKS                                                          */}
-            {/* ---------------------------------------------------------------- */}
-
-            <div className="border-t border-blue-100 px-4 py-4">
-              <label className="mb-1 block text-sm font-bold text-[#17245B]">
-                REMARKS
-                <span className="ml-1 font-normal text-gray-500">
-                  (Optional)
-                </span>
-              </label>
-
-              <textarea
-                value={remarks}
-                onChange={(event) =>
-                  setRemarks(
-                    event.target.value.slice(
-                      0,
-                      500
-                    )
-                  )
-                }
-                maxLength={500}
-                rows={4}
-                placeholder="Enter remarks (visible to next authority)..."
-                className="w-full resize-none rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-              />
-
-              <div className="mt-1 flex justify-end text-[11px] text-gray-500">
-                {remarks.length}/500
-              </div>
-            </div>
-
-            {/* ---------------------------------------------------------------- */}
-            {/* NOTE                                                              */}
-            {/* ---------------------------------------------------------------- */}
-
-            <div className="mx-4 mb-4 rounded-md bg-blue-50 p-3">
-              <div className="flex gap-2">
-                <Info
-                  size={15}
-                  className="mt-0.5 shrink-0 text-blue-600"
-                />
-
-                <div>
-                  <p className="text-xs font-bold text-blue-800">
-                    Note:
-                  </p>
-
-                  <ul className="mt-1 space-y-1 text-[11px] text-gray-600">
-                    <li>
-                      • After approval, LWOP days will
-                      be updated in attendance.
-                    </li>
-
-                    <li>
-                      • Salary will be deducted for
-                      the approved LWOP days as per
-                      payroll policy.
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ====================================================================== */}
-      {/* PREVIOUS / NEXT                                                        */}
-      {/* ====================================================================== */}
-
-      <div className="mt-5 flex items-center justify-between">
-        <button
-          type="button"
-          disabled={isFirstRequest}
-          onClick={handlePrevious}
-          className="flex items-center gap-2 rounded-md border border-blue-200 bg-white px-5 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          <ArrowLeft size={16} />
-          Previous Request
-        </button>
-
-        <div className="text-sm font-bold text-[#17245B]">
-          Request {currentIndex + 1} of{" "}
-          {mockRequests.length}
-        </div>
-
-        <button
-          type="button"
-          disabled={isLastRequest}
-          onClick={handleNext}
-          className="flex items-center gap-2 rounded-md border border-blue-200 bg-white px-5 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          Next Request
-          <ArrowRight size={16} />
-        </button>
-      </div>
-    </div>
-  );
-};
-
-/* ========================================================================== */
-/* TOP SUMMARY ITEM                                                           */
-/* ========================================================================== */
-
-type TopSummaryItemProps = {
-  icon: React.ReactNode;
-  label: string;
-  value?: string;
-  secondaryValue?: string;
-  customValue?: React.ReactNode;
-};
-
-const TopSummaryItem: React.FC<
-  TopSummaryItemProps
-> = ({
-  icon,
-  label,
-  value,
-  secondaryValue,
-  customValue,
-}) => {
-  return (
-    <div className="flex min-h-[95px] items-center gap-3 px-5 py-4">
-      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gray-50">
-        {icon}
-      </div>
-
-      <div className="min-w-0">
-        <p className="text-xs font-medium text-gray-500">
-          {label}
-        </p>
-
-        {customValue ? (
-          <div className="mt-1">
-            {customValue}
-          </div>
-        ) : (
-          <>
-            <p className="mt-1 text-sm font-bold text-[#17245B]">
-              {value}
+            <p className="mb-1 text-[11px] font-bold uppercase tracking-wide text-gray-500">
+                {label}
             </p>
 
-            {secondaryValue && (
-              <p className="mt-0.5 text-xs font-medium text-[#17245B]">
-                {secondaryValue}
-              </p>
-            )}
-          </>
-        )}
-      </div>
-    </div>
-  );
-};
-
-/* ========================================================================== */
-/* SECTION CARD                                                               */
-/* ========================================================================== */
-
-type SectionCardProps = {
-  title: string;
-  children: React.ReactNode;
-  icon?: React.ReactNode;
-  subtitle?: string;
-};
-
-const SectionCard: React.FC<
-  SectionCardProps
-> = ({
-  title,
-  children,
-  icon,
-  subtitle,
-}) => {
-  return (
-    <div className="rounded-lg border border-blue-100 bg-white">
-      <div className="border-b border-blue-100 px-4 py-3">
-        <div className="flex items-center gap-2">
-          {icon}
-
-          <h2 className="text-sm font-bold text-[#17245B]">
-            {title}
-          </h2>
+            <div className="min-h-[20px] text-sm font-semibold text-[#17245B]">
+                {value}
+            </div>
         </div>
-
-        {subtitle && (
-          <p className="mt-1 text-xs text-gray-500">
-            {subtitle}
-          </p>
-        )}
-      </div>
-
-      <div className="px-4 py-3">
-        {children}
-      </div>
-    </div>
-  );
+    );
 };
 
-/* ========================================================================== */
-/* INFO ROW                                                                   */
-/* ========================================================================== */
-
-type InfoRowProps = {
-  label: string;
-  value: string;
-  fullWidth?: boolean;
-};
-
-const InfoRow: React.FC<InfoRowProps> = ({
-  label,
-  value,
-  fullWidth = false,
-}) => {
-  return (
-    <div
-      className={`flex gap-4 border-b border-gray-100 py-2.5 ${
-        fullWidth
-          ? "md:col-span-2"
-          : ""
-      }`}
-    >
-      <span className="w-[130px] shrink-0 text-xs font-medium text-[#17245B]">
-        {label}
-      </span>
-
-      <span className="text-xs font-semibold text-[#17245B]">
-        {value || "-"}
-      </span>
-    </div>
-  );
-};
-
-/* ========================================================================== */
+/* -------------------------------------------------------------------------- */
 /* STATUS BADGE                                                               */
-/* ========================================================================== */
+/* -------------------------------------------------------------------------- */
 
 const StatusBadge: React.FC<{
-  status: LeaveWithoutPayRequest["status"];
+    status: string;
 }> = ({ status }) => {
-  const classes =
-    status === "Pending"
-      ? "border-orange-200 bg-orange-50 text-orange-700"
-      : status === "Approved"
-        ? "border-green-200 bg-green-50 text-green-700"
-        : "border-red-200 bg-red-50 text-red-700";
 
-  return (
-    <span
-      className={`inline-flex rounded-md border px-2.5 py-1 text-[11px] font-bold ${classes}`}
-    >
-      {status}
-    </span>
-  );
+    const className =
+        status === "FORWARDED"
+            ? "border-orange-200 bg-orange-50 text-orange-700"
+            : status === "APPROVED"
+                ? "border-green-200 bg-green-50 text-green-700"
+                : status === "REJECTED"
+                    ? "border-red-200 bg-red-50 text-red-700"
+                    : "border-gray-200 bg-gray-50 text-gray-700";
+
+    return (
+        <span
+            className={`inline-flex rounded border px-2 py-1 text-[10px] font-bold ${className}`}
+        >
+            {status}
+        </span>
+    );
 };
 
-/* ========================================================================== */
-/* HELPERS                                                                    */
-/* ========================================================================== */
+/* -------------------------------------------------------------------------- */
+/* DATE HELPERS                                                               */
+/* -------------------------------------------------------------------------- */
 
-const formatAppliedDate = (
-  value: string
-): string => {
-  if (!value) return "-";
+const formatDate = (date: string) => {
+    if (!date) {
+        return "-";
+    }
 
-  return value.split(" ")[0] || value;
+    const [year, month, day] = date.split("-");
+
+    if (!year || !month || !day) {
+        return date;
+    }
+
+    return `${day}/${month}/${year}`;
 };
 
-const formatAppliedTime = (
-  value: string
-): string => {
-  if (!value) return "";
+const formatDateTime = (date: string | null) => {
+    if (!date) {
+        return "-";
+    }
 
-  const parts = value.split(" ");
+    const parsedDate = new Date(date);
 
-  if (parts.length >= 3) {
-    return `${parts[1]} ${parts[2]}`;
-  }
+    if (Number.isNaN(parsedDate.getTime())) {
+        return date;
+    }
 
-  return "";
-};
-
-/*
- * These helpers provide the additional employee information
- * visible on the details screen.
- *
- * When the real backend is connected, replace these with
- * properties coming from the backend response.
- */
-
-const getDesignation = (
-  request: LeaveWithoutPayRequest
-): string => {
-  const designations: Record<
-    string,
-    string
-  > = {
-    "10145": "Weaving Operator",
-    "10234": "Mechanic",
-    "10267": "Finishing Operator",
-    "10312": "Quality Inspector",
-    "103245": "Washing Operator",
-    "103678": "Cutting Operator",
-    "102913": "Dyeing Operator",
-  };
-
-  return (
-    designations[request.employeeId] ||
-    "Employee"
-  );
-};
-
-const getJoiningDate = (
-  request: LeaveWithoutPayRequest
-): string => {
-  const joiningDates: Record<
-    string,
-    string
-  > = {
-    "10145": "12-Feb-2021",
-    "10234": "10-Jan-2020",
-    "10267": "18-Mar-2021",
-    "10312": "05-Jun-2022",
-    "103245": "14-Aug-2020",
-    "103678": "20-Jan-2022",
-    "102913": "11-Nov-2019",
-  };
-
-  return (
-    joiningDates[request.employeeId] ||
-    "-"
-  );
-};
-
-const getReportingManager = (
-  request: LeaveWithoutPayRequest
-): string => {
-  const managers: Record<
-    string,
-    string
-  > = {
-    "10145": "Abdul Karim (10063)",
-    "10234": "Abul Kashem (10075)",
-    "10267": "Abdul Karim (10063)",
-    "10312": "Shahana Begum (10091)",
-    "103245": "Abdul Karim (10063)",
-    "103678": "Abul Kashem (10075)",
-    "102913": "Abdul Karim (10063)",
-  };
-
-  return (
-    managers[request.employeeId] ||
-    "-"
-  );
-};
-
-const getEmployeeRemarks = (
-  request: LeaveWithoutPayRequest
-): string => {
-  const remarks: Record<
-    string,
-    string
-  > = {
-    LWPR2505003:
-      "Requesting leave without pay as I have no leave balance.",
-    LWPR2505004:
-      "Unable to attend work due to urgent personal matter.",
-    LWPR2505005:
-      "Requesting unpaid leave due to family emergency.",
-    LWPR2505006:
-      "Need half day leave for personal work.",
-    LWPR2505007:
-      "Requesting leave due to travel outside Dhaka.",
-    LWPR2505008:
-      "Requesting leave for family function.",
-    LWPR2505009:
-      "Requesting unpaid leave for urgent personal matter.",
-  };
-
-  return (
-    remarks[request.requestId] ||
-    request.reason ||
-    "-"
-  );
+    return parsedDate.toLocaleString();
 };
 
 export default LeaveWithoutPayRequestsDetails;

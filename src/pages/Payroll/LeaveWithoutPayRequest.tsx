@@ -9,38 +9,47 @@ import {
     FileText,
     Info,
     Search,
-    Send,
     XCircle,
-    Users
+    Users,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 
 import CommonInputField from "../../components/CommonInputFields";
-// Adjust this import path according to your project structure.
+import { API_ROUTES } from "../../api/routes";
+import { useGet } from "../../hooks/useGet";
+import { api } from "../../api/client";
+import { useAuth } from "../../context/AuthContext";
 
 export type LeaveWithoutPayRequest = {
     requestId: string;
-    appliedOn: string;
-
     employeeId: string;
+    employeeCode: string;
     employeeName: string;
-    department: string;
-
-    leaveWithoutPayType: string;
-    leaveFrom: string;
-    leaveTo: string;
+    leaveType: string;
+    fromDate: string;
+    toDate: string;
     totalDays: number;
-
     reason: string;
-    contactDuringLeave: string;
-
-    submittedBy: string;
-    submittedOn: string;
-
-    status: "Pending" | "Approved" | "Rejected";
-
-    forwardedBy: string;
+    status: string;
+    createdBy: string;
+    createdDate: string;
+    approvedBy: string | null;
+    approvedDate: string | null;
+    forwardedBy: string | null;
+    forwardedDate: string | null;
+    availableLeaves: {
+        leaveTypeId: string;
+        leaveTypeName: string;
+        openingBalance: number;
+        earnedLeave: number;
+        availedLeave: number;
+        adjustedLeave: number;
+        encashedLeave: number;
+        closingBalance: number;
+    }[];
+    leaveTypeId: string;
+    departmentName: string;
 };
 
 type FilterForm = {
@@ -52,184 +61,6 @@ type FilterForm = {
     leaveFrom: string;
     leaveTo: string;
 };
-
-/* -------------------------------------------------------------------------- */
-/* MOCK DATA                                                                  */
-/* -------------------------------------------------------------------------- */
-
-export const mockRequests: LeaveWithoutPayRequest[] = [
-    {
-        requestId: "LWPR2505003",
-        appliedOn: "14-May-2025 10:30 AM",
-
-        employeeId: "10145",
-        employeeName: "Md. Rashedul Islam",
-        department: "Weaving",
-
-        leaveWithoutPayType: "Full Day(s)",
-        leaveFrom: "20-May-2025",
-        leaveTo: "27-May-2025",
-        totalDays: 8,
-
-        reason: "Going to village for family matter.",
-        contactDuringLeave: "01712-345678",
-
-        submittedBy: "Production Floor",
-        submittedOn: "14-May-2025 09:40 AM",
-
-        status: "Pending",
-
-        forwardedBy: "Production Floor",
-    },
-
-    {
-        requestId: "LWPR2505004",
-        appliedOn: "14-May-2025 11:15 AM",
-
-        employeeId: "10234",
-        employeeName: "Abdul Karim",
-        department: "Spinning",
-
-        leaveWithoutPayType: "Full Day(s)",
-        leaveFrom: "18-May-2025",
-        leaveTo: "20-May-2025",
-        totalDays: 3,
-
-        reason: "Personal emergency at home.",
-        contactDuringLeave: "01811-223344",
-
-        submittedBy: "Spinning Floor",
-        submittedOn: "14-May-2025 10:20 AM",
-
-        status: "Pending",
-
-        forwardedBy: "Spinning Floor",
-    },
-
-    {
-        requestId: "LWPR2505005",
-        appliedOn: "13-May-2025 03:10 PM",
-
-        employeeId: "10267",
-        employeeName: "Rina Parvin",
-        department: "Finishing",
-
-        leaveWithoutPayType: "Full Day(s)",
-        leaveFrom: "21-May-2025",
-        leaveTo: "23-May-2025",
-        totalDays: 3,
-
-        reason: "Family medical emergency.",
-        contactDuringLeave: "01922-334455",
-
-        submittedBy: "Finishing Floor",
-        submittedOn: "13-May-2025 02:35 PM",
-
-        status: "Pending",
-
-        forwardedBy: "Finishing Floor",
-    },
-
-    {
-        requestId: "LWPR2505006",
-        appliedOn: "13-May-2025 04:20 PM",
-
-        employeeId: "10312",
-        employeeName: "Shahana Akter",
-        department: "Quality",
-
-        leaveWithoutPayType: "Half Day",
-        leaveFrom: "19-May-2025",
-        leaveTo: "19-May-2025",
-        totalDays: 0.5,
-
-        reason: "Personal work.",
-        contactDuringLeave: "01611-556677",
-
-        submittedBy: "Quality Floor",
-        submittedOn: "13-May-2025 03:50 PM",
-
-        status: "Pending",
-
-        forwardedBy: "Quality Floor",
-    },
-
-    {
-        requestId: "LWPR2505007",
-        appliedOn: "12-May-2025 09:25 AM",
-
-        employeeId: "103245",
-        employeeName: "Jamal Uddin",
-        department: "Washing",
-
-        leaveWithoutPayType: "Full Day(s)",
-        leaveFrom: "22-May-2025",
-        leaveTo: "25-May-2025",
-        totalDays: 4,
-
-        reason: "Traveling outside Dhaka.",
-        contactDuringLeave: "01755-778899",
-
-        submittedBy: "Washing Floor",
-        submittedOn: "12-May-2025 09:00 AM",
-
-        status: "Pending",
-
-        forwardedBy: "Washing Floor",
-    },
-
-    {
-        requestId: "LWPR2505008",
-        appliedOn: "12-May-2025 11:10 AM",
-
-        employeeId: "103678",
-        employeeName: "Pushpa Rani",
-        department: "Cutting",
-
-        leaveWithoutPayType: "Full Day(s)",
-        leaveFrom: "24-May-2025",
-        leaveTo: "28-May-2025",
-        totalDays: 5,
-
-        reason: "Family function.",
-        contactDuringLeave: "01844-889900",
-
-        submittedBy: "Cutting Floor",
-        submittedOn: "12-May-2025 10:45 AM",
-
-        status: "Pending",
-
-        forwardedBy: "Cutting Floor",
-    },
-
-    {
-        requestId: "LWPR2505009",
-        appliedOn: "11-May-2025 01:30 PM",
-
-        employeeId: "102913",
-        employeeName: "Shofiqul Islam",
-        department: "Dyeing",
-
-        leaveWithoutPayType: "Full Day(s)",
-        leaveFrom: "26-May-2025",
-        leaveTo: "29-May-2025",
-        totalDays: 4,
-
-        reason: "Urgent personal matter.",
-        contactDuringLeave: "01799-112233",
-
-        submittedBy: "Dyeing Floor",
-        submittedOn: "11-May-2025 01:10 PM",
-
-        status: "Approved",
-
-        forwardedBy: "Dyeing Floor",
-    },
-];
-
-/* -------------------------------------------------------------------------- */
-/* COMPONENT                                                                  */
-/* -------------------------------------------------------------------------- */
 
 const LeaveWithoutPayRequestList: React.FC = () => {
     const navigate = useNavigate();
@@ -245,7 +76,7 @@ const LeaveWithoutPayRequestList: React.FC = () => {
             employeeIdName: "",
             department: "",
             leaveWithoutPayType: "",
-            status: "Pending",
+            status: "FORWARDED",
             leaveFrom: "",
             leaveTo: "",
         },
@@ -255,23 +86,37 @@ const LeaveWithoutPayRequestList: React.FC = () => {
     /* STATE                                                                    */
     /* ------------------------------------------------------------------------ */
 
-    const [selectedIds, setSelectedIds] = useState<string[]>(
-        []
-    );
-
+    const [selectedIds, setSelectedIds] = useState<string[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
-
     const [pageSize, setPageSize] = useState(10);
-
     const [remarks, setRemarks] = useState("");
-
-    const [, setSearched] = useState(false);
+    const [isApproving, setIsApproving] = useState(false);
+    const [isRejecting, setIsRejecting] = useState(false);
 
     /* ------------------------------------------------------------------------ */
     /* FILTER VALUES                                                            */
     /* ------------------------------------------------------------------------ */
 
     const filters = watch();
+
+    const fromDate = watch("leaveFrom");
+    const toDate = watch("leaveTo");
+
+    /* ------------------------------------------------------------------------ */
+    /* GET REQUESTS                                                             */
+    /* ------------------------------------------------------------------------ */
+
+    const {
+        data: { data: leaveWithoutPayRequest = [] } = {},
+        refetch: refetchLWPRequests,
+    } = useGet({
+        key: [
+            "leaveWithoutPayRequests",
+            fromDate,
+            toDate,
+        ],
+        url: `${API_ROUTES.LEAVE}?leaveType=LWP&fromDate=${fromDate}&toDate=${toDate}&status=FORWARDED`,
+    });
 
     /* ------------------------------------------------------------------------ */
     /* FILTER OPTIONS                                                           */
@@ -291,15 +136,17 @@ const LeaveWithoutPayRequestList: React.FC = () => {
 
     const leaveTypeOptions = [
         { label: "All", value: "" },
-        { label: "Full Day(s)", value: "Full Day(s)" },
-        { label: "Half Day", value: "Half Day" },
+        { label: "Casual Leave", value: "Casual Leave" },
+        { label: "Sick Leave", value: "Sick Leave" },
+        { label: "Earned Leave", value: "Earned Leave" },
+        { label: "Leave Without Pay", value: "Leave Without Pay" },
     ];
 
     const statusOptions = [
-        { label: "Pending", value: "Pending" },
+        { label: "Forwarded", value: "FORWARDED" },
         { label: "All", value: "" },
-        { label: "Approved", value: "Approved" },
-        { label: "Rejected", value: "Rejected" },
+        { label: "Approved", value: "APPROVED" },
+        { label: "Rejected", value: "REJECTED" },
     ];
 
     /* ------------------------------------------------------------------------ */
@@ -307,48 +154,58 @@ const LeaveWithoutPayRequestList: React.FC = () => {
     /* ------------------------------------------------------------------------ */
 
     const filteredRequests = useMemo(() => {
-        return mockRequests.filter((request) => {
-            const requestIdMatch =
-                !filters.requestId ||
-                request.requestId
-                    .toLowerCase()
-                    .includes(filters.requestId.toLowerCase());
+        return (leaveWithoutPayRequest as LeaveWithoutPayRequest[]).filter(
+            (request) => {
+                const requestIdMatch =
+                    !filters.requestId ||
+                    request.requestId
+                        .toLowerCase()
+                        .includes(filters.requestId.toLowerCase());
 
-            const employeeMatch =
-                !filters.employeeIdName ||
-                request.employeeId
-                    .toLowerCase()
-                    .includes(
-                        filters.employeeIdName.toLowerCase()
-                    ) ||
-                request.employeeName
-                    .toLowerCase()
-                    .includes(
-                        filters.employeeIdName.toLowerCase()
-                    );
+                const employeeMatch =
+                    !filters.employeeIdName ||
+                    request.employeeId
+                        .toLowerCase()
+                        .includes(filters.employeeIdName.toLowerCase()) ||
+                    request.employeeName
+                        .toLowerCase()
+                        .includes(filters.employeeIdName.toLowerCase()) ||
+                    request.employeeCode
+                        .toLowerCase()
+                        .includes(filters.employeeIdName.toLowerCase());
 
-            const departmentMatch =
-                !filters.department ||
-                request.department === filters.department;
+                const departmentMatch =
+                    !filters.department ||
+                    request.departmentName === filters.department;
 
-            const leaveTypeMatch =
-                !filters.leaveWithoutPayType ||
-                request.leaveWithoutPayType ===
-                filters.leaveWithoutPayType;
+                const leaveTypeMatch =
+                    !filters.leaveWithoutPayType ||
+                    request.leaveType === filters.leaveWithoutPayType;
 
-            const statusMatch =
-                !filters.status ||
-                request.status === filters.status;
+                const statusMatch =
+                    !filters.status ||
+                    request.status === filters.status;
 
-            return (
-                requestIdMatch &&
-                employeeMatch &&
-                departmentMatch &&
-                leaveTypeMatch &&
-                statusMatch
-            );
-        });
-    }, [filters]);
+                const fromDateMatch =
+                    !filters.leaveFrom ||
+                    request.fromDate >= filters.leaveFrom;
+
+                const toDateMatch =
+                    !filters.leaveTo ||
+                    request.toDate <= filters.leaveTo;
+
+                return (
+                    requestIdMatch &&
+                    employeeMatch &&
+                    departmentMatch &&
+                    leaveTypeMatch &&
+                    statusMatch &&
+                    fromDateMatch &&
+                    toDateMatch
+                );
+            }
+        );
+    }, [leaveWithoutPayRequest, filters]);
 
     /* ------------------------------------------------------------------------ */
     /* PAGINATION                                                               */
@@ -379,16 +236,12 @@ const LeaveWithoutPayRequestList: React.FC = () => {
 
     const allVisibleSelected =
         visibleIds.length > 0 &&
-        visibleIds.every((id) =>
-            selectedIds.includes(id)
-        );
+        visibleIds.every((id) => selectedIds.includes(id));
 
     const handleSelectAll = () => {
         if (allVisibleSelected) {
             setSelectedIds((prev) =>
-                prev.filter(
-                    (id) => !visibleIds.includes(id)
-                )
+                prev.filter((id) => !visibleIds.includes(id))
             );
         } else {
             setSelectedIds((prev) => [
@@ -400,9 +253,7 @@ const LeaveWithoutPayRequestList: React.FC = () => {
     const handleSelectOne = (requestId: string) => {
         setSelectedIds((prev) => {
             if (prev.includes(requestId)) {
-                return prev.filter(
-                    (id) => id !== requestId
-                );
+                return prev.filter((id) => id !== requestId);
             }
 
             return [...prev, requestId];
@@ -414,17 +265,15 @@ const LeaveWithoutPayRequestList: React.FC = () => {
     /* ------------------------------------------------------------------------ */
 
     const selectedRequests = useMemo(() => {
-        return mockRequests.filter((request) =>
-            selectedIds.includes(request.requestId)
+        return (leaveWithoutPayRequest as LeaveWithoutPayRequest[]).filter(
+            (request) => selectedIds.includes(request.requestId)
         );
-    }, [selectedIds]);
+    }, [leaveWithoutPayRequest, selectedIds]);
 
     const totalSelected = selectedRequests.length;
 
     const totalEmployees = new Set(
-        selectedRequests.map(
-            (request) => request.employeeId
-        )
+        selectedRequests.map((request) => request.employeeId)
     ).size;
 
     const totalDays = selectedRequests.reduce(
@@ -438,16 +287,16 @@ const LeaveWithoutPayRequestList: React.FC = () => {
 
     const handleSearch = () => {
         setCurrentPage(1);
-        setSearched(true);
+        setSelectedIds([]);
     };
 
-    const handleClear = () => {
+    const handleClear = async () => {
         reset({
             requestId: "",
             employeeIdName: "",
             department: "",
             leaveWithoutPayType: "",
-            status: "Pending",
+            status: "FORWARDED",
             leaveFrom: "",
             leaveTo: "",
         });
@@ -455,44 +304,78 @@ const LeaveWithoutPayRequestList: React.FC = () => {
         setSelectedIds([]);
         setCurrentPage(1);
         setRemarks("");
-        setSearched(false);
+
+        await refetchLWPRequests();
     };
 
     /* ------------------------------------------------------------------------ */
     /* VIEW DETAILS                                                             */
     /* ------------------------------------------------------------------------ */
 
-    const handleViewRequest = (
-        requestId: string
-    ) => {
+    const handleViewRequest = (requestId: string) => {
         navigate(
             `/payroll-and-workforce-movement/attendance-cell/leave-without-pay-request/${requestId}`
         );
     };
 
     /* ------------------------------------------------------------------------ */
-    /* FORWARD / APPROVE                                                        */
+    /* APPROVE / REJECT                                                         */
     /* ------------------------------------------------------------------------ */
 
-    const handleForwardSelected = () => {
+    const {user} = useAuth();
+
+    const handleApproval = async (
+        approvalStatus: "APPROVED" | "REJECTED"
+    ) => {
         if (selectedIds.length === 0) {
-            alert(
-                "Please select at least one request."
-            );
+            alert("Please select at least one request.");
             return;
         }
 
-        console.log(
-            "Forward Leave Without Pay Requests",
-            {
-                requestIds: selectedIds,
-                remarks,
-            }
-        );
+        if (approvalStatus === "APPROVED") {
+            setIsApproving(true);
+        } else {
+            setIsRejecting(true);
+        }
 
-        alert(
-            `${selectedIds.length} request(s) forwarded successfully.`
-        );
+
+        try {
+            const payload = selectedRequests.map((request) => ({
+                requestId: request.requestId,
+                leaveType: request.leaveType,
+                fromDate: request.fromDate,
+                toDate: request.toDate,
+                reason: request.reason,
+                forwardedBy: request.forwardedBy ?? "",
+                forwardedDate: request.forwardedDate ?? "",
+                approvedBy: user?.userName ?? "",
+                approvStatus: approvalStatus,
+            }));
+
+            await api.put(API_ROUTES.LEAVE,
+                payload),
+
+            setSelectedIds([]);
+            setRemarks("");
+
+            await refetchLWPRequests();
+        } catch (error) {
+            console.error(
+                "Leave Without Pay approval/rejection failed:",
+                error
+            );
+
+            alert(
+                `Failed to ${
+                    approvalStatus === "APPROVED"
+                        ? "approve"
+                        : "reject"
+                } selected request(s).`
+            );
+        } finally {
+            setIsApproving(false);
+            setIsRejecting(false);
+        }
     };
 
     /* ------------------------------------------------------------------------ */
@@ -507,19 +390,38 @@ const LeaveWithoutPayRequestList: React.FC = () => {
     };
 
     /* ------------------------------------------------------------------------ */
+    /* SUMMARY COUNTS                                                           */
+    /* ------------------------------------------------------------------------ */
+
+    const totalRequests = leaveWithoutPayRequest.length;
+
+    const pendingCount = leaveWithoutPayRequest.filter(
+        (request: LeaveWithoutPayRequest) =>
+            request.status === "FORWARDED"
+    ).length;
+
+    const approvedCount = leaveWithoutPayRequest.filter(
+        (request: LeaveWithoutPayRequest) =>
+            request.status === "APPROVED"
+    ).length;
+
+    const rejectedCount = leaveWithoutPayRequest.filter(
+        (request: LeaveWithoutPayRequest) =>
+            request.status === "REJECTED"
+    ).length;
+
+    /* ------------------------------------------------------------------------ */
     /* RENDER                                                                   */
     /* ------------------------------------------------------------------------ */
 
     return (
         <div className="min-h-screen bg-white px-4 py-4 text-[#17245B]">
-            {/* ================================================================== */}
-            {/* PAGE HEADER                                                        */}
-            {/* ================================================================== */}
 
+            {/* PAGE HEADER */}
             <header className="h-[59px] bg-[#082b87] px-5 text-white">
                 <div className="flex h-full items-center justify-between">
+
                     <div className="flex h-full items-center">
-                        {/* Logo */}
 
                         <div className="flex items-center gap-2 pr-5">
                             <div className="flex h-[38px] w-[38px] items-center justify-center rounded bg-white">
@@ -550,18 +452,16 @@ const LeaveWithoutPayRequestList: React.FC = () => {
                             <div className="mt-1 text-[10px]">
                                 Dashboard
                                 <span className="mx-2">&gt;</span>
-                                Normal Exception Requests
+                                Leave Without Pay Requests
                             </div>
                         </div>
                     </div>
 
-                    {/* Header Right */}
-
                     <div className="flex items-center gap-4">
+
                         <div className="flex h-[32px] items-center gap-2 rounded bg-white px-3 text-[10px] font-semibold text-[#17275c]">
                             <CalendarDays size={14} />
-
-                            15 May 2025 | Thursday
+                            30 September 2026
                         </div>
 
                         <div className="flex items-center gap-2 border-l border-white/30 pl-4">
@@ -576,7 +476,6 @@ const LeaveWithoutPayRequestList: React.FC = () => {
                                 <div className="font-bold">
                                     Nusrat Jahan
                                 </div>
-
                                 <div>Section Incharge</div>
                             </div>
                         </div>
@@ -584,7 +483,9 @@ const LeaveWithoutPayRequestList: React.FC = () => {
                 </div>
             </header>
 
+            {/* TITLE */}
             <div className="mb-5 flex items-start justify-between">
+
                 <div>
                     <h1 className="text-xl font-bold text-[#07185C]">
                         LEAVE WITHOUT PAY REQUESTS
@@ -597,6 +498,7 @@ const LeaveWithoutPayRequestList: React.FC = () => {
                 </div>
 
                 <div className="flex gap-2">
+
                     <button
                         type="button"
                         onClick={handleClear}
@@ -608,21 +510,41 @@ const LeaveWithoutPayRequestList: React.FC = () => {
 
                     <button
                         type="button"
-                        onClick={handleForwardSelected}
-                        disabled={selectedIds.length === 0}
-                        className="flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                        onClick={() => handleApproval("APPROVED")}
+                        disabled={
+                            selectedIds.length === 0 ||
+                            isApproving ||
+                            isRejecting
+                        }
+                        className="flex items-center gap-2 rounded-md bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                        <Send size={15} />
-                        Forward Selected
+                        <CheckCircle2 size={15} />
+                        {isApproving
+                            ? "Approving..."
+                            : "Approve Selected"}
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={() => handleApproval("REJECTED")}
+                        disabled={
+                            selectedIds.length === 0 ||
+                            isApproving ||
+                            isRejecting
+                        }
+                        className="flex items-center gap-2 rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                        <XCircle size={15} />
+                        {isRejecting
+                            ? "Rejecting..."
+                            : "Reject Selected"}
                     </button>
                 </div>
             </div>
 
-            {/* ================================================================== */}
-            {/* SUMMARY CARDS                                                      */}
-            {/* ================================================================== */}
-
+            {/* SUMMARY CARDS */}
             <div className="mb-5 grid grid-cols-1 gap-4 md:grid-cols-4">
+
                 <SummaryCard
                     icon={
                         <FileText
@@ -631,7 +553,7 @@ const LeaveWithoutPayRequestList: React.FC = () => {
                         />
                     }
                     title="TOTAL REQUESTS"
-                    value={mockRequests.length}
+                    value={totalRequests}
                     iconBg="bg-blue-50"
                 />
 
@@ -642,12 +564,8 @@ const LeaveWithoutPayRequestList: React.FC = () => {
                             className="text-orange-500"
                         />
                     }
-                    title="PENDING WITH ME"
-                    value={
-                        mockRequests.filter(
-                            (r) => r.status === "Pending"
-                        ).length
-                    }
+                    title="FORWARDED"
+                    value={pendingCount}
                     iconBg="bg-orange-50"
                 />
 
@@ -659,11 +577,7 @@ const LeaveWithoutPayRequestList: React.FC = () => {
                         />
                     }
                     title="APPROVED"
-                    value={
-                        mockRequests.filter(
-                            (r) => r.status === "Approved"
-                        ).length
-                    }
+                    value={approvedCount}
                     iconBg="bg-green-50"
                 />
 
@@ -675,20 +589,14 @@ const LeaveWithoutPayRequestList: React.FC = () => {
                         />
                     }
                     title="REJECTED"
-                    value={
-                        mockRequests.filter(
-                            (r) => r.status === "Rejected"
-                        ).length
-                    }
+                    value={rejectedCount}
                     iconBg="bg-red-50"
                 />
             </div>
 
-            {/* ================================================================== */}
-            {/* SEARCH & FILTER                                                    */}
-            {/* ================================================================== */}
-
+            {/* SEARCH & FILTER */}
             <div className="mb-5 rounded-lg border border-blue-100 bg-white p-4">
+
                 <div className="mb-3">
                     <h2 className="text-sm font-bold text-[#17245B]">
                         Search & Filter
@@ -696,6 +604,7 @@ const LeaveWithoutPayRequestList: React.FC = () => {
                 </div>
 
                 <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
+
                     <CommonInputField
                         label="Request ID"
                         name="requestId"
@@ -724,7 +633,7 @@ const LeaveWithoutPayRequestList: React.FC = () => {
                     />
 
                     <CommonInputField
-                        label="LWOP Type"
+                        label="Leave Type"
                         name="leaveWithoutPayType"
                         register={register}
                         control={control}
@@ -776,12 +685,11 @@ const LeaveWithoutPayRequestList: React.FC = () => {
                 </div>
             </div>
 
-            {/* ================================================================== */}
-            {/* REQUEST TABLE                                                       */}
-            {/* ================================================================== */}
-
+            {/* REQUEST TABLE */}
             <div className="mb-5 rounded-lg border border-blue-100 bg-white">
+
                 <div className="flex items-center justify-between border-b border-blue-100 px-4 py-4">
+
                     <h2 className="text-sm font-bold text-[#17245B]">
                         Leave Without Pay Requests List
                     </h2>
@@ -792,10 +700,12 @@ const LeaveWithoutPayRequestList: React.FC = () => {
                 </div>
 
                 <div className="overflow-x-auto">
+
                     <table className="w-full min-w-[1250px] border-collapse text-xs">
+
                         <thead>
                             <tr className="bg-[#F7F9FC] text-left">
-                                {/* IMPORTANT: FAR LEFT CHECKBOX */}
+
                                 <th className="w-10 border-b border-gray-200 px-3 py-3">
                                     <input
                                         type="checkbox"
@@ -810,7 +720,7 @@ const LeaveWithoutPayRequestList: React.FC = () => {
                                 </th>
 
                                 <th className="border-b border-gray-200 px-3 py-3 font-bold">
-                                    Applied On
+                                    Created Date
                                 </th>
 
                                 <th className="border-b border-gray-200 px-3 py-3 font-bold">
@@ -826,7 +736,7 @@ const LeaveWithoutPayRequestList: React.FC = () => {
                                 </th>
 
                                 <th className="border-b border-gray-200 px-3 py-3 font-bold">
-                                    LWOP Type
+                                    Leave Type
                                 </th>
 
                                 <th className="border-b border-gray-200 px-3 py-3 font-bold">
@@ -842,7 +752,7 @@ const LeaveWithoutPayRequestList: React.FC = () => {
                                 </th>
 
                                 <th className="border-b border-gray-200 px-3 py-3 font-bold">
-                                    Submitted By
+                                    Created By
                                 </th>
 
                                 <th className="border-b border-gray-200 px-3 py-3 font-bold">
@@ -856,120 +766,121 @@ const LeaveWithoutPayRequestList: React.FC = () => {
                         </thead>
 
                         <tbody>
+
                             {paginatedRequests.length === 0 ? (
                                 <tr>
                                     <td
                                         colSpan={13}
                                         className="px-4 py-10 text-center text-gray-500"
                                     >
-                                        No leave without pay requests
-                                        found.
+                                        No leave without pay requests found.
                                     </td>
                                 </tr>
                             ) : (
-                                paginatedRequests.map(
-                                    (request) => {
-                                        const checked =
-                                            selectedIds.includes(
-                                                request.requestId
-                                            );
+                                paginatedRequests.map((request) => {
 
-                                        return (
-                                            <tr
-                                                key={request.requestId}
-                                                className={`border-b border-gray-100 hover:bg-blue-50/40 ${checked
-                                                        ? "bg-blue-50"
-                                                        : ""
-                                                    }`}
-                                            >
-                                                {/* FAR LEFT CHECKBOX */}
-                                                <td className="px-3 py-3">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={checked}
-                                                        onChange={() =>
-                                                            handleSelectOne(
-                                                                request.requestId
-                                                            )
-                                                        }
-                                                        className="h-4 w-4 cursor-pointer accent-blue-600"
-                                                    />
-                                                </td>
-
-                                                <td className="whitespace-nowrap px-3 py-3 font-semibold text-blue-700">
-                                                    {request.requestId}
-                                                </td>
-
-                                                <td className="whitespace-nowrap px-3 py-3">
-                                                    {request.appliedOn}
-                                                </td>
-
-                                                <td className="px-3 py-3">
-                                                    {request.employeeId}
-                                                </td>
-
-                                                <td className="whitespace-nowrap px-3 py-3 font-medium">
-                                                    {request.employeeName}
-                                                </td>
-
-                                                <td className="px-3 py-3">
-                                                    {request.department}
-                                                </td>
-
-                                                <td className="whitespace-nowrap px-3 py-3">
-                                                    {request.leaveWithoutPayType}
-                                                </td>
-
-                                                <td className="whitespace-nowrap px-3 py-3">
-                                                    {request.leaveFrom}
-                                                </td>
-
-                                                <td className="whitespace-nowrap px-3 py-3">
-                                                    {request.leaveTo}
-                                                </td>
-
-                                                <td className="px-3 py-3 font-semibold">
-                                                    {request.totalDays}
-                                                </td>
-
-                                                <td className="whitespace-nowrap px-3 py-3">
-                                                    {request.submittedBy}
-                                                </td>
-
-                                                <td className="px-3 py-3">
-                                                    <StatusBadge
-                                                        status={request.status}
-                                                    />
-                                                </td>
-
-                                                <td className="px-3 py-3 text-center">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() =>
-                                                            handleViewRequest(
-                                                                request.requestId
-                                                            )
-                                                        }
-                                                        className="inline-flex items-center gap-1 rounded border border-blue-200 px-3 py-1.5 font-semibold text-blue-700 hover:bg-blue-50"
-                                                    >
-                                                        <Eye size={13} />
-                                                        View
-                                                    </button>
-                                                </td>
-                                            </tr>
+                                    const checked =
+                                        selectedIds.includes(
+                                            request.requestId
                                         );
-                                    }
-                                )
+
+                                    return (
+                                        <tr
+                                            key={request.requestId}
+                                            className={`border-b border-gray-100 hover:bg-blue-50/40 ${
+                                                checked
+                                                    ? "bg-blue-50"
+                                                    : ""
+                                            }`}
+                                        >
+
+                                            <td className="px-3 py-3">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={checked}
+                                                    onChange={() =>
+                                                        handleSelectOne(
+                                                            request.requestId
+                                                        )
+                                                    }
+                                                    className="h-4 w-4 cursor-pointer accent-blue-600"
+                                                />
+                                            </td>
+
+                                            <td className="whitespace-nowrap px-3 py-3 font-semibold text-blue-700">
+                                                {request.requestId}
+                                            </td>
+
+                                            <td className="whitespace-nowrap px-3 py-3">
+                                                {new Date(
+                                                    request.createdDate
+                                                ).toLocaleDateString()}
+                                            </td>
+
+                                            <td className="px-3 py-3">
+                                                {request.employeeCode}
+                                            </td>
+
+                                            <td className="whitespace-nowrap px-3 py-3 font-medium">
+                                                {request.employeeName}
+                                            </td>
+
+                                            <td className="px-3 py-3">
+                                                {request.departmentName}
+                                            </td>
+
+                                            <td className="whitespace-nowrap px-3 py-3">
+                                                {request.leaveType}
+                                            </td>
+
+                                            <td className="whitespace-nowrap px-3 py-3">
+                                                {request.fromDate}
+                                            </td>
+
+                                            <td className="whitespace-nowrap px-3 py-3">
+                                                {request.toDate}
+                                            </td>
+
+                                            <td className="px-3 py-3 font-semibold">
+                                                {request.totalDays}
+                                            </td>
+
+                                            <td className="whitespace-nowrap px-3 py-3">
+                                                {request.createdBy}
+                                            </td>
+
+                                            <td className="px-3 py-3">
+                                                <StatusBadge
+                                                    status={request.status}
+                                                />
+                                            </td>
+
+                                            <td className="px-3 py-3 text-center">
+
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        handleViewRequest(
+                                                            request.requestId
+                                                        )
+                                                    }
+                                                    className="inline-flex items-center gap-1 rounded border border-blue-200 px-3 py-1.5 font-semibold text-blue-700 hover:bg-blue-50"
+                                                >
+                                                    <Eye size={13} />
+                                                    View
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })
                             )}
                         </tbody>
                     </table>
                 </div>
 
-                {/* ---------------------------------------------------------------- */}
-                {/* TABLE FOOTER                                                     */}
-                {/* ---------------------------------------------------------------- */}
-
+                {/* TABLE FOOTER */}
                 <div className="flex items-center justify-between border-t border-gray-100 px-4 py-3">
+
                     <div className="flex items-center gap-2 text-xs text-gray-600">
                         <span>Show</span>
 
@@ -987,6 +898,7 @@ const LeaveWithoutPayRequestList: React.FC = () => {
                     </div>
 
                     <div className="flex items-center gap-1">
+
                         <button
                             type="button"
                             disabled={safeCurrentPage === 1}
@@ -1025,13 +937,11 @@ const LeaveWithoutPayRequestList: React.FC = () => {
                 </div>
             </div>
 
-            {/* ================================================================== */}
-            {/* SELECTED REQUEST SUMMARY + REMARKS                                 */}
-            {/* ================================================================== */}
-
+            {/* SELECTED REQUEST SUMMARY + REMARKS */}
             <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-                {/* Selected Summary */}
+
                 <div className="rounded-lg border border-blue-100 bg-white">
+
                     <div className="border-b border-blue-100 px-4 py-3">
                         <h2 className="text-sm font-bold">
                             Selected Requests Summary
@@ -1039,6 +949,7 @@ const LeaveWithoutPayRequestList: React.FC = () => {
                     </div>
 
                     <div className="grid grid-cols-2 gap-y-4 px-4 py-4 text-xs">
+
                         <SummaryValue
                             label="Total Selected"
                             value={totalSelected}
@@ -1062,15 +973,16 @@ const LeaveWithoutPayRequestList: React.FC = () => {
                             label="Selected Status"
                             value={
                                 totalSelected > 0
-                                    ? "Pending Review"
+                                    ? "FORWARDED"
                                     : "-"
                             }
                         />
                     </div>
                 </div>
 
-                {/* Remarks */}
+                {/* REMARKS */}
                 <div className="rounded-lg border border-blue-100 bg-white">
+
                     <div className="border-b border-blue-100 px-4 py-3">
                         <h2 className="text-sm font-bold">
                             Remarks (Optional)
@@ -1078,6 +990,7 @@ const LeaveWithoutPayRequestList: React.FC = () => {
                     </div>
 
                     <div className="px-4 py-4">
+
                         <textarea
                             value={remarks}
                             onChange={(e) =>
@@ -1087,7 +1000,7 @@ const LeaveWithoutPayRequestList: React.FC = () => {
                             }
                             maxLength={250}
                             rows={3}
-                            placeholder="Enter remarks before forwarding..."
+                            placeholder="Enter remarks..."
                             className="w-full resize-none rounded-md border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                         />
 
@@ -1104,11 +1017,9 @@ const LeaveWithoutPayRequestList: React.FC = () => {
                 </div>
             </div>
 
-            {/* ================================================================== */}
-            {/* BOTTOM ACTIONS                                                      */}
-            {/* ================================================================== */}
-
+            {/* BOTTOM ACTIONS */}
             <div className="mt-4 flex justify-end gap-2">
+
                 <button
                     type="button"
                     onClick={() => {
@@ -1122,27 +1033,45 @@ const LeaveWithoutPayRequestList: React.FC = () => {
 
                 <button
                     type="button"
-                    onClick={handleForwardSelected}
-                    disabled={selectedIds.length === 0}
-                    className="flex items-center gap-2 rounded-md bg-blue-600 px-6 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    onClick={() => handleApproval("REJECTED")}
+                    disabled={
+                        selectedIds.length === 0 ||
+                        isApproving ||
+                        isRejecting
+                    }
+                    className="flex items-center gap-2 rounded-md bg-red-600 px-6 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                    Forward Selected
-                    <Send size={15} />
+                    <XCircle size={15} />
+                    Reject Selected
+                </button>
+
+                <button
+                    type="button"
+                    onClick={() => handleApproval("APPROVED")}
+                    disabled={
+                        selectedIds.length === 0 ||
+                        isApproving ||
+                        isRejecting
+                    }
+                    className="flex items-center gap-2 rounded-md bg-green-600 px-6 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                    <CheckCircle2 size={15} />
+                    Approve Selected
                 </button>
             </div>
 
-            {/* ================================================================== */}
-            {/* IMPORTANT INFORMATION                                               */}
-            {/* ================================================================== */}
-
+            {/* INFORMATION */}
             <div className="mt-4 rounded-md border border-blue-100 bg-blue-50/40 p-3">
+
                 <div className="flex gap-2">
+
                     <Info
                         size={16}
                         className="mt-0.5 shrink-0 text-blue-600"
                     />
 
                     <div>
+
                         <p className="text-xs font-bold text-blue-800">
                             Note
                         </p>
@@ -1177,6 +1106,7 @@ const SummaryCard: React.FC<SummaryCardProps> = ({
 }) => {
     return (
         <div className="flex items-center gap-3 rounded-lg border border-blue-100 bg-white px-4 py-4">
+
             <div
                 className={`flex h-10 w-10 items-center justify-center rounded-full ${iconBg}`}
             >
@@ -1206,6 +1136,7 @@ const SummaryValue: React.FC<{
 }> = ({ label, value }) => {
     return (
         <div className="flex justify-between border-b border-gray-100 pb-2 pr-6">
+
             <span className="font-medium text-gray-600">
                 {label}
             </span>
@@ -1222,14 +1153,17 @@ const SummaryValue: React.FC<{
 /* -------------------------------------------------------------------------- */
 
 const StatusBadge: React.FC<{
-    status: LeaveWithoutPayRequest["status"];
+    status: string;
 }> = ({ status }) => {
+
     const className =
-        status === "Pending"
+        status === "FORWARDED"
             ? "border-orange-200 bg-orange-50 text-orange-700"
-            : status === "Approved"
+            : status === "APPROVED"
                 ? "border-green-200 bg-green-50 text-green-700"
-                : "border-red-200 bg-red-50 text-red-700";
+                : status === "REJECTED"
+                    ? "border-red-200 bg-red-50 text-red-700"
+                    : "border-gray-200 bg-gray-50 text-gray-700";
 
     return (
         <span
