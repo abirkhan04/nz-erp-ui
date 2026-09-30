@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import {
     ArrowLeft,
     CalendarDays,
@@ -31,6 +31,7 @@ import toast from "react-hot-toast";
 /* -------------------------------------------------------------------------- */
 
 interface Employee {
+    id: string;
     employeeId: string | number;
     employeeCode: string;
     employeeName: string;
@@ -109,6 +110,9 @@ const PerformanceIncrementRequest: React.FC = () => {
     const [searchedEmployees, setSearchedEmployees] =
         useState<Employee[]>([]);
 
+    const searchedEmployeesRef =
+        useRef<Employee[]>([])
+
     const [selectedEmployee, setSelectedEmployee] =
         useState<Employee | null>(null);
 
@@ -139,85 +143,74 @@ const PerformanceIncrementRequest: React.FC = () => {
     /* EMPLOYEE SEARCH                                                        */
     /* ====================================================================== */
 
-    const handleEmployeeSearch = async (
-        searchText: string,
-    ) => {
-        if (!searchText.trim()) {
+    const employeeCacheRef = useRef<Map<string, Employee>>(new Map());
+    const searchRequestId = useRef(0);
+
+    const handleEmployeeSearch = async (searchText: string) => {
+        const text = searchText.trim();
+
+        if (!text) {
             setEmployeeOptions([]);
-            setSearchedEmployees([]);
             setEmployeeFound(false);
             return;
         }
 
+        // Ignore the label the dropdown writes back after a selection
+        if (
+            selectedEmployee &&
+            text === `${selectedEmployee.employeeCode} - ${selectedEmployee.employeeName}`
+        ) {
+            return;
+        }
+
+        const requestId = ++searchRequestId.current;
+
         try {
-            /*
-             * Replace this URL with the same employee-search API
-             * used by ForwardLeaveRequest.
-             */
             const response = await api.get<Employee[]>(
-                `${API_ROUTES.EMPLOYEES}/search-extention?searchText=${encodeURIComponent(
-                    searchText.trim(),
-                )}`,
+                `${API_ROUTES.EMPLOYEES}/search-extention?searchText=${encodeURIComponent(text)}`
             );
+
+            // Drop stale responses
+            if (requestId !== searchRequestId.current) return;
 
             const data = response.data ?? [];
 
-            setSearchedEmployees(data);
+            data.forEach((emp) =>
+                employeeCacheRef.current.set(String(emp.employeeCode), emp)
+            );
 
             setEmployeeOptions(
                 data.map((employee) => ({
                     label: `${employee.employeeCode} - ${employee.employeeName}`,
-                    value: employee.employeeId,
-                })),
+                    value: employee.employeeCode,
+                }))
             );
-
         } catch (error) {
-            console.error(
-                "Employee search failed:",
-                error,
-            );
-
+            if (requestId !== searchRequestId.current) return;
+            console.error("Employee search failed:", error);
             setEmployeeOptions([]);
-            setSearchedEmployees([]);
-            setEmployeeFound(false);
         }
     };
 
-    /* ====================================================================== */
-    /* EMPLOYEE SELECT                                                        */
-    /* ====================================================================== */
+    const handleEmployeeSelect = (option: Option) => {
+        // Try value first, then fall back to the code parsed from the label
+        const code =
+            employeeCacheRef.current.has(String(option.value))
+                ? String(option.value)
+                : String(option.label ?? "").split(" - ")[0].trim();
 
-    const handleEmployeeSelect = (
-        option: Option,
-    ) => {
-        const employee = searchedEmployees.find(
-            (item) =>
-                String(item.employeeId) ===
-                String(option.value),
-        );
+        const employee = employeeCacheRef.current.get(code);
+        if (!employee) {
+            console.warn("No employee for", option);
+            return;
+        }
 
-        if (!employee) return;
-
-        setSelectedEmployee(employee);
+        setSelectedEmployee({ ...employee });   // new object so React always re-renders
         setEmployeeFound(true);
-
-        setValue(
-            "searchEmployee",
-            String(employee.employeeId),
-        );
-
-        /*
-         * Default performance increment.
-         * Screenshot uses 7%.
-         */
         setIncrementPercentage(7);
-
-        setValue(
-            "currentIncrementPercentage",
-            7,
-        );
+        setValue("searchEmployee", employee.employeeCode);
+        setValue("currentIncrementPercentage", 7);
     };
-
     /* ====================================================================== */
     /* CALCULATIONS                                                           */
     /* ====================================================================== */
@@ -289,7 +282,7 @@ const PerformanceIncrementRequest: React.FC = () => {
 
         const request: PerformanceIncrementRequest = {
             employeeId:
-                String(selectedEmployee.employeeCode),
+                String(selectedEmployee.id),
 
             employeeName:
                 selectedEmployee.employeeName,
@@ -363,7 +356,7 @@ const PerformanceIncrementRequest: React.FC = () => {
         );
     };
 
-    const {user} = useAuth();
+    const { user } = useAuth();
 
     /* ====================================================================== */
     /* CLEAR ALL                                                              */
