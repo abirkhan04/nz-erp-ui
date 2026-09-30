@@ -62,6 +62,12 @@ const PayrollExceptionRequestPostLockDetails = lazy(() => import("./pages/Payrol
 const LeaveWithoutPayRequests = lazy(() => import("./pages/Payroll/LeaveWithoutPayRequest"));
 const LeaveWithoutPayRequestsDetails = lazy(() => import("./pages/Payroll/LeaveWithoutPayRequestDetails"));
 const PayrollAdjustmentPostLock = lazy(() => import("./pages/Attendance/PayrollAdjustment"));
+
+
+/*
+   Directors Review
+*/
+const DirectorsDashboard = lazy(()=>import("./pages/DirectorsReview/DirectorsDashboard"));
 /**
  * 🔐 Auth Check
  */
@@ -485,6 +491,13 @@ export default function App() {
             path="/payroll-and-workforce-movement/attendance-cell/leave-without-pay-request/:requestId"
             element={<ProtectedRoute>
               <LeaveWithoutPayRequestsDetails />
+            </ProtectedRoute>}
+          />
+
+          <Route
+            path="/director-dashboard"
+            element={<ProtectedRoute>
+              <DirectorsDashboard />
             </ProtectedRoute>}
           />
 
