@@ -107,11 +107,9 @@ const PerformanceIncrementRequest: React.FC = () => {
     const [employeeOptions, setEmployeeOptions] =
         useState<Option[]>([]);
 
-    const [searchedEmployees, setSearchedEmployees] =
+    const [, setSearchedEmployees] =
         useState<Employee[]>([]);
 
-    const searchedEmployeesRef =
-        useRef<Employee[]>([])
 
     const [selectedEmployee, setSelectedEmployee] =
         useState<Employee | null>(null);
