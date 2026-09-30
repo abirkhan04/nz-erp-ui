@@ -138,7 +138,7 @@ const LeaveWithoutPayRequest: React.FC = () => {
                 forwardedBy: user?.userId,
                 forwardedDate: format(new Date(), "yyyy-MM-dd"),
                 approvedBy: user?.userId,
-                approvStatus: "APPROVED"
+                approvStatus: "FORWARDED"
             }));
 
 

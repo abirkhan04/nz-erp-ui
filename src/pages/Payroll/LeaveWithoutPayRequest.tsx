@@ -20,6 +20,7 @@ import { API_ROUTES } from "../../api/routes";
 import { useGet } from "../../hooks/useGet";
 import { api } from "../../api/client";
 import { useAuth } from "../../context/AuthContext";
+import { format } from "date-fns";
 
 export type LeaveWithoutPayRequest = {
     requestId: string;
@@ -347,7 +348,7 @@ const LeaveWithoutPayRequestList: React.FC = () => {
                 toDate: request.toDate,
                 reason: request.reason,
                 forwardedBy: request.forwardedBy ?? "",
-                forwardedDate: request.forwardedDate ?? "",
+                forwardedDate: format(new Date(), "yyyy-MM-dd"),
                 approvedBy: user?.userName ?? "",
                 approvStatus: approvalStatus,
             }));
