@@ -41,7 +41,7 @@ interface IncrementHistoryResponse {
     message?: string;
 }
 
-type Decision = "Approved" | "Rejected";
+type Decision = "APPROVED" | "REJECTED";
 
 /* -------------------------------------------------------------------------- */
 /* HELPERS                                                                    */
@@ -128,11 +128,11 @@ const DirectorPerformanceIncrementRequests: React.FC = () => {
     };
 
     const approvedCount = useMemo(
-        () => Object.values(decisions).filter((d) => d === "Approved").length,
+        () => Object.values(decisions).filter((d) => d === "APPROVED").length,
         [decisions],
     );
     const rejectedCount = useMemo(
-        () => Object.values(decisions).filter((d) => d === "Rejected").length,
+        () => Object.values(decisions).filter((d) => d === "REJECTED").length,
         [decisions],
     );
     const decidedCount = approvedCount + rejectedCount;
@@ -148,8 +148,9 @@ const DirectorPerformanceIncrementRequests: React.FC = () => {
          */
         const payload = {
             requests: Object.entries(decisions).map(([id, status]) => ({
-                id,
-                status, // "Approved" | "Rejected"
+                payIncrementHistoryId: id,
+                status, // "APPROVED" | "REJECTED"
+                effectiveDate: new Date().toISOString().split("T")[0], // or whatever date is appropriate
             })),
             approvedBy: user?.userName ?? "",
             approvalDate: new Date().toISOString(),
@@ -295,8 +296,8 @@ const DirectorPerformanceIncrementRequests: React.FC = () => {
                             ) : (
                                 rows.map((row, index) => {
                                     const decision = decisions[row.id];
-                                    const isApproved = decision === "Approved";
-                                    const isRejected = decision === "Rejected";
+                                    const isApproved = decision === "APPROVED";
+                                    const isRejected = decision === "REJECTED";
 
                                     const submittedOn = formatDate(
                                         row.requests?.[0]?.createdOn ?? row.effectiveDate,
@@ -344,21 +345,21 @@ const DirectorPerformanceIncrementRequests: React.FC = () => {
                                                         type="button"
                                                         aria-pressed={isApproved}
                                                         disabled={submitting}
-                                                        onClick={() => toggleDecision(row.id, "Approved")}
+                                                        onClick={() => toggleDecision(row.id, "APPROVED")}
                                                         className={`rounded border px-3 py-1.5 text-[11px] font-semibold transition disabled:opacity-50 ${
                                                             isApproved
                                                                 ? "border-green-600 bg-green-600 text-white"
                                                                 : "border-green-500 bg-white text-green-700 hover:bg-green-50"
                                                         }`}
                                                     >
-                                                        {isApproved ? "Approved" : "Approve"}
+                                                        {isApproved ? "APPROVED" : "APPROVE"}
                                                     </button>
 
                                                     <button
                                                         type="button"
                                                         aria-pressed={isRejected}
                                                         disabled={submitting}
-                                                        onClick={() => toggleDecision(row.id, "Rejected")}
+                                                        onClick={() => toggleDecision(row.id, "REJECTED")}
                                                         className={`rounded border px-3 py-1.5 text-[11px] font-semibold transition disabled:opacity-50 ${
                                                             isRejected
                                                                 ? "border-red-600 bg-red-600 text-white"
