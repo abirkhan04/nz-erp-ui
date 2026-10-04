@@ -96,8 +96,7 @@ const td = "border border-slate-200 px-2 py-3 text-center text-xs";
 export default function AdjustmentIncrementRequests({
   newStatus = "Standard Worker",
 }: Props) {
-
-  const {user} = useAuth();
+  const { user } = useAuth();
   const approvedBy = user?.userName;
   const [rows, setRows] = useState<IncrementRequest[]>([]);
   const [decisions, setDecisions] = useState<Record<string, Decision>>({});
@@ -105,7 +104,10 @@ export default function AdjustmentIncrementRequests({
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
   const [notice, setNotice] = useState<string>("");
-  const [rejecting, setRejecting] = useState<IncrementRequest | null>(null);
+  const [reviewing, setReviewing] = useState<{
+    row: IncrementRequest;
+    status: DecisionStatus;
+  } | null>(null);
   const [remarks, setRemarks] = useState<string>("");
 
   useEffect(() => {
@@ -114,7 +116,7 @@ export default function AdjustmentIncrementRequests({
       try {
         setLoading(true);
         const res = await api.get("learners/eligible-adjustments/pending-approvals");
-    
+
         const data: IncrementRequest[] | { requests: IncrementRequest[] } = res.data;
         if (!cancelled) setRows(Array.isArray(data) ? data : data.requests ?? []);
       } catch (e) {
@@ -138,21 +140,30 @@ export default function AdjustmentIncrementRequests({
     };
   }, [decisions, rows.length]);
 
-  const approve = (row: IncrementRequest) =>
-    setDecisions((p) => ({ ...p, [row.requestId]: { status: "approved", remarks: "" } }));
-
-  const openReject = (row: IncrementRequest) => {
-    setRejecting(row);
-    setRemarks(decisions[row.requestId]?.remarks ?? "");
+  const openDecision = (row: IncrementRequest, status: DecisionStatus) => {
+    const existing = decisions[row.requestId];
+    setReviewing({ row, status });
+    // carry over existing remarks when switching between approve/reject
+    setRemarks(existing?.remarks ?? "");
   };
 
-  const confirmReject = () => {
-    if (!rejecting) return;
+  const confirmDecision = () => {
+    if (!reviewing) return;
+    // Uncomment to make rejection remarks mandatory:
+    // if (reviewing.status === "rejected" && !remarks.trim()) return;
     setDecisions((p) => ({
       ...p,
-      [rejecting.requestId]: { status: "rejected", remarks: remarks.trim() },
+      [reviewing.row.requestId]: {
+        status: reviewing.status,
+        remarks: remarks.trim(),
+      },
     }));
-    setRejecting(null);
+    setReviewing(null);
+    setRemarks("");
+  };
+
+  const closeDialog = () => {
+    setReviewing(null);
     setRemarks("");
   };
 
@@ -179,7 +190,7 @@ export default function AdjustmentIncrementRequests({
       setSubmitting(true);
       setError("");
       setNotice("");
-       await api.post("learners/eligible-adjustments/approve", payload);
+      await api.post("learners/eligible-adjustments/approve", payload);
 
       const done = new Set(requests.map((r) => r.requestId));
       setRows((p) => p.filter((r) => !done.has(r.requestId)));
@@ -223,7 +234,7 @@ export default function AdjustmentIncrementRequests({
       <main className="px-7 pb-10 pt-5">
         <button
           type="button"
-          onClick={()=> navigate('/director-dashboard')}
+          onClick={() => navigate("/director-dashboard")}
           className="rounded-md border border-[#0b1f6b] bg-white px-5 py-2 text-sm font-semibold text-[#0b1f6b] hover:bg-indigo-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500"
         >
           ← Back
@@ -305,43 +316,42 @@ export default function AdjustmentIncrementRequests({
                     <td className={td}>{fmtDate(r.forwardedOn)}</td>
                     <td className={td}>
                       <div className="flex items-center justify-center gap-1.5">
-                        {!d ? (
-                          <>
-                            <button
-                              type="button"
-                              onClick={() => approve(r)}
-                              className="rounded border border-green-600 bg-white px-2.5 py-1 text-[11px] font-semibold text-green-600 hover:bg-green-50"
-                            >
-                              Approve
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => openReject(r)}
-                              className="rounded border border-red-600 bg-white px-2.5 py-1 text-[11px] font-semibold text-red-600 hover:bg-red-50"
-                            >
-                              Reject
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            <span
-                              title={d.remarks}
-                              className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${
-                                d.status === "approved"
-                                  ? "bg-green-100 text-green-800"
-                                  : "bg-red-100 text-red-800"
-                              }`}
-                            >
-                              {d.status === "approved" ? "Approved" : "Rejected"}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => undo(r)}
-                              className="rounded border border-slate-300 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-500 hover:bg-slate-50"
-                            >
-                              Undo
-                            </button>
-                          </>
+                        <button
+                          type="button"
+                          aria-pressed={d?.status === "approved"}
+                          onClick={() =>
+                            d?.status === "approved" ? undo(r) : openDecision(r, "approved")
+                          }
+                          className={`rounded border px-2.5 py-1 text-[11px] font-semibold transition-colors ${
+                            d?.status === "approved"
+                              ? "border-green-600 bg-green-600 text-white"
+                              : "border-green-600 bg-white text-green-600 hover:bg-green-50"
+                          }`}
+                        >
+                          Approve
+                        </button>
+                        <button
+                          type="button"
+                          aria-pressed={d?.status === "rejected"}
+                          onClick={() =>
+                            d?.status === "rejected" ? undo(r) : openDecision(r, "rejected")
+                          }
+                          className={`rounded border px-2.5 py-1 text-[11px] font-semibold transition-colors ${
+                            d?.status === "rejected"
+                              ? "border-red-600 bg-red-600 text-white"
+                              : "border-red-600 bg-white text-red-600 hover:bg-red-50"
+                          }`}
+                        >
+                          Reject
+                        </button>
+                        {d?.remarks && (
+                          <span
+                            title={d.remarks}
+                            className="cursor-help text-[11px] text-slate-400"
+                            aria-label="Has remarks"
+                          >
+                            💬
+                          </span>
                         )}
                       </div>
                     </td>
@@ -370,11 +380,11 @@ export default function AdjustmentIncrementRequests({
         </div>
       </main>
 
-      {/* Reject dialog */}
-      {rejecting && (
+      {/* Decision dialog */}
+      {reviewing && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4"
-          onClick={() => setRejecting(null)}
+          onClick={closeDialog}
         >
           <div
             role="dialog"
@@ -382,36 +392,53 @@ export default function AdjustmentIncrementRequests({
             className="w-full max-w-md rounded-lg bg-white p-5"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-lg font-bold text-[#0b1f6b]">Reject request</h3>
+            <h3
+              className={`text-lg font-bold ${
+                reviewing.status === "approved" ? "text-green-700" : "text-red-700"
+              }`}
+            >
+              {reviewing.status === "approved" ? "Approve request" : "Reject request"}
+            </h3>
             <p className="mb-3.5 text-sm text-slate-500">
-              {rejecting.employeeName} ({rejecting.employeeCode})
+              {reviewing.row.employeeName} ({reviewing.row.employeeCode})
             </p>
-            <label htmlFor="reject-remarks" className="mb-1.5 block text-sm font-semibold">
-              Remarks
+            <label htmlFor="decision-remarks" className="mb-1.5 block text-sm font-semibold">
+              Remarks{" "}
+              <span className="font-normal text-slate-400">
+                {reviewing.status === "approved" ? "(optional)" : ""}
+              </span>
             </label>
             <textarea
-              id="reject-remarks"
+              id="decision-remarks"
               rows={4}
               autoFocus
               value={remarks}
               onChange={(e) => setRemarks(e.target.value)}
-              placeholder="Reason for rejection"
+              placeholder={
+                reviewing.status === "approved"
+                  ? "Add a note for approval (optional)"
+                  : "Reason for rejection"
+              }
               className="w-full resize-y rounded-md border border-slate-200 p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
             />
             <div className="mt-3.5 flex justify-end gap-2">
               <button
                 type="button"
-                onClick={() => setRejecting(null)}
+                onClick={closeDialog}
                 className="rounded border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-500 hover:bg-slate-50"
               >
                 Cancel
               </button>
               <button
                 type="button"
-                onClick={confirmReject}
-                className="rounded bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
+                onClick={confirmDecision}
+                className={`rounded px-4 py-2 text-sm font-semibold text-white ${
+                  reviewing.status === "approved"
+                    ? "bg-green-600 hover:bg-green-700"
+                    : "bg-red-600 hover:bg-red-700"
+                }`}
               >
-                Reject request
+                {reviewing.status === "approved" ? "Confirm approval" : "Confirm rejection"}
               </button>
             </div>
           </div>
