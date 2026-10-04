@@ -179,7 +179,7 @@ const CARDS: RequestCardConfig[] = [
     btnClass: "bg-[#f97316] focus-visible:ring-[#f97316]/40",
     softBgClass: "bg-[#fdeee0]",
     Icon: CalculatorIcon,
-    uri: "adjustment"
+    uri: "adjustment-increment"
   },
   {
     type: "promotion",
