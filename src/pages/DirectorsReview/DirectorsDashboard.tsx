@@ -188,7 +188,7 @@ const CARDS: RequestCardConfig[] = [
     btnClass: "bg-[#4a12c9] focus-visible:ring-[#4a12c9]/40",
     softBgClass: "bg-[#efe9fb]",
     Icon: PromotionIcon,
-    uri: "promotion"
+    uri: "promotion-increment"
   },
 ];
 
