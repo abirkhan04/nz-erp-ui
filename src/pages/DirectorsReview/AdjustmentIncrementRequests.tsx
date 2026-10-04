@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { api } from "../../api/client";
-import { API_ROUTES } from "../../api/routes";
+import { useAuth } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 /* ----------------------------- Types ----------------------------- */
 
@@ -34,7 +35,7 @@ export interface DecisionPayloadItem {
 
 export interface DecisionPayload {
   requests: DecisionPayloadItem[];
-  approvedBy: string;
+  approvedBy: string | undefined;
 }
 
 type DecisionStatus = "approved" | "rejected";
@@ -93,11 +94,11 @@ const td = "border border-slate-200 px-2 py-3 text-center text-xs";
 /* ---------------------------- Component --------------------------- */
 
 export default function AdjustmentIncrementRequests({
-  approvedBy = "director",
   newStatus = "Standard Worker",
-  headers = {},
-  onBack,
 }: Props) {
+
+  const {user} = useAuth();
+  const approvedBy = user?.userName;
   const [rows, setRows] = useState<IncrementRequest[]>([]);
   const [decisions, setDecisions] = useState<Record<string, Decision>>({});
   const [loading, setLoading] = useState<boolean>(true);
@@ -199,6 +200,7 @@ export default function AdjustmentIncrementRequests({
   });
   const weekday = now.toLocaleDateString("en-GB", { weekday: "long" });
   const decidedCount = counts.approved + counts.rejected;
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-white text-slate-800">
@@ -221,7 +223,7 @@ export default function AdjustmentIncrementRequests({
       <main className="px-7 pb-10 pt-5">
         <button
           type="button"
-          onClick={onBack}
+          onClick={()=> navigate('/director-dashboard')}
           className="rounded-md border border-[#0b1f6b] bg-white px-5 py-2 text-sm font-semibold text-[#0b1f6b] hover:bg-indigo-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500"
         >
           ← Back
