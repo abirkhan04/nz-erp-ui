@@ -71,6 +71,12 @@ const DirectorsDashboard = lazy(()=>import("./pages/DirectorsReview/DirectorsDas
 const DirectorsPerformanceIncrement = lazy(()=> import("./pages/DirectorsReview/PerformanceIncrementRequests"));
 const DirectorsAdjustmentIncrement = lazy(()=> import("./pages/DirectorsReview/AdjustmentIncrementRequests"));
 const DirectorsPromotionIncrement = lazy(()=> import("./pages/DirectorsReview/PromotionAndIncrementRequests"));
+
+/**
+ * Employee Movement
+ */
+const EmployeeMovement = lazy(() => import("./pages/EmployeeMovement/EmployeeMovement"));
+
 /**
  * 🔐 Auth Check
  */
@@ -522,6 +528,13 @@ export default function App() {
             path="/director-dashboard/promotion-increment"
             element={<ProtectedRoute>
               <DirectorsPromotionIncrement />
+            </ProtectedRoute>}
+          />
+
+          <Route
+            path="/employee-movement"
+            element={<ProtectedRoute>
+              <EmployeeMovement />
             </ProtectedRoute>}
           />
 
