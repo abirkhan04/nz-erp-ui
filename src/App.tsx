@@ -67,15 +67,16 @@ const PayrollAdjustmentPostLock = lazy(() => import("./pages/Attendance/PayrollA
 /*
    Directors Review
 */
-const DirectorsDashboard = lazy(()=>import("./pages/DirectorsReview/DirectorsDashboard"));
-const DirectorsPerformanceIncrement = lazy(()=> import("./pages/DirectorsReview/PerformanceIncrementRequests"));
-const DirectorsAdjustmentIncrement = lazy(()=> import("./pages/DirectorsReview/AdjustmentIncrementRequests"));
-const DirectorsPromotionIncrement = lazy(()=> import("./pages/DirectorsReview/PromotionAndIncrementRequests"));
+const DirectorsDashboard = lazy(() => import("./pages/DirectorsReview/DirectorsDashboard"));
+const DirectorsPerformanceIncrement = lazy(() => import("./pages/DirectorsReview/PerformanceIncrementRequests"));
+const DirectorsAdjustmentIncrement = lazy(() => import("./pages/DirectorsReview/AdjustmentIncrementRequests"));
+const DirectorsPromotionIncrement = lazy(() => import("./pages/DirectorsReview/PromotionAndIncrementRequests"));
 
 /**
  * Employee Movement
  */
 const EmployeeMovement = lazy(() => import("./pages/EmployeeMovement/EmployeeMovement"));
+const EmployeeMovementPromotionIncrement = lazy(() => import("./pages/EmployeeMovement/PromotionIncrement"));
 
 /**
  * 🔐 Auth Check
@@ -535,6 +536,13 @@ export default function App() {
             path="/employee-movement"
             element={<ProtectedRoute>
               <EmployeeMovement />
+            </ProtectedRoute>}
+          />
+
+          <Route
+            path="/employee-movement/promotion-increment"
+            element={<ProtectedRoute>
+              <EmployeeMovementPromotionIncrement />
             </ProtectedRoute>}
           />
 
