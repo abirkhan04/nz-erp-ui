@@ -115,7 +115,7 @@ export default function AdjustmentIncrementRequests({
     (async () => {
       try {
         setLoading(true);
-        const res = await api.get("learners/eligible-adjustments/pending-approvals");
+        const res = await api.get("learners/eligible-adjustments");
 
         const data: IncrementRequest[] | { requests: IncrementRequest[] } = res.data;
         if (!cancelled) setRows(Array.isArray(data) ? data : data.requests ?? []);

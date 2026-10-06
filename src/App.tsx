@@ -77,6 +77,7 @@ const DirectorsPromotionIncrement = lazy(() => import("./pages/DirectorsReview/P
  */
 const EmployeeMovement = lazy(() => import("./pages/EmployeeMovement/EmployeeMovement"));
 const EmployeeMovementPromotionIncrement = lazy(() => import("./pages/EmployeeMovement/PromotionIncrement"));
+const PerformanceIncrementRequestEmployeeMovement = lazy(() => import("./pages/EmployeeMovement/PerformanceIncrementRequests"));
 
 /**
  * 🔐 Auth Check
@@ -543,6 +544,13 @@ export default function App() {
             path="/employee-movement/promotion-increment"
             element={<ProtectedRoute>
               <EmployeeMovementPromotionIncrement />
+            </ProtectedRoute>}
+          />
+
+          <Route
+            path="/employee-movement/promotion-increment/performance"
+            element={<ProtectedRoute>
+              <PerformanceIncrementRequestEmployeeMovement />
             </ProtectedRoute>}
           />
 
