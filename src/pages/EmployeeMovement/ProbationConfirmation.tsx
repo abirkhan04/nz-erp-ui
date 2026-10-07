@@ -4,7 +4,6 @@ import { format, isValid, parse } from "date-fns";
 import { Check, Info, Search } from "lucide-react";
 
 import CommonInputField from "../../components/CommonInputFields";
-import type { Option } from "../../components/CommonInputFields";
 import { api } from "../../api/client";
 import { useGet } from "../../hooks/useGet";
 import { API_ROUTES } from "../../api/routes";
@@ -56,11 +55,6 @@ const formatDisplayDate = (value: string) => {
 
 const toLabel = (status: string) =>
     status ? status.charAt(0) + status.slice(1).toLowerCase() : "";
-
-const uniqueOptions = (values: string[]): Option[] =>
-    Array.from(new Set(values))
-        .sort((a, b) => a.localeCompare(b))
-        .map((v) => ({ label: v, value: v }));
 
 /* ------------------------------------------------------------------ */
 /* Component                                                           */
@@ -160,7 +154,6 @@ const ProbationConfirmation = () => {
 
             setItems((prev) => prev.filter((i) => i.employeeId !== employee.employeeId));
             setTotal((prev) => Math.max(prev - 1, 0));
-            setFilterSource((prev) => prev.filter((i) => i.employeeId !== employee.employeeId));
             setNotice({
                 type: "success",
                 text: `${employee.employeeName} has been confirmed. A confirmation letter was generated.`,
