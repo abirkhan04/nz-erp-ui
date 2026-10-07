@@ -11,7 +11,7 @@ import {
     ShieldCheck,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useCurrentShift } from "./utls/getCurrentShifts";
+import { useCurrentShift } from "./utils/getCurrentShifts";
 
 const LeaveEncashment: React.FC = () => {
 

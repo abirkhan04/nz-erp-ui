@@ -20,7 +20,7 @@ import { api } from "../../api/client";
 import { API_ROUTES } from "../../api/routes";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { useCurrentShift } from "./utls/getCurrentShifts";
+import { useCurrentShift } from "./utils/getCurrentShifts";
 import { usePost } from "../../hooks/usePost";
 import toast from "react-hot-toast";
 

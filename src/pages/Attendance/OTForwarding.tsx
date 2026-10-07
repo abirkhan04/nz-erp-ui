@@ -19,7 +19,7 @@ import AddNewEmployee from "./AddNewEmployee";
 import type { NewEmployee } from "./AddNewEmployee";
 import { usePost } from "../../hooks/usePost";
 import toast from "react-hot-toast";
-import { useCurrentShift } from "./utls/getCurrentShifts.ts";
+import { useCurrentShift } from "./utils/getCurrentShifts.ts";
 
 interface PreviousShiftEmployee {
     employeeId: string;
