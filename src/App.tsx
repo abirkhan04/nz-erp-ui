@@ -80,7 +80,7 @@ const EmployeeMovementPromotionIncrement = lazy(() => import("./pages/EmployeeMo
 const PerformanceIncrementRequestEmployeeMovement = lazy(() => import("./pages/EmployeeMovement/PerformanceIncrementRequests"));
 const AdjustmentIncrementRequestEmployeeMovement = lazy(() => import("./pages/EmployeeMovement/AdjustmentIncrementRequests"));
 const PromotionAndIncrementRequestEmployeeMovement = lazy(() => import("./pages/EmployeeMovement/PromotionAndIncrementRequests"));
-
+const ProbationConfirmation = lazy(() => import("./pages/EmployeeMovement/ProbationConfirmation"));
 /**
  * 🔐 Auth Check
  */
@@ -539,6 +539,13 @@ export default function App() {
             path="/employee-movement"
             element={<ProtectedRoute>
               <EmployeeMovement />
+            </ProtectedRoute>}
+          />
+
+          <Route
+            path="/employee-movement/confirmation"
+            element={<ProtectedRoute>
+              <ProbationConfirmation />
             </ProtectedRoute>}
           />
 
