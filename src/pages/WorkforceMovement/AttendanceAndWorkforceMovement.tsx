@@ -434,7 +434,7 @@ export default function AttendanceWorkforceDashboard() {
                         cardBg="bg-gradient-to-r from-blue-50 to-sky-50"
                         badgeBg="bg-blue-600"
                         // TODO: replace with your real route
-                        onOpen={() => navigate("/attendance-cell")}
+                        onOpen={() => navigate("/attendance-and-workforce-movement/attendance-cell")}
                     />
                     <CellCard
                         title="Employee Movement Cell"
@@ -445,7 +445,7 @@ export default function AttendanceWorkforceDashboard() {
                         cardBg="bg-gradient-to-r from-emerald-50 to-teal-50"
                         badgeBg="bg-teal-600"
                         // TODO: replace with your real route
-                        onOpen={() => navigate("/employee-movement")}
+                        onOpen={() => navigate("/attendance-and-workforce-movement/employee-movement")}
                     />
                 </section>
 

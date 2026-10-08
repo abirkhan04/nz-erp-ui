@@ -87,6 +87,10 @@ const EmployeeTransferAndShift = lazy(() => import("./pages/EmployeeMovement/Emp
  Attendance and Workforce Movement
 */
 const AttendanceAndWorkforceMovement = lazy(() => import("./pages/WorkforceMovement/AttendanceAndWorkforceMovement"));
+const AWMEmployeeMovementCell = lazy(() => import("./pages/WorkforceMovement/PromotionAndIncrement.tsx"));
+const AWMPerformanceIncrementRequest = lazy(() => import("./pages/WorkforceMovement/PerformanceIncrementRequests.tsx"));
+const AWMAdjustmentIncrementRequest = lazy(() => import("./pages/WorkforceMovement/AdjustmentIncrementRequests.tsx"));
+const AWMPromotionAndIncrementRequest = lazy(() => import("./pages/WorkforceMovement/PromotionAndIncrementRequests.tsx"));
 /**
  * 🔐 Auth Check
  */
@@ -591,9 +595,37 @@ export default function App() {
           />
 
           <Route
-              path="/attendance-and-workforce-movement"
+            path="/attendance-and-workforce-movement"
             element={<ProtectedRoute>
               <AttendanceAndWorkforceMovement />
+            </ProtectedRoute>}
+          />
+
+          <Route
+            path="/attendance-and-workforce-movement/employee-movement"
+            element={<ProtectedRoute>
+              <AWMEmployeeMovementCell />
+            </ProtectedRoute>}
+          />
+
+          <Route
+            path="/attendance-and-workforce-movement/employee-movement/performance"
+            element={<ProtectedRoute>
+              <AWMPerformanceIncrementRequest />
+            </ProtectedRoute>}
+          />
+
+          <Route
+            path="/attendance-and-workforce-movement/employee-movement/adjustment"
+            element={<ProtectedRoute>
+              <AWMAdjustmentIncrementRequest />
+            </ProtectedRoute>}
+          />
+
+          <Route
+            path="/attendance-and-workforce-movement/employee-movement/promotion"
+            element={<ProtectedRoute>
+              <AWMPromotionAndIncrementRequest />
             </ProtectedRoute>}
           />
           {/* Protected Application Routes (With Topbar) */}
