@@ -82,6 +82,11 @@ const AdjustmentIncrementRequestEmployeeMovement = lazy(() => import("./pages/Em
 const PromotionAndIncrementRequestEmployeeMovement = lazy(() => import("./pages/EmployeeMovement/PromotionAndIncrementRequests"));
 const ProbationConfirmation = lazy(() => import("./pages/EmployeeMovement/ProbationConfirmation"));
 const EmployeeTransferAndShift = lazy(() => import("./pages/EmployeeMovement/EmployeeShiftAndTransfer"));
+
+/*
+ Attendance and Workforce Movement
+*/
+const AttendanceAndWorkforceMovement = lazy(() => import("./pages/WorkforceMovement/AttendanceAndWorkforceMovement"));
 /**
  * 🔐 Auth Check
  */
@@ -585,6 +590,12 @@ export default function App() {
             </ProtectedRoute>}
           />
 
+          <Route
+              path="/attendance-and-workforce-movement"
+            element={<ProtectedRoute>
+              <AttendanceAndWorkforceMovement />
+            </ProtectedRoute>}
+          />
           {/* Protected Application Routes (With Topbar) */}
           <Route
             path="/*"
