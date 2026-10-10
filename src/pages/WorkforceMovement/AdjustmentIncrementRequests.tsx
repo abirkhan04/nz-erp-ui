@@ -55,7 +55,7 @@ const fmtDate = (iso: string) =>
 
 export default function AdjustmentIncrementReview() {
 
-    const getUrl = "/learners/eligible-adjustments?status=Approved";
+    const getUrl = "/learners/eligible-adjustments?status=ForwardedMovementSection";
     const postUrl = "/learners/eligible-adjustments/movement-cell";
 
     const { user } = useAuth()

@@ -12,7 +12,7 @@ import { api } from "../../api/client";
 
 // Status value the backend expects when the Employee Movement Cell forwards
 // the requests to the Attendance & Workforce Movement Section.
-const FORWARD_STATUS = "FORWARDED";
+const FORWARD_STATUS = "ForwardedToMovementSection";
 
 /* ------------------------------------------------------------------ */
 /* Types                                                               */
@@ -27,6 +27,7 @@ interface IncrementApproval {
     updatedOn: string;
     updatedBy: string;
     isActive: boolean;
+    toStatus: string;
 }
 
 interface IncrementHistory {
@@ -353,7 +354,7 @@ export default function PerformanceIncrementReview() {
                             !loadError &&
                             items.map((item, index) => {
                                 const isChecked = selected.has(item.id);
-                                const approvalDate = item.requests?.[0]?.approvalDate;
+                                const approvalDate = item.requests?.find((i)=> i.toStatus=== "Approved")?.approvalDate;
                                 return (
                                     <tr
                                         key={item.id}

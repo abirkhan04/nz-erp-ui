@@ -12,7 +12,7 @@ import { api } from "../../api/client";
 
 // Status value the backend expects when the Employee Movement Cell forwards
 // the requests to the Attendance & Workforce Movement Section.
-const FORWARD_STATUS = "FORWARDED";
+const FORWARD_STATUS = "ForwardedToHR";
 
 /* ------------------------------------------------------------------ */
 /* Types                                                               */
@@ -22,6 +22,7 @@ interface IncrementApproval {
     payIncHistId: string;
     approvedBy: string;
     approvalDate: string;
+    toStatus: string;
     createdOn: string;
     createdBy: string;
     updatedOn: string;
@@ -126,7 +127,7 @@ export default function PerformanceIncrementReview() {
         setLoading(true);
         setLoadError(null);
         try {
-            const res = await api.get("/payroll/increment-histories?status=Approved");
+            const res = await api.get("/payroll/increment-histories?status=ForwardedToMovementSection");
             const data: IncrementHistoryResponse = res.data;
             setItems(data.items ?? []);
             setSelected(new Set());
@@ -291,6 +292,11 @@ export default function PerformanceIncrementReview() {
                                 <br />
                                 Date
                             </th>
+                            <th rowSpan={2} className={th}>
+                                EmployeeMovement Cell Review Date
+                                <br />
+                                Date
+                            </th>
                             <th rowSpan={2} className={th}>Status</th>
                         </tr>
                         <tr>
@@ -348,7 +354,8 @@ export default function PerformanceIncrementReview() {
                             !loadError &&
                             items.map((item, index) => {
                                 const isChecked = selected.has(item.id);
-                                const approvalDate = item.requests?.[0]?.approvalDate;
+                                const directorApprovalDate = item.requests?.find((i) => i.toStatus === "Approved")?.approvalDate;
+                                const movementCellApprovalDate = item.requests?.find((i) => i.toStatus === "ForwardedToMovementSection")?.approvalDate;
                                 return (
                                     <tr
                                         key={item.id}
@@ -382,7 +389,8 @@ export default function PerformanceIncrementReview() {
                                                 item.proposedPerformanceIncrementAmount ?? item.incrementAmount
                                             )}
                                         </td>
-                                        <td className={td}>{formatDate(approvalDate)}</td>
+                                        <td className={td}>{formatDate(directorApprovalDate)}</td>
+                                         <td className={td}>{formatDate(movementCellApprovalDate)}</td>
                                         <td className={td}>
                                             <div className="flex flex-col items-center gap-1">
                                                 <span className="block w-full rounded border border-emerald-300 bg-emerald-50 px-2 py-1 text-[10px] font-bold uppercase leading-tight text-emerald-700">
