@@ -11,6 +11,7 @@ import {
 
 /* ----------------------------- Types ----------------------------- */
 
+
 export interface AdjustmentRequest {
     requestId: string;
     employeeId: string;
@@ -31,6 +32,7 @@ export interface AdjustmentRequest {
     status: string;
     forwardedBy: string;
     forwardedOn: string;
+    approvalHistories: any[];
 }
 
 export interface ForwardPayloadItem {
@@ -44,6 +46,21 @@ export interface ForwardPayloadItem {
 const fmtMoney = (n: number) =>
     n.toLocaleString("en-BD", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+const EMPTY = "—";
+
+const formatDate = (value?: string | null): string => {
+    if (!value) return EMPTY;
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return EMPTY;
+    return d
+        .toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+        })
+        .replace(/ /g, "-");
+};
+
 const fmtDate = (iso: string) =>
     new Date(iso).toLocaleDateString("en-GB", {
         day: "2-digit",
@@ -56,7 +73,7 @@ const fmtDate = (iso: string) =>
 export default function AdjustmentIncrementReview() {
 
     const getUrl = "/learners/eligible-adjustments?status=ForwardedMovementSection";
-    const postUrl = "/learners/eligible-adjustments/movement-cell";
+    const postUrl = "/learners/eligible-adjustments/movement-section";
 
     const { user } = useAuth()
 
@@ -277,6 +294,16 @@ export default function AdjustmentIncrementReview() {
                             <th className="px-3 py-3">Adjustment Amount<br />(BDT)</th>
                             <th className="px-3 py-3">Increment Amount<br />(BDT)</th>
                             <th className="px-3 py-3">Effective From</th>
+                            <th>
+                                Director Approval
+                                <br />
+                                Date
+                            </th>
+                            <th>
+                                EmployeeMovement Cell Review Date
+                                <br />
+                                Date
+                            </th>
                             <th className="px-3 py-3">Status</th>
                             <th className="min-w-[200px] px-3 py-3">Remarks<br />(Optional)</th>
                         </tr>
@@ -298,6 +325,8 @@ export default function AdjustmentIncrementReview() {
 
                         {rows.map((r, i) => {
                             const isChecked = selected.has(r.requestId);
+                            const directorApprovalDate = r.approvalHistories?.find((i) => i.toStatus === "Approved")?.actionOn;
+                            const movementCellApprovalDate = r.approvalHistories?.find((i) => i.toStatus === "ForwardedMovementSection")?.actionOn;
                             return (
                                 <tr
                                     key={r.requestId}
@@ -324,6 +353,8 @@ export default function AdjustmentIncrementReview() {
                                     <td className="px-3 py-4">{fmtMoney(r.adjustmentAmount)}</td>
                                     <td className="px-3 py-4">{fmtMoney(r.incrementAmount)}</td>
                                     <td className="px-3 py-4 whitespace-nowrap">{fmtDate(r.effectiveFrom)}</td>
+                                    <td className="px-3 py-4 whitespace-nowrap">{formatDate(directorApprovalDate)}</td>
+                                    <td className="px-3 py-4 whitespace-nowrap">{formatDate(movementCellApprovalDate)}</td>
                                     <td className="px-3 py-4">
                                         <div className="flex flex-col items-center gap-1">
                                             <span className="block w-full rounded border border-emerald-300 bg-emerald-50 px-2 py-1 text-[10px] font-bold uppercase leading-tight text-emerald-700">

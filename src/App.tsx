@@ -91,6 +91,23 @@ const AWMEmployeeMovementCell = lazy(() => import("./pages/WorkforceMovement/Pro
 const AWMPerformanceIncrementRequest = lazy(() => import("./pages/WorkforceMovement/PerformanceIncrementRequests.tsx"));
 const AWMAdjustmentIncrementRequest = lazy(() => import("./pages/WorkforceMovement/AdjustmentIncrementRequests.tsx"));
 const AWMPromotionAndIncrementRequest = lazy(() => import("./pages/WorkforceMovement/PromotionAndIncrementRequests.tsx"));
+
+
+
+/*
+  HR Branch Manager Sections
+*/
+
+const HRBranchManagerDashboard = lazy(() => import("./pages/HRBranchManager/HRBranchManagerDashboard"));
+const HRMAttendanceAndWorkforceMovement = lazy(() => import("./pages/HRBranchManager/AttendanceAndWorkforceMovement"));
+const HRMPerformanceIncrementRequest = lazy(() => import("./pages/HRBranchManager/PerformanceIncrementRequests"));
+const HRMAdjustmentIncrementRequest = lazy(() => import("./pages/HRBranchManager/AdjustmentIncrementRequests"));
+const HRMPromotionAndIncrementRequest = lazy(() => import("./pages/HRBranchManager/PromotionAndIncrementRequests"));
+const EarnedLeaveEncashmentList = lazy(() => import("./pages/HRBranchManager/EarnedLeaveEncashmentList"));
+const HREarnedLeaveEncashmentDetails = lazy(() => import("./pages/HRBranchManager/EarnedLeaveEncashmentDetails.tsx"));
+const MaternityLeaveEncashmentList = lazy(() => import("./pages/HRBranchManager/MaternityLeaveEncashmentList"));
+const HRMaternityLeaveEncashmentDetails = lazy(() => import("./pages/HRBranchManager/MaternityLeaveEncashmentDetail.tsx"));
+
 /**
  * 🔐 Auth Check
  */
@@ -628,7 +645,65 @@ export default function App() {
               <AWMPromotionAndIncrementRequest />
             </ProtectedRoute>}
           />
-          {/* Protected Application Routes (With Topbar) */}
+
+          <Route
+            path="/hr-branch-manager"
+            element={<ProtectedRoute>
+              <HRBranchManagerDashboard />
+            </ProtectedRoute>}
+          />
+
+          <Route
+            path="/hr-branch-manager/attendance-and-workforce-movement"
+            element={<ProtectedRoute>
+              <HRMAttendanceAndWorkforceMovement />
+            </ProtectedRoute>}
+          />
+
+          <Route
+            path="/hr-branch-manager/attendance-and-workforce-movement/performance"
+            element={<ProtectedRoute>
+              <HRMPerformanceIncrementRequest />
+            </ProtectedRoute>}
+          />
+
+          <Route
+            path="/hr-branch-manager/attendance-and-workforce-movement/adjustment"
+            element={<ProtectedRoute>
+              <HRMAdjustmentIncrementRequest />
+            </ProtectedRoute>}
+          />
+          <Route
+            path="/hr-branch-manager/attendance-and-workforce-movement/promotion"
+            element={<ProtectedRoute>
+              <HRMPromotionAndIncrementRequest />
+            </ProtectedRoute>}
+          />
+          <Route
+            path="/hr-branch-manager/attendance-and-workforce-movement/earned-leave-encashment"
+            element={<ProtectedRoute>
+              <EarnedLeaveEncashmentList />
+            </ProtectedRoute>}
+          />
+          <Route
+            path="/hr-branch-manager/attendance-and-workforce-movement/earned-leave-encashment/:requestId"
+            element={<ProtectedRoute>
+              <HREarnedLeaveEncashmentDetails />
+            </ProtectedRoute>}
+          />
+          <Route
+            path="/hr-branch-manager/attendance-and-workforce-movement/maternity-leave-encashment"
+            element={<ProtectedRoute>
+              <MaternityLeaveEncashmentList />
+            </ProtectedRoute>}
+          />
+          <Route
+            path="/hr-branch-manager/attendance-and-workforce-movement/maternity-leave-encashment/:requestId"
+            element={<ProtectedRoute>
+              <HRMaternityLeaveEncashmentDetails />
+            </ProtectedRoute>}
+          />
+
           <Route
             path="/*"
             element={

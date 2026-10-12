@@ -27,9 +27,8 @@ export interface PromotionIncrementRequest {
     newGrossSalary: number | null;
     effectiveFrom: string | null;
     reason: string | null;
-    directorApprovalDate: string | null;
-    movementCellReviewDate: string | null;
     status: string;
+    approvalHistories: any[];
 }
 
 export interface PromotionIncrementListResponse {
@@ -85,8 +84,8 @@ const joinParts = (a: string | null, b: string | null) =>
 
 export default function PromotionIncrementReview() {
     // TODO: replace with your real endpoints
-    const getUrl = "/payroll/promotion-increment-requests?status=PENDING_EMPLOYEE_MOVEMENT_CELL";
-    const putUrl = "/payroll/promotion-increment-requests/forwarded-to-movement-cell";
+    const getUrl = "/payroll/promotion-increment-requests?status=PENDING_EMPLOYEE_MOVEMENT_SECTION";
+    const putUrl = "/payroll/promotion-increment-requests/forwarded-to-movement-section";
 
     const { user } = useAuth();
     const navigate = useNavigate();
@@ -302,6 +301,7 @@ export default function PromotionIncrementReview() {
                             <th className="px-3 py-3">Increment %</th>
                             <th className="px-3 py-3">Increment Amount<br />(BDT)</th>
                             <th className="px-3 py-3">Director Approval Date</th>
+                            <th className="px-3 py-3">Movement Cell Review Date</th>
                             <th className="px-3 py-3">Status</th>
                             <th className="min-w-[200px] px-3 py-3">Remarks<br />(Optional)</th>
                         </tr>
@@ -323,6 +323,8 @@ export default function PromotionIncrementReview() {
 
                         {rows.map((r, i) => {
                             const isChecked = selected.has(r.requestId);
+                            const directorApprovalDate = r.approvalHistories?.find((i) => i.toStatus === "Approved")?.actionOn;
+                            const movementCellApprovalDate = r.approvalHistories?.find((i) => i.toStatus === "PENDING_EMPLOYEE_MOVEMENT_SECTION")?.actionOn;
                             return (
                                 <tr
                                     key={r.requestId}
@@ -348,7 +350,8 @@ export default function PromotionIncrementReview() {
                                     <td className="px-3 py-4">{orDash(r.proposedDesignation)}</td>
                                     <td className="px-3 py-4">{fmtPercent(r.incrementPercent)}</td>
                                     <td className="px-3 py-4">{fmtMoney(r.incrementAmount)}</td>
-                                    <td className="px-3 py-4 whitespace-nowrap">{fmtDate(r.directorApprovalDate)}</td>
+                                    <td className="px-3 py-4 whitespace-nowrap">{fmtDate(directorApprovalDate)}</td>
+                                    <td className="px-3 py-4 whitespace-nowrap">{fmtDate(movementCellApprovalDate)}</td>
                                     <td className="px-3 py-4">
                                         <div className="flex flex-col items-center gap-1">
                                             <span className="block w-full rounded border border-emerald-300 bg-emerald-50 px-2 py-1 text-[10px] font-bold uppercase leading-tight text-emerald-700">

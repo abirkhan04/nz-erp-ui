@@ -530,7 +530,8 @@ const AttendanceSummary: React.FC = () => {
           <a href="/attendance-dashboard">Go to Attendance Dashboard</a><br/>
           <a href="/payroll-and-workforce-movement">Payroll and Workforce Movement</a><br/>
           <a href="/director-dashboard">Click to go to Directors Dashboard</a><br/>
-          <a href="/attendance-and-workforce-movement">Click to go to Attendance and Workforce Movement</a>
+          <a href="/attendance-and-workforce-movement">Click to go to Attendance and Workforce Movement</a><br/>
+          <a href="/hr-branch-manager">Click to go to HR Branch Manager Dashboard</a>
         </section>
 
         {/* =================================================
