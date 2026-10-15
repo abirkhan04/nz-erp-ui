@@ -69,6 +69,7 @@ const OTForwardingPage: React.FC = () => {
 
     const shiftId = currentShift?.id;
     const departmentId = employee.departmentId;
+    const unitId = employee.unitId;
 
     const {
         data: previousShiftEmployees = [],
@@ -423,6 +424,7 @@ const OTForwardingPage: React.FC = () => {
             otDate: new Date().toISOString(),
             departmentId,
             reason,
+            unitId,
             employees: selectedEmployees.map((employee) => ({
                 employeeId: employee.employeeId,
                 employeeCode: employee.employeeCode,
