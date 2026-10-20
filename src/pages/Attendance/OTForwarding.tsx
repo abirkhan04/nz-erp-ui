@@ -20,6 +20,7 @@ import type { NewEmployee } from "./AddNewEmployee";
 import { usePost } from "../../hooks/usePost";
 import toast from "react-hot-toast";
 import { useCurrentShift } from "./utils/getCurrentShifts.ts";
+import { useNavigate } from "react-router-dom";
 
 interface PreviousShiftEmployee {
     employeeId: string;
@@ -125,9 +126,9 @@ const OTForwardingPage: React.FC = () => {
 
         const initialEmployees = previousShiftEmployees.slice(0, ITEMS_PER_PAGE);
 
-        setSelectedEmployees(initialEmployees);
+        //setSelectedEmployees(initialEmployees);
 
-        setCheckedEmployees(initialEmployees.map((employee) => employee.employeeId));
+        // setCheckedEmployees(initialEmployees.map((employee) => employee.employeeId));
 
         /*
          * Default OT hours for selected employees.
@@ -427,6 +428,8 @@ const OTForwardingPage: React.FC = () => {
         });
     };
 
+    const navigate = useNavigate();
+
     return (
         <div className="min-h-screen bg-[#f5f7fb] p-1 sm:p-2">
             <div className="mx-auto flex min-h-[calc(100vh-8px)] max-w-[1400px] flex-col overflow-hidden bg-white">
@@ -502,6 +505,7 @@ const OTForwardingPage: React.FC = () => {
                         <button
                             type="button"
                             className="flex items-center gap-2 text-xs font-medium text-blue-700 hover:text-blue-900"
+                            onClick={() => navigate("/production-floor-portal")}
                         >
                             <ArrowLeft size={17} />
                             Back to Dashboard
@@ -778,7 +782,7 @@ const OTForwardingPage: React.FC = () => {
                                     <ArrowLeft size={20} />
 
                                     <span className="text-[8px] font-semibold">
-                                        Remove
+                                        Remove All
                                     </span>
                                 </button>
                             </div>

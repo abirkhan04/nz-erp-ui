@@ -1,8 +1,11 @@
-import React from "react";
-import { Plus, Search, Trash2 } from "lucide-react";
+import React, { useState } from "react";
+import { Plus, Trash2 } from "lucide-react";
 import { useForm } from "react-hook-form";
+import toast from "react-hot-toast";
 import { api } from "../../api/client";
 import { API_ROUTES } from "../../api/routes";
+import type { Option } from "../../components/CommonInputFields";
+import CommonInputField from "../../components/CommonInputFields";
 
 export interface NewEmployee {
     employeeId: string;
@@ -12,7 +15,6 @@ export interface NewEmployee {
     designationName: string;
     departmentId: string;
     departmentName: string;
-   //  otHours: string;
 }
 
 interface AddNewEmployeeProps {
@@ -23,6 +25,15 @@ interface AddNewEmployeeProps {
 }
 
 interface EmployeeFormValues {
+    /*
+     * Only used by the searchable dropdown (typed text / picked option).
+     * It is never sent anywhere.
+     */
+    searchEmployee: string;
+
+    /*
+     * Filled automatically when an employee is selected.
+     */
     employeeId: string;
     employeeCode: string;
     employeeName: string;
@@ -31,6 +42,16 @@ interface EmployeeFormValues {
     otHours: string;
 }
 
+const emptyValues: EmployeeFormValues = {
+    searchEmployee: "",
+    employeeId: "",
+    employeeCode: "",
+    employeeName: "",
+    designationName: "",
+    departmentName: "",
+    otHours: "",
+};
+
 const AddNewEmployee: React.FC<AddNewEmployeeProps> = ({
     departmentId,
     onAdd,
@@ -38,47 +59,102 @@ const AddNewEmployee: React.FC<AddNewEmployeeProps> = ({
     onRemove,
 }) => {
     const {
+        control,
         register,
         handleSubmit,
         reset,
         setValue,
-        getValues,
         formState: { errors },
     } = useForm<EmployeeFormValues>({
-        defaultValues: {
-            employeeId: "",
-            employeeCode: "",
-            employeeName: "",
-            designationName: "",
-            departmentName: "",
-            otHours: "",
-        },
+        defaultValues: emptyValues,
     });
 
-    const handleSearchEmployee = async () => {
-        const employeeId = getValues("employeeId");
+    const [employeeOptions, setEmployeeOptions] = useState<Option[]>([]);
+    const [searchedEmployees, setSearchedEmployees] = useState<any[]>([]);
 
-        if (!employeeId.trim()) {
+    /*
+     * Changing this key remounts the search dropdown,
+     * which clears any text the user typed into it.
+     */
+    const [searchKey, setSearchKey] = useState(0);
+
+    /* ---------------------------------------------------------------------- */
+    /* SEARCH                                                                 */
+    /* ---------------------------------------------------------------------- */
+
+    const handleEmployeeSearch = async (searchText: string) => {
+        if (!searchText.trim()) {
+            setEmployeeOptions([]);
+            setSearchedEmployees([]);
             return;
         }
 
+        try {
+            const response = await api.get<any[]>(
+                `${API_ROUTES.EMPLOYEES}/search?searchText=${encodeURIComponent(
+                    searchText.trim()
+                )}`
+            );
 
-        const response = await api.get<any>(`${API_ROUTES.EMPLOYEES}/search?searchText=${employeeId}`);
-        const data = response.data[0];
-        /*
-          * TODO:
-          * Replace this with employee search API when available.
-          *
-          * Example:
-          *   */
-        
-        setValue("employeeId", data.id);
-        setValue("employeeName", data.employeeNameEnglish);
-        setValue("employeeCode", data.employeeCode);
-        setValue("designationName", data.designationName);
-        setValue("departmentName", data.departmentName);
+            const data = response.data ?? [];
 
+            setSearchedEmployees(data);
+
+            setEmployeeOptions(
+                data.map((employee) => ({
+                    label: `${employee.employeeCode} - ${employee.employeeNameEnglish}`,
+                    value: employee.id,
+                }))
+            );
+        } catch (error) {
+            console.error("Failed to search employees:", error);
+
+            setEmployeeOptions([]);
+            setSearchedEmployees([]);
+        }
     };
+
+    /* ---------------------------------------------------------------------- */
+    /* SELECT                                                                 */
+    /* ---------------------------------------------------------------------- */
+
+    const handleEmployeeSelect = (option: Option) => {
+        const employee = searchedEmployees.find(
+            (item) => String(item.id) === String(option.value)
+        );
+
+        if (!employee) {
+            console.error("Employee not found:", option);
+            return;
+        }
+
+        const alreadyAdded = addedEmployees.some(
+            (item) => String(item.employeeId) === String(employee.id)
+        );
+
+        if (alreadyAdded) {
+            toast.error("Employee already added.");
+            return;
+        }
+
+        setValue("employeeId", String(employee.id), {
+            shouldValidate: true,
+        });
+        setValue("employeeCode", employee.employeeCode ?? "");
+        setValue("employeeName", employee.employeeNameEnglish ?? "", {
+            shouldValidate: true,
+        });
+        setValue("designationName", employee.designationName ?? "");
+        setValue("departmentName", employee.departmentName ?? "");
+
+        // Close the dropdown list; the details are now in the form below.
+        setEmployeeOptions([]);
+        setSearchedEmployees([]);
+    };
+
+    /* ---------------------------------------------------------------------- */
+    /* SUBMIT                                                                 */
+    /* ---------------------------------------------------------------------- */
 
     const onSubmit = (data: EmployeeFormValues) => {
         const employee: NewEmployee = {
@@ -93,7 +169,10 @@ const AddNewEmployee: React.FC<AddNewEmployeeProps> = ({
 
         onAdd(employee, data.otHours);
 
-        reset();
+        reset(emptyValues);
+        setEmployeeOptions([]);
+        setSearchedEmployees([]);
+        setSearchKey((key) => key + 1);
     };
 
     return (
@@ -107,39 +186,40 @@ const AddNewEmployee: React.FC<AddNewEmployeeProps> = ({
                 </h3>
             </div>
 
-            {/* Search */}
-            <div className="relative mb-2">
-                <Search
-                    size={15}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400"
-                />
-
-                <input
-                    {...register("employeeId", {
-                        required: "Employee ID is required",
-                    })}
-                    placeholder="Search by Employee ID"
-                    className="h-9 w-full rounded border border-slate-200 pl-3 pr-9 text-[10px] outline-none focus:border-blue-400"
-                />
-            </div>
-
-            {errors.employeeId && (
-                <p className="mb-2 text-[9px] text-red-500">
-                    {errors.employeeId.message}
-                </p>
-            )}
-
-            <button
-                type="button"
-                onClick={handleSearchEmployee}
-                className="mb-3 flex h-8 w-full items-center justify-center gap-1 rounded bg-blue-600 text-[10px] font-semibold text-white hover:bg-blue-700"
-            >
-                <Search size={13} />
-                Search Employee
-            </button>
-
             <form onSubmit={handleSubmit(onSubmit)}>
                 <div className="space-y-2">
+                    {/* Search */}
+                    <CommonInputField
+                        key={searchKey}
+                        label="Search Employee"
+                        name="searchEmployee"
+                        register={register}
+                        control={control}
+                        errors={errors}
+                        type="searchable-dropdown"
+                        options={employeeOptions}
+                        placeholder="Search by Employee ID or Name"
+                        onSearchChange={handleEmployeeSearch}
+                        onOptionSelect={handleEmployeeSelect}
+                    />
+
+                    {/*
+                     * Hidden field that holds the selected employee's id.
+                     * Validation here forces the user to pick from the dropdown.
+                     */}
+                    <input
+                        type="hidden"
+                        {...register("employeeId", {
+                            required: "Please search and select an employee",
+                        })}
+                    />
+
+                    {errors.employeeId && (
+                        <p className="text-[9px] text-red-500">
+                            {errors.employeeId.message}
+                        </p>
+                    )}
+
                     {/* Employee Code */}
                     <div>
                         <label className="mb-1 block text-[9px] font-semibold text-[#17254c]">
@@ -148,7 +228,8 @@ const AddNewEmployee: React.FC<AddNewEmployeeProps> = ({
 
                         <input
                             {...register("employeeCode")}
-                            className="input-field"
+                            readOnly
+                            className="input-field bg-slate-50"
                         />
                     </div>
 
@@ -163,7 +244,8 @@ const AddNewEmployee: React.FC<AddNewEmployeeProps> = ({
                             {...register("employeeName", {
                                 required: "Employee name is required",
                             })}
-                            className="input-field"
+                            readOnly
+                            className="input-field bg-slate-50"
                         />
 
                         {errors.employeeName && (
@@ -181,7 +263,8 @@ const AddNewEmployee: React.FC<AddNewEmployeeProps> = ({
 
                         <input
                             {...register("designationName")}
-                            className="input-field"
+                            readOnly
+                            className="input-field bg-slate-50"
                         />
                     </div>
 
@@ -193,10 +276,12 @@ const AddNewEmployee: React.FC<AddNewEmployeeProps> = ({
 
                         <input
                             {...register("departmentName")}
-                            className="input-field"
+                            readOnly
+                            className="input-field bg-slate-50"
                         />
                     </div>
 
+                    {/* OT Hours */}
                     <div>
                         <label className="mb-1 block text-[9px] font-semibold text-[#17254c]">
                             OT Hours <span className="text-red-500">*</span>
@@ -206,8 +291,8 @@ const AddNewEmployee: React.FC<AddNewEmployeeProps> = ({
                             {...register("otHours", {
                                 required: "OT hours are required",
                                 pattern: {
-                                    value: /^\d{1,3}:\d{2}$/,
-                                    message: "Use HH:mm format",
+                                    value: /^(?:[01]\d|2[0-3]):[0-5]\d$/,
+                                    message: "Use HH:mm format, e.g. 01:00",
                                 },
                             })}
                             placeholder="HH:mm"
@@ -259,9 +344,7 @@ const AddNewEmployee: React.FC<AddNewEmployeeProps> = ({
 
                             <button
                                 type="button"
-                                onClick={() =>
-                                    onRemove(employee.employeeId)
-                                }
+                                onClick={() => onRemove(employee.employeeId)}
                                 className="text-red-500 hover:text-red-700"
                             >
                                 <Trash2 size={13} />
