@@ -32,27 +32,44 @@ interface PreviousShiftEmployee {
 }
 
 const footerItems = [
-    {
-        title: "ACCURATE",
-        subtitle: "Ensure accurate data",
-        icon: Target,
-    },
-    {
-        title: "RELIABLE",
-        subtitle: "Ensure reliability",
-        icon: ShieldCheck,
-    },
-    {
-        title: "INTEGRATED",
-        subtitle: "Ensure integration",
-        icon: Settings2,
-    },
+    { title: "ACCURATE", subtitle: "Ensure accurate data", icon: Target },
+    { title: "RELIABLE", subtitle: "Ensure reliability", icon: ShieldCheck },
+    { title: "INTEGRATED", subtitle: "Ensure integration", icon: Settings2 },
 ];
 
 const ITEMS_PER_PAGE = 5;
+const MAX_VISIBLE_PAGES = 5;
+
+/*
+ * Sliding window of page numbers.
+ * Keeps the current page centered when possible and clamps at the edges.
+ */
+const getVisiblePages = (
+    currentPage: number,
+    totalPages: number,
+    maxVisible: number = MAX_VISIBLE_PAGES
+): number[] => {
+    if (totalPages <= maxVisible) {
+        return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+
+    let start = currentPage - Math.floor(maxVisible / 2);
+    let end = start + maxVisible - 1;
+
+    if (start < 1) {
+        start = 1;
+        end = maxVisible;
+    }
+
+    if (end > totalPages) {
+        end = totalPages;
+        start = totalPages - maxVisible + 1;
+    }
+
+    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+};
 
 const OTForwardingPage: React.FC = () => {
-
     const user = JSON.parse(localStorage.getItem("user") || "{}");
 
     const selectedId = user.employeeId;
@@ -65,56 +82,35 @@ const OTForwardingPage: React.FC = () => {
 
     const { mutate: ForwardToTimeCell } = usePost(API_ROUTES.OVERTIME_REQUESTS);
 
-    const { currentShift ={}} = useCurrentShift();
+    const { currentShift = {} } = useCurrentShift();
 
     const shiftId = currentShift?.id;
     const departmentId = employee.departmentId;
     const unitId = employee.unitId;
 
-    const {
-        data: previousShiftEmployees = [],
-    } = useGet<PreviousShiftEmployee[]>({
-        key: [
-            "previouseShiftEmployees",
-            shiftId,
-            departmentId,
-        ],
+    const { data: previousShiftEmployees = [] } = useGet<PreviousShiftEmployee[]>({
+        key: ["previouseShiftEmployees", shiftId, departmentId],
         url: `${API_ROUTES.OVERTIME_REQUESTS}/employees/shift/${shiftId}/department/${departmentId}`,
         enabled: !!shiftId && !!departmentId,
     });
 
     const [currentPage, setCurrentPage] = useState(1);
 
-    const [
-        selectedEmployees,
-        setSelectedEmployees,
-    ] = useState<PreviousShiftEmployee[]>([]);
+    const [selectedEmployees, setSelectedEmployees] = useState<PreviousShiftEmployee[]>([]);
 
-    const [
-        newlyAddedEmployees,
-        setNewlyAddedEmployees,
-    ] = useState<NewEmployee[]>([]);
+    const [newlyAddedEmployees, setNewlyAddedEmployees] = useState<NewEmployee[]>([]);
 
-    const [
-        checkedEmployees,
-        setCheckedEmployees,
-    ] = useState<string[]>([]);
+    const [checkedEmployees, setCheckedEmployees] = useState<string[]>([]);
 
     /*
      * OT hours are UI-only data.
-     *
      * We deliberately don't modify the API employee object.
      */
-    const [otHours, setOtHours] = useState<
-        Record<string, string>
-    >({});
+    const [otHours, setOtHours] = useState<Record<string, string>>({});
 
-    const [searchPrevious, setSearchPrevious] =
-        useState("");
+    const [searchPrevious, setSearchPrevious] = useState("");
 
-    const [reason, setReason] = useState(
-        "Production Requirement"
-    );
+    const [reason, setReason] = useState("Production Requirement");
 
     /*
      * Initially select first page of previous-shift employees.
@@ -127,19 +123,11 @@ const OTForwardingPage: React.FC = () => {
             return;
         }
 
-        const initialEmployees =
-            previousShiftEmployees.slice(
-                0,
-                ITEMS_PER_PAGE
-            );
+        const initialEmployees = previousShiftEmployees.slice(0, ITEMS_PER_PAGE);
 
         setSelectedEmployees(initialEmployees);
 
-        setCheckedEmployees(
-            initialEmployees.map(
-                (employee) => employee.employeeId
-            )
-        );
+        setCheckedEmployees(initialEmployees.map((employee) => employee.employeeId));
 
         /*
          * Default OT hours for selected employees.
@@ -157,8 +145,7 @@ const OTForwardingPage: React.FC = () => {
     }, [previousShiftEmployees]);
 
     const filteredPreviousEmployees = useMemo(() => {
-        const search =
-            searchPrevious.toLowerCase().trim();
+        const search = searchPrevious.toLowerCase().trim();
 
         if (!search) {
             return previousShiftEmployees;
@@ -166,99 +153,74 @@ const OTForwardingPage: React.FC = () => {
 
         return previousShiftEmployees.filter(
             (employee) =>
-                employee.employeeId
-                    .toLowerCase()
-                    .includes(search) ||
-                employee.employeeName
-                    .toLowerCase()
-                    .includes(search) ||
-                employee.employeeCode
-                    .toLowerCase()
-                    .includes(search)
+                employee.employeeId.toLowerCase().includes(search) ||
+                employee.employeeName.toLowerCase().includes(search) ||
+                employee.employeeCode.toLowerCase().includes(search)
         );
-    }, [
-        previousShiftEmployees,
-        searchPrevious,
-    ]);
+    }, [previousShiftEmployees, searchPrevious]);
 
     const totalPages = Math.ceil(
-        filteredPreviousEmployees.length /
-        ITEMS_PER_PAGE
+        filteredPreviousEmployees.length / ITEMS_PER_PAGE
     );
 
-    const paginatedPreviousEmployees =
-        useMemo(() => {
-            const startIndex =
-                (currentPage - 1) *
-                ITEMS_PER_PAGE;
+    /*
+     * Only up to MAX_VISIBLE_PAGES page links are shown at a time.
+     * The window slides as the current page changes.
+     */
+    const visiblePages = useMemo(
+        () => getVisiblePages(currentPage, totalPages),
+        [currentPage, totalPages]
+    );
 
-            return filteredPreviousEmployees.slice(
-                startIndex,
-                startIndex + ITEMS_PER_PAGE
-            );
-        }, [
-            filteredPreviousEmployees,
-            currentPage,
-        ]);
+    /*
+     * Safety net: if the filtered result shrinks, keep the page in range.
+     */
+    useEffect(() => {
+        if (totalPages > 0 && currentPage > totalPages) {
+            setCurrentPage(totalPages);
+        }
+    }, [totalPages, currentPage]);
 
-    const toggleEmployee = (
-        employee: PreviousShiftEmployee
-    ) => {
+    const paginatedPreviousEmployees = useMemo(() => {
+        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+
+        return filteredPreviousEmployees.slice(
+            startIndex,
+            startIndex + ITEMS_PER_PAGE
+        );
+    }, [filteredPreviousEmployees, currentPage]);
+
+    const toggleEmployee = (employee: PreviousShiftEmployee) => {
         setCheckedEmployees((current) => {
-            if (
-                current.includes(employee.employeeId)
-            ) {
-                return current.filter(
-                    (id) =>
-                        id !== employee.employeeId
-                );
+            if (current.includes(employee.employeeId)) {
+                return current.filter((id) => id !== employee.employeeId);
             }
 
-            return [
-                ...current,
-                employee.employeeId,
-            ];
+            return [...current, employee.employeeId];
         });
     };
 
     const addSelectedEmployees = () => {
-        const employeesToAdd =
-            previousShiftEmployees.filter(
-                (employee) =>
-                    checkedEmployees.includes(
-                        employee.employeeId
-                    )
-            );
+        const employeesToAdd = previousShiftEmployees.filter((employee) =>
+            checkedEmployees.includes(employee.employeeId)
+        );
 
         setSelectedEmployees((current) => {
-            const existingIds = new Set(
-                current.map(
-                    (employee) =>
-                        employee.employeeId
-                )
-            );
+            const existingIds = new Set(current.map((employee) => employee.employeeId));
 
             return [
                 ...current,
                 ...employeesToAdd.filter(
-                    (employee) =>
-                        !existingIds.has(
-                            employee.employeeId
-                        )
+                    (employee) => !existingIds.has(employee.employeeId)
                 ),
             ];
         });
 
         setOtHours((current) => {
-            const updated = {
-                ...current,
-            };
+            const updated = { ...current };
 
             employeesToAdd.forEach((employee) => {
-                if (
-                    updated[employee.employeeId] ===
-                    undefined
-                ) {
+                if (updated[employee.employeeId] === undefined) {
                     updated[employee.employeeId] = "";
                 }
             });
@@ -267,27 +229,17 @@ const OTForwardingPage: React.FC = () => {
         });
     };
 
-    const removeEmployee = (
-        employeeId: string
-    ) => {
+    const removeEmployee = (employeeId: string) => {
         setSelectedEmployees((current) =>
-            current.filter(
-                (employee) =>
-                    employee.employeeId !==
-                    employeeId
-            )
+            current.filter((employee) => employee.employeeId !== employeeId)
         );
 
         setCheckedEmployees((current) =>
-            current.filter(
-                (id) => id !== employeeId
-            )
+            current.filter((id) => id !== employeeId)
         );
 
         setOtHours((current) => {
-            const updated = {
-                ...current,
-            };
+            const updated = { ...current };
 
             delete updated[employeeId];
 
@@ -295,18 +247,11 @@ const OTForwardingPage: React.FC = () => {
         });
 
         setNewlyAddedEmployees((current) =>
-            current.filter(
-                (employee) =>
-                    employee.employeeId !==
-                    employeeId
-            )
+            current.filter((employee) => employee.employeeId !== employeeId)
         );
     };
 
-    const addNewEmployee = (
-        employee: NewEmployee,
-        hours: string
-    ) => {
+    const addNewEmployee = (employee: NewEmployee, hours: string) => {
         const alreadyExists = selectedEmployees.some(
             (item) => item.employeeId === employee.employeeId
         );
@@ -315,15 +260,9 @@ const OTForwardingPage: React.FC = () => {
             return;
         }
 
-        setNewlyAddedEmployees((current) => [
-            ...current,
-            employee,
-        ]);
+        setNewlyAddedEmployees((current) => [...current, employee]);
 
-        setSelectedEmployees((current) => [
-            ...current,
-            employee,
-        ]);
+        setSelectedEmployees((current) => [...current, employee]);
 
         setOtHours((current) => ({
             ...current,
@@ -331,29 +270,17 @@ const OTForwardingPage: React.FC = () => {
         }));
     };
 
-    const removeNewEmployee = (
-        employeeId: string
-    ) => {
+    const removeNewEmployee = (employeeId: string) => {
         setNewlyAddedEmployees((current) =>
-            current.filter(
-                (employee) =>
-                    employee.employeeId !==
-                    employeeId
-            )
+            current.filter((employee) => employee.employeeId !== employeeId)
         );
 
         setSelectedEmployees((current) =>
-            current.filter(
-                (employee) =>
-                    employee.employeeId !==
-                    employeeId
-            )
+            current.filter((employee) => employee.employeeId !== employeeId)
         );
 
         setOtHours((current) => {
-            const updated = {
-                ...current,
-            };
+            const updated = { ...current };
 
             delete updated[employeeId];
 
@@ -361,10 +288,7 @@ const OTForwardingPage: React.FC = () => {
         });
     };
 
-    const updateOTHours = (
-        employeeId: string,
-        value: string
-    ) => {
+    const updateOTHours = (employeeId: string, value: string) => {
         /*
          * Accept HH:mm format.
          */
@@ -390,7 +314,6 @@ const OTForwardingPage: React.FC = () => {
     };
 
     const handleForward = () => {
-
         if (!currentShift?.id) {
             toast.error("Current shift is not available.");
             return;
@@ -407,10 +330,7 @@ const OTForwardingPage: React.FC = () => {
         }
 
         const invalidEmployee = selectedEmployees.find(
-            (employee) =>
-                !isValidOTHours(
-                    otHours[employee.employeeId] || ""
-                )
+            (employee) => !isValidOTHours(otHours[employee.employeeId] || "")
         );
 
         if (invalidEmployee) {
@@ -419,6 +339,7 @@ const OTForwardingPage: React.FC = () => {
             );
             return;
         }
+
         const payload = {
             currentShiftId: currentShift.id,
             otDate: new Date().toISOString(),
@@ -436,10 +357,11 @@ const OTForwardingPage: React.FC = () => {
             })),
         };
 
-
         ForwardToTimeCell(payload, {
             onSuccess: (response) => {
-                toast.success(response.message || "Review submitted to IT successfully!");
+                toast.success(
+                    response.message || "Review submitted to IT successfully!"
+                );
                 clearAll();
             },
             onError: (error) => {
@@ -460,11 +382,50 @@ const OTForwardingPage: React.FC = () => {
         return total + hours * 60 + minutes;
     }, 0);
 
-    const totalOTHours = `${String(
-        Math.floor(totalOTMinutes / 60)
-    ).padStart(2, "0")}:${String(
-        totalOTMinutes % 60
-    ).padStart(2, "0")}`;
+    const totalOTHours = `${String(Math.floor(totalOTMinutes / 60)).padStart(
+        2,
+        "0"
+    )}:${String(totalOTMinutes % 60).padStart(2, "0")}`;
+
+    const allPageChecked =
+        paginatedPreviousEmployees.length > 0 &&
+        paginatedPreviousEmployees.every((employee) =>
+            checkedEmployees.includes(employee.employeeId)
+        );
+
+    const toggleAllOnPage = () => {
+        const pageIds = paginatedPreviousEmployees.map(
+            (employee) => employee.employeeId
+        );
+
+        if (pageIds.every((id) => checkedEmployees.includes(id))) {
+            setCheckedEmployees((current) =>
+                current.filter((id) => !pageIds.includes(id))
+            );
+        } else {
+            setCheckedEmployees((current) =>
+                Array.from(new Set([...current, ...pageIds]))
+            );
+        }
+    };
+
+    const removeCheckedFromSelected = () => {
+        setSelectedEmployees((current) =>
+            current.filter(
+                (employee) => !checkedEmployees.includes(employee.employeeId)
+            )
+        );
+
+        setOtHours((current) => {
+            const updated = { ...current };
+
+            checkedEmployees.forEach((id) => {
+                delete updated[id];
+            });
+
+            return updated;
+        });
+    };
 
     return (
         <div className="min-h-screen bg-[#f5f7fb] p-1 sm:p-2">
@@ -513,13 +474,11 @@ const OTForwardingPage: React.FC = () => {
 
                                 <div>
                                     <div className="text-xs font-bold">
-                                        {employee.employeeName ||
-                                            "USER"}
+                                        {employee.employeeName || "USER"}
                                     </div>
 
                                     <div className="text-[10px] text-cyan-400">
-                                        {employee.departmentName ||
-                                            ""}
+                                        {employee.departmentName || ""}
                                     </div>
                                 </div>
                             </div>
@@ -552,28 +511,19 @@ const OTForwardingPage: React.FC = () => {
                             <CalendarDays size={16} />
 
                             <span>
-                                {new Date().toLocaleDateString(
-                                    "en-GB",
-                                    {
-                                        day: "2-digit",
-                                        month: "long",
-                                        year: "numeric",
-                                    }
-                                )}
+                                {new Date().toLocaleDateString("en-GB", {
+                                    day: "2-digit",
+                                    month: "long",
+                                    year: "numeric",
+                                })}
                             </span>
 
-                            <span className="mx-1 text-slate-300">
-                                |
-                            </span>
+                            <span className="mx-1 text-slate-300">|</span>
 
                             <span>
-                                {new Date().toLocaleDateString(
-                                    "en-US",
-                                    {
-                                        weekday:
-                                            "long",
-                                    }
-                                )}
+                                {new Date().toLocaleDateString("en-US", {
+                                    weekday: "long",
+                                })}
                             </span>
                         </div>
                     </div>
@@ -583,70 +533,44 @@ const OTForwardingPage: React.FC = () => {
                     <section className="mb-3 rounded-md border border-slate-200 bg-white p-3">
                         <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
 
-                            <Field
-                                label="Current Shift"
-                                required
-                            >
+                            <Field label="Current Shift" required>
                                 <div className="select-field">
                                     {currentShift ? (
                                         <>
                                             {currentShift.shiftName} (
                                             {currentShift.startTime?.slice(0, 5)} -{" "}
-                                            {currentShift.endTime?.slice(0, 5)}
-                                            )
+                                            {currentShift.endTime?.slice(0, 5)})
                                         </>
                                     ) : (
                                         "No active roster shift"
                                     )}
 
-                                    <ChevronDown
-                                        size={15}
-                                    />
+                                    <ChevronDown size={15} />
                                 </div>
                             </Field>
 
-                            <Field
-                                label="OT Date"
-                                required
-                            >
+                            <Field label="OT Date" required>
                                 <div className="select-field">
-                                    {new Date().toLocaleDateString(
-                                        "en-GB",
-                                        {
-                                            day: "2-digit",
-                                            month: "long",
-                                            year: "numeric",
-                                        }
-                                    )}
+                                    {new Date().toLocaleDateString("en-GB", {
+                                        day: "2-digit",
+                                        month: "long",
+                                        year: "numeric",
+                                    })}
                                 </div>
                             </Field>
 
-                            <Field
-                                label="Department"
-                                required
-                            >
+                            <Field label="Department" required>
                                 <div className="select-field">
-                                    {employee.departmentName ||
-                                        ""}
+                                    {employee.departmentName || ""}
 
-                                    <ChevronDown
-                                        size={15}
-                                    />
+                                    <ChevronDown size={15} />
                                 </div>
                             </Field>
 
-                            <Field
-                                label="Reason"
-                                required
-                            >
+                            <Field label="Reason" required>
                                 <input
                                     value={reason}
-                                    onChange={(e) =>
-                                        setReason(
-                                            e.target
-                                                .value
-                                        )
-                                    }
+                                    onChange={(e) => setReason(e.target.value)}
                                     className="input-field"
                                 />
                             </Field>
@@ -672,10 +596,7 @@ const OTForwardingPage: React.FC = () => {
                                 </div>
 
                                 <span className="text-[10px] font-semibold text-slate-600">
-                                    Total:{" "}
-                                    {
-                                        previousShiftEmployees.length
-                                    }
+                                    Total: {previousShiftEmployees.length}
                                 </span>
                             </div>
 
@@ -689,26 +610,15 @@ const OTForwardingPage: React.FC = () => {
                                     stroke="currentColor"
                                     strokeWidth="2"
                                 >
-                                    <circle
-                                        cx="11"
-                                        cy="11"
-                                        r="8"
-                                    />
+                                    <circle cx="11" cy="11" r="8" />
                                     <path d="m21 21-4.3-4.3" />
                                 </svg>
 
                                 <input
-                                    value={
-                                        searchPrevious
-                                    }
+                                    value={searchPrevious}
                                     onChange={(e) => {
-                                        setSearchPrevious(
-                                            e.target
-                                                .value
-                                        );
-                                        setCurrentPage(
-                                            1
-                                        );
+                                        setSearchPrevious(e.target.value);
+                                        setCurrentPage(1);
                                     }}
                                     placeholder="Search by ID, Code or Name"
                                     className="h-9 w-full rounded border border-slate-200 pl-3 pr-9 text-[10px] outline-none focus:border-blue-400"
@@ -722,75 +632,12 @@ const OTForwardingPage: React.FC = () => {
                                             <th className="w-8 border-b px-1 py-2">
                                                 <input
                                                     type="checkbox"
-                                                    checked={
-                                                        paginatedPreviousEmployees.length >
-                                                        0 &&
-                                                        paginatedPreviousEmployees.every(
-                                                            (
-                                                                employee
-                                                            ) =>
-                                                                checkedEmployees.includes(
-                                                                    employee.employeeId
-                                                                )
-                                                        )
-                                                    }
-                                                    onChange={() => {
-                                                        const pageIds =
-                                                            paginatedPreviousEmployees.map(
-                                                                (
-                                                                    employee
-                                                                ) =>
-                                                                    employee.employeeId
-                                                            );
-
-                                                        const allSelected =
-                                                            pageIds.every(
-                                                                (
-                                                                    id
-                                                                ) =>
-                                                                    checkedEmployees.includes(
-                                                                        id
-                                                                    )
-                                                            );
-
-                                                        if (
-                                                            allSelected
-                                                        ) {
-                                                            setCheckedEmployees(
-                                                                (
-                                                                    current
-                                                                ) =>
-                                                                    current.filter(
-                                                                        (
-                                                                            id
-                                                                        ) =>
-                                                                            !pageIds.includes(
-                                                                                id
-                                                                            )
-                                                                    )
-                                                            );
-                                                        } else {
-                                                            setCheckedEmployees(
-                                                                (
-                                                                    current
-                                                                ) =>
-                                                                    Array.from(
-                                                                        new Set(
-                                                                            [
-                                                                                ...current,
-                                                                                ...pageIds,
-                                                                            ]
-                                                                        )
-                                                                    )
-                                                            );
-                                                        }
-                                                    }}
+                                                    checked={allPageChecked}
+                                                    onChange={toggleAllOnPage}
                                                 />
                                             </th>
 
-                                            <th className="border-b px-1 py-2">
-                                                #
-                                            </th>
+                                            <th className="border-b px-1 py-2">#</th>
 
                                             <th className="border-b px-1 py-2 text-left">
                                                 Emp ID
@@ -808,14 +655,9 @@ const OTForwardingPage: React.FC = () => {
 
                                     <tbody>
                                         {paginatedPreviousEmployees.map(
-                                            (
-                                                employee,
-                                                index
-                                            ) => (
+                                            (employee, index) => (
                                                 <tr
-                                                    key={
-                                                        employee.employeeId
-                                                    }
+                                                    key={employee.employeeId}
                                                     className="border-b last:border-0 hover:bg-blue-50"
                                                 >
                                                     <td className="px-1 py-2 text-center">
@@ -825,103 +667,71 @@ const OTForwardingPage: React.FC = () => {
                                                                 employee.employeeId
                                                             )}
                                                             onChange={() =>
-                                                                toggleEmployee(
-                                                                    employee
-                                                                )
+                                                                toggleEmployee(employee)
                                                             }
                                                         />
                                                     </td>
 
                                                     <td className="px-1 py-2 text-center">
-                                                        {(currentPage -
-                                                            1) *
+                                                        {(currentPage - 1) *
                                                             ITEMS_PER_PAGE +
                                                             index +
                                                             1}
                                                     </td>
 
                                                     <td className="px-1 py-2">
-                                                        {
-                                                            employee.employeeId
-                                                        }
+                                                        {employee.employeeId}
                                                     </td>
 
                                                     <td className="px-1 py-2 font-medium">
-                                                        {
-                                                            employee.employeeName
-                                                        }
+                                                        {employee.employeeName}
                                                     </td>
 
                                                     <td className="px-1 py-2">
-                                                        {employee.designationName ||
-                                                            "-"}
+                                                        {employee.designationName || "-"}
                                                     </td>
                                                 </tr>
                                             )
                                         )}
 
-                                        {paginatedPreviousEmployees.length ===
-                                            0 && (
-                                                <tr>
-                                                    <td
-                                                        colSpan={
-                                                            5
-                                                        }
-                                                        className="px-2 py-5 text-center text-slate-400"
-                                                    >
-                                                        No employees
-                                                        found
-                                                    </td>
-                                                </tr>
-                                            )}
+                                        {paginatedPreviousEmployees.length === 0 && (
+                                            <tr>
+                                                <td
+                                                    colSpan={5}
+                                                    className="px-2 py-5 text-center text-slate-400"
+                                                >
+                                                    No employees found
+                                                </td>
+                                            </tr>
+                                        )}
                                     </tbody>
                                 </table>
                             </div>
 
+                            {/* ===== Pagination (sliding window, max 5 links) ===== */}
+
                             <div className="mt-3 flex items-center justify-center gap-1">
                                 <button
                                     type="button"
-                                    disabled={
-                                        currentPage ===
-                                        1
-                                    }
+                                    disabled={currentPage === 1}
                                     onClick={() =>
-                                        setCurrentPage(
-                                            (page) =>
-                                                Math.max(
-                                                    page -
-                                                    1,
-                                                    1
-                                                )
-                                        )
+                                        setCurrentPage((page) => Math.max(page - 1, 1))
                                     }
                                     className="pagination-btn disabled:cursor-not-allowed disabled:opacity-40"
                                 >
-                                    <ChevronLeft
-                                        size={14}
-                                    />
+                                    <ChevronLeft size={14} />
                                 </button>
 
-                                {Array.from(
-                                    {
-                                        length: totalPages,
-                                    },
-                                    (_, index) =>
-                                        index + 1
-                                ).map((page) => (
+                                {visiblePages.map((page) => (
                                     <button
                                         key={page}
                                         type="button"
-                                        onClick={() =>
-                                            setCurrentPage(
-                                                page
-                                            )
-                                        }
-                                        className={`pagination-btn ${currentPage ===
-                                            page
-                                            ? "bg-blue-600 text-white"
-                                            : ""
-                                            }`}
+                                        onClick={() => setCurrentPage(page)}
+                                        className={`pagination-btn ${
+                                            currentPage === page
+                                                ? "bg-blue-600 text-white"
+                                                : ""
+                                        }`}
                                     >
                                         {page}
                                     </button>
@@ -930,26 +740,16 @@ const OTForwardingPage: React.FC = () => {
                                 <button
                                     type="button"
                                     disabled={
-                                        currentPage ===
-                                        totalPages ||
-                                        totalPages ===
-                                        0
+                                        currentPage === totalPages || totalPages === 0
                                     }
                                     onClick={() =>
-                                        setCurrentPage(
-                                            (page) =>
-                                                Math.min(
-                                                    page +
-                                                    1,
-                                                    totalPages
-                                                )
+                                        setCurrentPage((page) =>
+                                            Math.min(page + 1, totalPages)
                                         )
                                     }
                                     className="pagination-btn disabled:cursor-not-allowed disabled:opacity-40"
                                 >
-                                    <ChevronRight
-                                        size={14}
-                                    />
+                                    <ChevronRight size={14} />
                                 </button>
                             </div>
                         </div>
@@ -960,14 +760,10 @@ const OTForwardingPage: React.FC = () => {
                             <div className="flex flex-col gap-2">
                                 <button
                                     type="button"
-                                    onClick={
-                                        addSelectedEmployees
-                                    }
+                                    onClick={addSelectedEmployees}
                                     className="group flex h-12 w-12 flex-col items-center justify-center rounded border border-slate-300 bg-white text-blue-700 shadow-sm transition hover:border-blue-400 hover:bg-blue-50"
                                 >
-                                    <ArrowRight
-                                        size={20}
-                                    />
+                                    <ArrowRight size={20} />
 
                                     <span className="text-[8px] font-semibold">
                                         Add
@@ -976,49 +772,10 @@ const OTForwardingPage: React.FC = () => {
 
                                 <button
                                     type="button"
-                                    onClick={() => {
-                                        setSelectedEmployees(
-                                            (
-                                                current
-                                            ) =>
-                                                current.filter(
-                                                    (
-                                                        employee
-                                                    ) =>
-                                                        !checkedEmployees.includes(
-                                                            employee.employeeId
-                                                        )
-                                                )
-                                        );
-
-                                        setOtHours(
-                                            (
-                                                current
-                                            ) => {
-                                                const updated =
-                                                {
-                                                    ...current,
-                                                };
-
-                                                checkedEmployees.forEach(
-                                                    (
-                                                        id
-                                                    ) => {
-                                                        delete updated[
-                                                            id
-                                                        ];
-                                                    }
-                                                );
-
-                                                return updated;
-                                            }
-                                        );
-                                    }}
+                                    onClick={removeCheckedFromSelected}
                                     className="group flex h-12 w-12 flex-col items-center justify-center rounded border border-slate-300 bg-white text-slate-700 shadow-sm transition hover:border-slate-400 hover:bg-slate-50"
                                 >
-                                    <ArrowLeft
-                                        size={20}
-                                    />
+                                    <ArrowLeft size={20} />
 
                                     <span className="text-[8px] font-semibold">
                                         Remove
@@ -1042,10 +799,7 @@ const OTForwardingPage: React.FC = () => {
                                 </div>
 
                                 <span className="text-[10px] font-semibold">
-                                    Total:{" "}
-                                    {
-                                        selectedEmployees.length
-                                    }
+                                    Total: {selectedEmployees.length}
                                 </span>
                             </div>
 
@@ -1053,9 +807,7 @@ const OTForwardingPage: React.FC = () => {
                                 <table className="w-full border-collapse text-[9px]">
                                     <thead className="bg-slate-50">
                                         <tr>
-                                            <th className="border-b px-1 py-2">
-                                                #
-                                            </th>
+                                            <th className="border-b px-1 py-2">#</th>
 
                                             <th className="border-b px-1 py-2">
                                                 Emp ID
@@ -1080,84 +832,60 @@ const OTForwardingPage: React.FC = () => {
                                     </thead>
 
                                     <tbody>
-                                        {selectedEmployees.map(
-                                            (
-                                                employee,
-                                                index
-                                            ) => (
-                                                <tr
-                                                    key={
-                                                        employee.employeeId
-                                                    }
-                                                    className="border-b last:border-0"
-                                                >
-                                                    <td className="px-1 py-2 text-center">
-                                                        {index +
-                                                            1}
-                                                    </td>
+                                        {selectedEmployees.map((employee, index) => (
+                                            <tr
+                                                key={employee.employeeId}
+                                                className="border-b last:border-0"
+                                            >
+                                                <td className="px-1 py-2 text-center">
+                                                    {index + 1}
+                                                </td>
 
-                                                    <td className="px-1 py-2">
-                                                        {
-                                                            employee.employeeId
+                                                <td className="px-1 py-2">
+                                                    {employee.employeeId}
+                                                </td>
+
+                                                <td className="px-1 py-2 font-medium">
+                                                    {employee.employeeName}
+                                                </td>
+
+                                                <td className="px-1 py-2">
+                                                    {employee.designationName || "-"}
+                                                </td>
+
+                                                <td className="px-1 py-2">
+                                                    <input
+                                                        type="text"
+                                                        value={
+                                                            otHours[employee.employeeId] ||
+                                                            ""
                                                         }
-                                                    </td>
-
-                                                    <td className="px-1 py-2 font-medium">
-                                                        {
-                                                            employee.employeeName
+                                                        onChange={(e) =>
+                                                            updateOTHours(
+                                                                employee.employeeId,
+                                                                e.target.value
+                                                            )
                                                         }
-                                                    </td>
+                                                        placeholder="HH:mm"
+                                                        className="h-7 w-full rounded border border-slate-300 px-2 text-center text-[9px] outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-200"
+                                                    />
+                                                </td>
 
-                                                    <td className="px-1 py-2">
-                                                        {employee.designationName ||
-                                                            "-"}
-                                                    </td>
-
-                                                    <td className="px-1 py-2">
-                                                        <input
-                                                            type="text"
-                                                            value={
-                                                                otHours[
-                                                                employee
-                                                                    .employeeId
-                                                                ] ||
-                                                                ""
-                                                            }
-                                                            onChange={(
-                                                                e
-                                                            ) =>
-                                                                updateOTHours(
-                                                                    employee.employeeId,
-                                                                    e
-                                                                        .target
-                                                                        .value
-                                                                )
-                                                            }
-                                                            placeholder="HH:mm"
-                                                            className="h-7 w-full rounded border border-slate-300 px-2 text-center text-[9px] outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-200"
-                                                        />
-                                                    </td>
-
-                                                    <td className="px-1 py-2 text-center">
-                                                        <button
-                                                            type="button"
-                                                            onClick={() =>
-                                                                removeEmployee(
-                                                                    employee.employeeId
-                                                                )
-                                                            }
-                                                            className="text-red-500 hover:text-red-700"
-                                                        >
-                                                            <Trash2
-                                                                size={
-                                                                    14
-                                                                }
-                                                            />
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            )
-                                        )}
+                                                <td className="px-1 py-2 text-center">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            removeEmployee(
+                                                                employee.employeeId
+                                                            )
+                                                        }
+                                                        className="text-red-500 hover:text-red-700"
+                                                    >
+                                                        <Trash2 size={14} />
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
 
                                         {selectedEmployees.length > 0 && (
                                             <tr className="bg-slate-50 font-bold">
@@ -1176,20 +904,16 @@ const OTForwardingPage: React.FC = () => {
                                             </tr>
                                         )}
 
-                                        {selectedEmployees.length ===
-                                            0 && (
-                                                <tr>
-                                                    <td
-                                                        colSpan={
-                                                            6
-                                                        }
-                                                        className="px-2 py-5 text-center text-slate-400"
-                                                    >
-                                                        No employees
-                                                        selected
-                                                    </td>
-                                                </tr>
-                                            )}
+                                        {selectedEmployees.length === 0 && (
+                                            <tr>
+                                                <td
+                                                    colSpan={6}
+                                                    className="px-2 py-5 text-center text-slate-400"
+                                                >
+                                                    No employees selected
+                                                </td>
+                                            </tr>
+                                        )}
                                     </tbody>
                                 </table>
                             </div>
@@ -1198,18 +922,10 @@ const OTForwardingPage: React.FC = () => {
                         {/* ================= ADD NEW EMPLOYEE ================= */}
 
                         <AddNewEmployee
-                            departmentId={
-                                departmentId
-                            }
-                            addedEmployees={
-                                newlyAddedEmployees
-                            }
-                            onAdd={
-                                addNewEmployee
-                            }
-                            onRemove={
-                                removeNewEmployee
-                            }
+                            departmentId={departmentId}
+                            addedEmployees={newlyAddedEmployees}
+                            onAdd={addNewEmployee}
+                            onRemove={removeNewEmployee}
                         />
                     </section>
 
@@ -1218,21 +934,14 @@ const OTForwardingPage: React.FC = () => {
                     <section className="mt-3 flex flex-col gap-3 rounded-md border border-slate-200 bg-white p-3 lg:flex-row lg:items-center">
 
                         <div className="flex flex-1 items-center gap-2 text-[9px] text-slate-500">
-                            <Info
-                                size={22}
-                                className="shrink-0 text-blue-600"
-                            />
+                            <Info size={22} className="shrink-0 text-blue-600" />
 
                             <span>
-                                <strong className="text-slate-700">
-                                    Note:
-                                </strong>{" "}
-                                Employees from previous shift are
-                                shown on the left. You can select
-                                from this list or add new
-                                employees not in the previous
-                                shift. Enter OT hours for each
-                                selected employee.
+                                <strong className="text-slate-700">Note:</strong>{" "}
+                                Employees from previous shift are shown on the left. You
+                                can select from this list or add new employees not in the
+                                previous shift. Enter OT hours for each selected
+                                employee.
                             </span>
                         </div>
 
@@ -1261,52 +970,35 @@ const OTForwardingPage: React.FC = () => {
                 <footer className="bg-[#03153f] px-6 py-3 text-white">
                     <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
                         <div className="flex flex-wrap items-center gap-5">
-                            {footerItems.map(
-                                (item, index) => {
-                                    const Icon =
-                                        item.icon;
+                            {footerItems.map((item, index) => {
+                                const Icon = item.icon;
 
-                                    return (
-                                        <React.Fragment
-                                            key={
-                                                item.title
-                                            }
-                                        >
-                                            <div className="flex items-center gap-2">
-                                                <Icon
-                                                    size={
-                                                        24
-                                                    }
-                                                    strokeWidth={
-                                                        1.5
-                                                    }
-                                                    className="text-cyan-400"
-                                                />
+                                return (
+                                    <React.Fragment key={item.title}>
+                                        <div className="flex items-center gap-2">
+                                            <Icon
+                                                size={24}
+                                                strokeWidth={1.5}
+                                                className="text-cyan-400"
+                                            />
 
-                                                <div>
-                                                    <div className="text-[10px] font-bold">
-                                                        {
-                                                            item.title
-                                                        }
-                                                    </div>
+                                            <div>
+                                                <div className="text-[10px] font-bold">
+                                                    {item.title}
+                                                </div>
 
-                                                    <div className="text-[8px] text-white/70">
-                                                        {
-                                                            item.subtitle
-                                                        }
-                                                    </div>
+                                                <div className="text-[8px] text-white/70">
+                                                    {item.subtitle}
                                                 </div>
                                             </div>
+                                        </div>
 
-                                            {index <
-                                                footerItems.length -
-                                                1 && (
-                                                    <div className="hidden h-7 w-px bg-cyan-500/30 sm:block" />
-                                                )}
-                                        </React.Fragment>
-                                    );
-                                }
-                            )}
+                                        {index < footerItems.length - 1 && (
+                                            <div className="hidden h-7 w-px bg-cyan-500/30 sm:block" />
+                                        )}
+                                    </React.Fragment>
+                                );
+                            })}
                         </div>
 
                         <div className="text-right">
@@ -1316,10 +1008,7 @@ const OTForwardingPage: React.FC = () => {
 
                             <span className="text-lg font-bold">
                                 SYNEXIS
-                                <span className="text-cyan-400">
-                                    {" "}
-                                    ERP
-                                </span>
+                                <span className="text-cyan-400"> ERP</span>
                             </span>
                         </div>
                     </div>
@@ -1337,20 +1026,11 @@ interface FieldProps {
     children: React.ReactNode;
 }
 
-const Field: React.FC<FieldProps> = ({
-    label,
-    required,
-    children,
-}) => {
+const Field: React.FC<FieldProps> = ({ label, required, children }) => {
     return (
         <div>
             <label className="mb-1 block text-[9px] font-semibold text-[#17254c]">
-                {label}{" "}
-                {required && (
-                    <span className="text-red-500">
-                        *
-                    </span>
-                )}
+                {label} {required && <span className="text-red-500">*</span>}
             </label>
 
             {children}
