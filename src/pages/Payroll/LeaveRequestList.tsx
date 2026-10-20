@@ -18,14 +18,17 @@ import { api } from "../../api/client";
 interface LeaveRequest {
     requestId: string;
     employeeId: string;
+    employeeCode: string;
     employeeName: string;
     departmentName: string;
     leaveType: string;
     fromDate: string;
     toDate: string;
     forwardedDate: string;
+    createdDate: string;
     reason: string;
     forwardedBy: string;
+    actionBy: string;
     status: "Pending" | "Approved" | "Rejected";
 }
 
@@ -704,7 +707,7 @@ const LeaveRequestList: React.FC = () => {
 
                                                 <td className="px-4 py-3 text-slate-600">
                                                     {
-                                                        request.employeeId
+                                                        request.employeeCode
                                                     }
                                                 </td>
 
@@ -740,7 +743,7 @@ const LeaveRequestList: React.FC = () => {
 
                                                 <td className="px-4 py-3 text-slate-600">
                                                     {
-                                                        request.forwardedDate
+                                                        request.createdDate.split("T")[0]
                                                     }
                                                 </td>
 
@@ -752,7 +755,7 @@ const LeaveRequestList: React.FC = () => {
 
                                                 <td className="px-4 py-3 text-slate-600">
                                                     {
-                                                        request.forwardedBy
+                                                        request.actionBy
                                                     }
                                                 </td>
 
