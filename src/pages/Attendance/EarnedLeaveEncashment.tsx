@@ -280,6 +280,7 @@ const EarnedLeaveEncashment = () => {
                 leaveType: "EL",
                 encashDate: new Date().toISOString().split("T")[0],
                 encashDays: request.daysToBeEncashed,
+                maxEncashable: request.maximumEncashable,
                 reason: request.reason,
                 forwardedBy: user?.userName,
                 forwardedDate: new Date().toISOString().split("T")[0],
