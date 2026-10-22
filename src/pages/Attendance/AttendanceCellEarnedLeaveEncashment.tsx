@@ -128,6 +128,7 @@ const AttendanceCellEarnedLeaveEncashment: React.FC = () => {
         forwardedBy: request.forwardedBy,
         forwardedDate: new Date().toISOString().split("T")[0],
         status: "FORWARDED",
+        ActionTaken: "FORWARDED-TO-SECTION-IN-CHARGE"
       }));
 
       await api.put(
@@ -159,7 +160,8 @@ const AttendanceCellEarnedLeaveEncashment: React.FC = () => {
       reason: request.reason,
       forwardedBy: request.forwardedBy,
       forwardedDate: new Date().toISOString().split("T")[0],
-      status: "FORWARDED"
+      status: "FORWARDED",
+      ActionTaken: "FORWARDED-TO-SECTION-IN-CHARGE"
     }));
     await api.put(
       `${API_ROUTES.LEAVE_ENCASHMENT_REQUESTS}`,

@@ -119,7 +119,7 @@ const EarnedLeaveEncashmentList: React.FC = () => {
         refetch,
     } = useGet<EarnedLeaveEncashmentResponse>({
         key: ["encashRequests"],
-        url: `${API_ROUTES.LEAVE_ENCASHMENT_REQUESTS}?status=FORWARDED&leaveType=EL&page=1&size=10000`,
+        url: `${API_ROUTES.LEAVE_ENCASHMENT_REQUESTS}?status=FORWARDED&leaveType=EL&page=1&size=10000&actionTaken=FORWARDED-TO-SECTION-IN-CHARGE`,
     });
 
     const encashRequests = response?.data ?? [];
@@ -309,7 +309,8 @@ const EarnedLeaveEncashmentList: React.FC = () => {
                 forwardedBy: request.forwardedBy,
                 forwardedDate: request.forwardedDate.split("T")[0],
                 modifiedBy: user?.userId,
-                status: "FORWARDED_TO_HR",
+                status: "FORWARDED",
+                ActionTaken: "FORWARDED-TO-HR"
             }));
 
         try {
