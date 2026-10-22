@@ -36,12 +36,20 @@ type MaternityPeriod =
     | "Pre-Delivery"
     | "Post-Delivery";
 
+interface Leave {
+    leaveCode: string;
+    leaveName: string;
+    closingBalance: number;
+    accruedLeave?: number;
+}
+
 interface Employee {
     employeeId: string | number;
     employeeName: string;
     employeeCode: string;
     designationName: string;
     departmentName: string;
+    leaves?: Leave[];
 }
 
 interface MaternityLeaveRow {
@@ -61,6 +69,7 @@ interface MaternityLeaveRow {
 
     documentName: string;
     documentAttached: boolean;
+    maximumEncashable?: number;
 }
 
 interface MaternityLeaveEncashmentForm {
@@ -216,6 +225,10 @@ const MaternityLeaveEncashment = () => {
          * Second installment = 64 days
          */
 
+        const maternityLeave = selectedEmployee.leaves?.find(
+            (leave) => leave.leaveCode === "ML"
+        );
+
         append([
             {
                 employeeId: selectedEmployee.employeeId,
@@ -233,6 +246,8 @@ const MaternityLeaveEncashment = () => {
 
                 fromDate: "",
                 toDate: "",
+
+                maximumEncashable: maternityLeave?.closingBalance ? maternityLeave?.closingBalance / 2 : 0,
 
                 reason:
                     "Pre-Delivery – As per doctor's recommendation",
@@ -257,6 +272,8 @@ const MaternityLeaveEncashment = () => {
 
                 fromDate: "",
                 toDate: "",
+
+                maximumEncashable: maternityLeave?.closingBalance ? maternityLeave?.closingBalance / 2 : 0,
 
                 reason:
                     "Post-Delivery – As per doctor's recommendation",
@@ -320,6 +337,7 @@ const MaternityLeaveEncashment = () => {
     const onSubmit = async (
         data: MaternityLeaveEncashmentForm,
     ) => {
+        console.log("data-->", data);
         const payload = {
             requests: data.requests.map(
                 (request) => ({
@@ -352,6 +370,8 @@ const MaternityLeaveEncashment = () => {
 
                     documentName:
                         request.documentName,
+
+                    maxEncashable: request.maximumEncashable,
 
                     forwardedBy:
                         user?.userName,
@@ -810,9 +830,9 @@ const MaternityLeaveEncashment = () => {
 
                                                             <div
                                                                 className={`rounded-md px-2 py-2 text-[11px] font-semibold leading-4 ${field.period ===
-                                                                        "Pre-Delivery"
-                                                                        ? "bg-[#e3f7ef] text-[#078d72]"
-                                                                        : "bg-[#e5f1ff] text-[#1554d1]"
+                                                                    "Pre-Delivery"
+                                                                    ? "bg-[#e3f7ef] text-[#078d72]"
+                                                                    : "bg-[#e5f1ff] text-[#1554d1]"
                                                                     }`}
                                                             >
 
@@ -918,8 +938,8 @@ const MaternityLeaveEncashment = () => {
 
                                                             <label
                                                                 className={`inline-flex cursor-pointer items-center gap-1 rounded-md border px-3 py-2 text-[11px] font-semibold ${field.documentAttached
-                                                                        ? "border-[#a9decf] bg-[#effaf6] text-[#078d72]"
-                                                                        : "border-[#d6deeb] bg-white text-[#536078]"
+                                                                    ? "border-[#a9decf] bg-[#effaf6] text-[#078d72]"
+                                                                    : "border-[#d6deeb] bg-white text-[#536078]"
                                                                     }`}
                                                             >
 

@@ -138,6 +138,7 @@ const AttendanceCellMaternityLeaveEncashment: React.FC = () => {
       forwardedDate: new Date().toISOString().split("T")[0],
       modifiedBy: user?.userName,
       status: "FORWARDED",
+       ActionTaken: "FORWARDED-TO-SECTION-IN-CHARGE"
     }));
 
     try {
@@ -168,6 +169,7 @@ const AttendanceCellMaternityLeaveEncashment: React.FC = () => {
       forwardedDate: new Date().toISOString().split("T")[0],
       modifiedBy: user?.userName,
       status: "FORWARDED",
+      ActionTaken: "FORWARDED-TO-SECTION-IN-CHARGE"
     }));
     try {
       await api.put(API_ROUTES.LEAVE_ENCASHMENT_REQUESTS, payload);
