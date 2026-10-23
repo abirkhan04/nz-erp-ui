@@ -354,6 +354,7 @@ const MaternityLeaveEncashmentList: React.FC = () => {
                 forwardedDate: request.forwardedDate.split("T")[0],
                 modifiedBy: user?.userId,
                 status: "REJECTED",
+                actionTaken: "FORWARDED-TO-HR"
             }));
 
         try {

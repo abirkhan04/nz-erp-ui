@@ -836,7 +836,7 @@ const MaternityLeaveEncashmentDetails: React.FC = () => {
                                 type="button"
                                 disabled={isSubmitting}
                                 onClick={() =>
-                                    handleAction("FORWARD-TO-HR")
+                                    handleAction("FORWARDED-TO-HR")
                                 }
                                 className="
                                     flex

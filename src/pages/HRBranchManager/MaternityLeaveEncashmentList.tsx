@@ -119,7 +119,7 @@ const MaternityLeaveEncashmentList: React.FC = () => {
         refetch,
     } = useGet<EarnedLeaveEncashmentResponse>({
         key: ["encashRequests"],
-        url: `${API_ROUTES.LEAVE_ENCASHMENT_REQUESTS}?status=FORWARDED_TO_HR&leaveType=ML&page=1&size=10000`,
+        url: `${API_ROUTES.LEAVE_ENCASHMENT_REQUESTS}?status=FORWARDED&leaveType=ML&page=1&size=10000&actionTaken=FORWARDED-TO-HR`,
     });
 
     const encashRequests = response?.data ?? [];
@@ -309,7 +309,8 @@ const MaternityLeaveEncashmentList: React.FC = () => {
                 forwardedBy: request.forwardedBy,
                 forwardedDate: request.forwardedDate.split("T")[0],
                 modifiedBy: user?.userId,
-                status: "FORWARDED_TO_CEO",
+                status: "FORWARDED",
+                actionTaken: "FORWARDED-TO-CEO"
             }));
 
         try {
@@ -350,9 +351,10 @@ const MaternityLeaveEncashmentList: React.FC = () => {
                 encashDays: request.encashDays,
                 reason: request.reason,
                 forwardedBy: request.forwardedBy,
-                forwardedDate: request.forwardedDate,
+                forwardedDate: request.forwardedDate.split("T")[0],
                 modifiedBy: user?.userId,
                 status: "REJECTED",
+                actionTaken: "REJECTED-FROM-HR"
             }));
 
         try {
