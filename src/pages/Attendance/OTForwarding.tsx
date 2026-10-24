@@ -684,7 +684,7 @@ const OTForwardingPage: React.FC = () => {
                                                     </td>
 
                                                     <td className="px-1 py-2">
-                                                        {employee.employeeId}
+                                                        {employee.employeeCode}
                                                     </td>
 
                                                     <td className="px-1 py-2 font-medium">

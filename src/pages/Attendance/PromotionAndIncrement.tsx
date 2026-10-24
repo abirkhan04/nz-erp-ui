@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
     ArrowLeft,
     CalendarDays,
@@ -22,7 +22,7 @@ import { API_ROUTES } from "../../api/routes";
 import { api } from "../../api/client";
 import { usePost } from "../../hooks/usePost";
 import toast from "react-hot-toast";
-import { useAuth } from "../../context/AuthContext";
+import { useGet } from "../../hooks/useGet";
 
 interface Employee {
     id: string;
@@ -40,11 +40,12 @@ interface Employee {
 
 interface PromotionRequest {
     employeeId: string;
+    employeeCode: string;
     employeeName: string;
     department: string;
     currentDesignation: string;
     proposedDesignation: string;
-    proposedDesignationId: string; 
+    proposedDesignationId: string;
     currentGrade: string;
     newGrade: string;
     proposedGradeId: string;
@@ -60,15 +61,19 @@ interface PromotionRequest {
 
 interface PromotionSearchForm {
     searchEmployee: string;
+    grade: string;
+    designation: string;
 }
+
 const POST_URL = "payroll/promotion-increment-requests/forward-to-director";
 
 const PromotionIncrementRequest: React.FC = () => {
 
     const { mutate: PromotionIncrement } =
-        usePost(POST_URL);
+        usePost<{ message: string }, any>(POST_URL);
 
     const navigate = useNavigate();
+
     /* =========================================================
        SEARCH OPTIONS
     ========================================================= */
@@ -85,18 +90,58 @@ const PromotionIncrementRequest: React.FC = () => {
     >([]);
 
     /* =========================================================
-       SEARCH FORM
+       FORM (search + grade + designation)
     ========================================================= */
 
     const {
         register,
         control,
         setValue,
+        watch,
+        trigger,
+        getValues,
+        clearErrors,
+        formState: { errors },
     } = useForm<PromotionSearchForm>({
+        mode: "onTouched",
         defaultValues: {
             searchEmployee: "",
+            grade: "",
+            designation: "",
         },
     });
+
+    /* =========================================================
+       GRADES + DESIGNATIONS (same pattern as GateRegistration)
+    ========================================================= */
+
+    const grade = watch("grade");
+
+    const { data: grades = [] } = useGet<any[]>({
+        key: ["grades"],
+        url: API_ROUTES.GRADE,
+    });
+
+    const { data: designations = [] } = useGet<any[]>({
+        key: ["designations", grade],
+        url: `${API_ROUTES.DESIGNATION}?gradeId=${grade}`,
+        enabled: !!grade,
+    });
+
+    // Designation depends on grade, so clear it whenever the grade changes
+    useEffect(() => {
+        setValue("designation", "");
+    }, [grade, setValue]);
+
+    const gradeOptions = grades.map((g) => ({
+        label: g.gradeName,
+        value: g.id,
+    }));
+
+    const designationOptions = designations.map((d) => ({
+        label: d.designationName,
+        value: d.id,
+    }));
 
     /* =========================================================
        EMPLOYEE STATE
@@ -111,12 +156,6 @@ const PromotionIncrementRequest: React.FC = () => {
     /* =========================================================
        PROMOTION / INCREMENT STATE
     ========================================================= */
-
-    const [proposedDesignation, setProposedDesignation] =
-        useState("Manager");
-
-    const [newGrade, setNewGrade] =
-        useState("M-4");
 
     const [effectiveFrom, setEffectiveFrom] =
         useState("2025-06-01");
@@ -164,8 +203,9 @@ const PromotionIncrementRequest: React.FC = () => {
         setEmployee(null);
         setEmployeeFound(false);
 
-        setProposedDesignation("Manager");
-        setNewGrade("M-4");
+        setValue("grade", "");
+        setValue("designation", "");
+        clearErrors(["grade", "designation"]);
 
         setIncrementType("percentage");
         setIncrementPercent(12);
@@ -177,7 +217,7 @@ const PromotionIncrementRequest: React.FC = () => {
 
     /* =========================================================
        EMPLOYEE SEARCH
-       
+
        This is the ONLY API call for employee searching.
     ========================================================= */
 
@@ -201,7 +241,7 @@ const PromotionIncrementRequest: React.FC = () => {
         try {
             const response = await api.get<Employee[]>(
                 `${API_ROUTES.EMPLOYEES}/search-extention?searchText=${encodeURIComponent(
-                    searchText.trim(),
+                    text,
                 )}`,
             );
 
@@ -229,13 +269,12 @@ const PromotionIncrementRequest: React.FC = () => {
 
     /* =========================================================
        EMPLOYEE SELECT
-       
-       IMPORTANT:
+
        Selecting an employee DOES NOT trigger another search.
-       
        The selected object from searchedEmployees is directly
        used to populate Section 2.
     ========================================================= */
+
     const handleEmployeeSelect = (option: Option) => {
         const employeeId = option?.value;
 
@@ -244,10 +283,6 @@ const PromotionIncrementRequest: React.FC = () => {
             return;
         }
 
-        /*
-         * Find the employee from the results that are already
-         * loaded by the previous search API call.
-         */
         const selectedEmployee =
             searchedEmployees.find(
                 (item) =>
@@ -259,9 +294,6 @@ const PromotionIncrementRequest: React.FC = () => {
             return;
         }
 
-        /*
-         * Keep the selected employee ID in the form.
-         */
         setValue(
             "searchEmployee",
             selectedEmployee.id,
@@ -271,13 +303,6 @@ const PromotionIncrementRequest: React.FC = () => {
             },
         );
 
-        /*
-         * Directly populate Section 2.
-         *
-         * NO handleSearch()
-         * NO API call
-         * NO mock data
-         */
         setEmployee(selectedEmployee);
         setEmployeeFound(true);
 
@@ -285,8 +310,9 @@ const PromotionIncrementRequest: React.FC = () => {
          * Reset only the promotion/increment fields
          * because a different employee has been selected.
          */
-        setProposedDesignation("Manager");
-        setNewGrade("M-4");
+        setValue("grade", "");
+        setValue("designation", "");
+        clearErrors(["grade", "designation"]);
 
         setIncrementType("percentage");
         setIncrementPercent(12);
@@ -306,23 +332,14 @@ const PromotionIncrementRequest: React.FC = () => {
                 return 0;
             }
 
-            if (
-                incrementType ===
-                "percentage"
-            ) {
+            if (incrementType === "percentage") {
                 return (
                     employee.basicSalary *
-                    (Number(
-                        incrementPercent,
-                    ) / 100)
+                    (Number(incrementPercent) / 100)
                 );
             }
 
-            return (
-                Number(
-                    incrementAmount,
-                ) || 0
-            );
+            return Number(incrementAmount) || 0;
         }, [
             employee,
             incrementType,
@@ -359,16 +376,11 @@ const PromotionIncrementRequest: React.FC = () => {
                 return 0;
             }
 
-            if (
-                incrementType ===
-                "percentage"
-            ) {
+            if (incrementType === "percentage") {
                 return (
                     employee.grossSalary +
                     employee.grossSalary *
-                    (Number(
-                        incrementPercent,
-                    ) / 100)
+                    (Number(incrementPercent) / 100)
                 );
             }
 
@@ -378,10 +390,7 @@ const PromotionIncrementRequest: React.FC = () => {
                     employee.basicSalary
                     : 0;
 
-            return (
-                employee.grossSalary *
-                (1 + ratio)
-            );
+            return employee.grossSalary * (1 + ratio);
         }, [
             employee,
             incrementType,
@@ -393,82 +402,79 @@ const PromotionIncrementRequest: React.FC = () => {
        ADD TO LIST
     ========================================================= */
 
-    const handleAddToList = () => {
+    const handleAddToList = async () => {
         if (!employee) {
             return;
         }
 
-        if (!proposedDesignation) {
+        // This is not a handleSubmit form, so validate manually
+        const valid = await trigger(["grade", "designation"]);
+
+        if (!valid) {
             return;
         }
 
-        if (!newGrade) {
+        const {
+            grade: gradeId,
+            designation: designationId,
+        } = getValues();
+
+        const selectedGrade = grades.find(
+            (g) => String(g.id) === String(gradeId),
+        );
+
+        const selectedDesignation = designations.find(
+            (d) => String(d.id) === String(designationId),
+        );
+
+        if (!selectedGrade || !selectedDesignation) {
+            toast.error("Please select a valid grade and designation.");
             return;
         }
 
         if (!effectiveFrom) {
+            toast.error("Please select an effective date.");
             return;
         }
 
         if (!reason.trim()) {
+            toast.error("Please enter a reason.");
             return;
         }
 
         const requestIncrementPercent =
-            incrementType ===
-                "percentage"
-                ? Number(
-                    incrementPercent,
-                )
+            incrementType === "percentage"
+                ? Number(incrementPercent)
                 : employee.basicSalary > 0
                     ? (calculatedIncrementAmount /
                         employee.basicSalary) *
                     100
                     : 0;
 
-        const newRequest: PromotionRequest =
-        {
-            employeeId:
-                employee.id,
+        const newRequest: PromotionRequest = {
+            employeeId: employee.id,
+            employeeCode: employee.employeeCode,
+            employeeName: employee.employeeName,
+            department: employee.department,
+            currentDesignation: employee.designation,
 
-            employeeName:
-                employee.employeeName,
+            proposedDesignation:
+                selectedDesignation.designationNameBangla ||
+                selectedDesignation.designationName,
+            proposedDesignationId: String(selectedDesignation.id),
 
-            department:
-                employee.department,
+            currentGrade: employee.grade,
+            newGrade: selectedGrade.gradeName,
+            proposedGradeId: String(selectedGrade.id),
 
-            currentDesignation:
-                employee.designation,
-
-            proposedDesignation,
-
-            currentGrade:
-                employee.grade,
-
-            newGrade,
-
-            currentBasicSalary:
-                employee.basicSalary,
-
-            currentGrossSalary:
-                employee.grossSalary,
-
-            incrementPercent:
-                requestIncrementPercent,
-
-            incrementAmount:
-                calculatedIncrementAmount,
-
-            newBasicSalary:
-                calculatedNewBasicSalary,
-
-            newGrossSalary:
-                calculatedNewGrossSalary,
-
+            currentBasicSalary: employee.basicSalary,
+            currentGrossSalary: employee.grossSalary,
+            incrementPercent: requestIncrementPercent,
+            incrementAmount: calculatedIncrementAmount,
+            newBasicSalary: calculatedNewBasicSalary,
+            newGrossSalary: calculatedNewGrossSalary,
             effectiveFrom,
-
-            reason:
-                reason.trim(),
+            reason: reason.trim(),
         };
 
         setRequests((prev) => [
@@ -505,12 +511,8 @@ const PromotionIncrementRequest: React.FC = () => {
         useMemo(
             () =>
                 requests.reduce(
-                    (
-                        sum,
-                        item,
-                    ) =>
-                        sum +
-                        item.incrementAmount,
+                    (sum, item) =>
+                        sum + item.incrementAmount,
                     0,
                 ),
             [requests],
@@ -520,12 +522,8 @@ const PromotionIncrementRequest: React.FC = () => {
         useMemo(
             () =>
                 requests.reduce(
-                    (
-                        sum,
-                        item,
-                    ) =>
-                        sum +
-                        item.newBasicSalary,
+                    (sum, item) =>
+                        sum + item.newBasicSalary,
                     0,
                 ),
             [requests],
@@ -535,12 +533,8 @@ const PromotionIncrementRequest: React.FC = () => {
         useMemo(
             () =>
                 requests.reduce(
-                    (
-                        sum,
-                        item,
-                    ) =>
-                        sum +
-                        item.newGrossSalary,
+                    (sum, item) =>
+                        sum + item.newGrossSalary,
                     0,
                 ),
             [requests],
@@ -549,12 +543,8 @@ const PromotionIncrementRequest: React.FC = () => {
     const averageIncrement =
         requests.length > 0
             ? requests.reduce(
-                (
-                    sum,
-                    item,
-                ) =>
-                    sum +
-                    item.incrementPercent,
+                (sum, item) =>
+                    sum + item.incrementPercent,
                 0,
             ) / requests.length
             : 0;
@@ -578,14 +568,12 @@ const PromotionIncrementRequest: React.FC = () => {
        SUBMIT
     ========================================================= */
 
-    const {user} = useAuth();
-
     const handleForward = () => {
         if (requests.length === 0) {
             toast.error("Please add at least one promotion request.");
             return;
         }
-    
+
         const payload = {
             requests: requests.map((item) => ({
                 employeeId: item.employeeId,
@@ -595,8 +583,8 @@ const PromotionIncrementRequest: React.FC = () => {
                 proposedDesignation: item.proposedDesignation,
                 currentGrade: item.currentGrade,
                 newGrade: item.newGrade,
-                proposedDesignationId: item.proposedDesignationId || item.proposedDesignation, // Map to the required ID if available
-                proposedGradeId: item.proposedGradeId || item.newGrade, // Map to the required ID if available
+                proposedDesignationId: item.proposedDesignationId,
+                proposedGradeId: item.proposedGradeId,
                 incrementPercent: item.incrementPercent,
                 incrementAmount: item.incrementAmount,
                 effectiveFrom: item.effectiveFrom,
@@ -604,16 +592,14 @@ const PromotionIncrementRequest: React.FC = () => {
             })),
             remarks: "", // Add remarks if needed
         };
-    
-        console.log("Mapped Payload:", payload);
-    
+
         PromotionIncrement(payload, {
             onSuccess: (response) => {
                 toast.success(
                     response.message ||
                     "Promotion + increment request forwarded successfully!"
                 );
-    
+
                 setRequests([]);
             },
             onError: (error) => {
@@ -621,7 +607,7 @@ const PromotionIncrementRequest: React.FC = () => {
                     "Failed to forward promotion + increment request:",
                     error
                 );
-    
+
                 toast.error(
                     error.message ||
                     "Failed to forward promotion + increment request."
@@ -844,9 +830,7 @@ const PromotionIncrementRequest: React.FC = () => {
                                         </span>
 
                                         <strong className="ml-5">
-                                            {
-                                                employee.employeeCode
-                                            }
+                                            {employee.employeeCode}
                                         </strong>
                                     </div>
 
@@ -856,9 +840,7 @@ const PromotionIncrementRequest: React.FC = () => {
                                         </span>
 
                                         <strong className="ml-8">
-                                            {
-                                                employee.employeeName
-                                            }
+                                            {employee.employeeName}
                                         </strong>
                                     </div>
 
@@ -868,9 +850,7 @@ const PromotionIncrementRequest: React.FC = () => {
                                         </span>
 
                                         <strong className="ml-2">
-                                            {
-                                                employee.employeeType
-                                            }
+                                            {employee.employeeType}
                                         </strong>
                                     </div>
 
@@ -880,9 +860,7 @@ const PromotionIncrementRequest: React.FC = () => {
                                         </span>
 
                                         <strong className="ml-5">
-                                            {
-                                                employee.department
-                                            }
+                                            {employee.department}
                                         </strong>
                                     </div>
 
@@ -892,9 +870,7 @@ const PromotionIncrementRequest: React.FC = () => {
                                         </span>
 
                                         <strong className="ml-10">
-                                            {
-                                                employee.section
-                                            }
+                                            {employee.section}
                                         </strong>
                                     </div>
 
@@ -904,9 +880,7 @@ const PromotionIncrementRequest: React.FC = () => {
                                         </span>
 
                                         <strong className="ml-4">
-                                            {
-                                                employee.designation
-                                            }
+                                            {employee.designation}
                                         </strong>
                                     </div>
 
@@ -942,9 +916,7 @@ const PromotionIncrementRequest: React.FC = () => {
                                         Current Grade
 
                                         <strong className="float-right">
-                                            {
-                                                employee.grade
-                                            }
+                                            {employee.grade}
                                         </strong>
                                     </div>
 
@@ -952,9 +924,7 @@ const PromotionIncrementRequest: React.FC = () => {
                                         Current Designation
 
                                         <strong className="float-right">
-                                            {
-                                                employee.designation
-                                            }
+                                            {employee.designation}
                                         </strong>
                                     </div>
 
@@ -1044,68 +1014,50 @@ const PromotionIncrementRequest: React.FC = () => {
                                         type="checkbox"
                                         className="accent-[#3217c7]"
                                     />
-
                                     No Promotion
-
                                 </label>
 
-                                <label className="mt-3 block text-[9px] font-semibold">
-                                    New Designation *
-                                </label>
+                                {/* NEW GRADE (from API) */}
+                                <div className="mt-2">
+                                    <CommonInputField
+                                        label="New Grade"
+                                        name="grade"
+                                        type="dropdown"
+                                        options={gradeOptions}
+                                        rules={{ required: "Select Grade" }}
+                                        register={
+                                            register as UseFormRegister<any>
+                                        }
+                                        errors={
+                                            errors as FieldErrors<any>
+                                        }
+                                        control={
+                                            control as Control<any>
+                                        }
+                                    />
+                                </div>
 
-                                <select
-                                    value={
-                                        proposedDesignation
-                                    }
-                                    onChange={(e) =>
-                                        setProposedDesignation(
-                                            e.target.value,
-                                        )
-                                    }
-                                    className="mt-1 h-[31px] w-full rounded border border-gray-300 px-2 text-[10px]"
-                                >
-                                    <option>
-                                        Manager
-                                    </option>
-                                    <option>
-                                        Senior Manager
-                                    </option>
-                                    <option>
-                                        Deputy Manager
-                                    </option>
-                                    <option>
-                                        Assistant Manager
-                                    </option>
-                                </select>
-
-                                <label className="mt-2 block text-[9px] font-semibold">
-                                    New Grade *
-                                </label>
-
-                                <select
-                                    value={
-                                        newGrade
-                                    }
-                                    onChange={(e) =>
-                                        setNewGrade(
-                                            e.target.value,
-                                        )
-                                    }
-                                    className="mt-1 h-[31px] w-full rounded border border-gray-300 px-2 text-[10px]"
-                                >
-                                    <option>
-                                        M-4
-                                    </option>
-                                    <option>
-                                        M-5
-                                    </option>
-                                    <option>
-                                        M-6
-                                    </option>
-                                    <option>
-                                        E-2
-                                    </option>
-                                </select>
+                                {/* NEW DESIGNATION (from API, depends on grade) */}
+                                <div className="mt-3">
+                                    <CommonInputField
+                                        label="New Designation"
+                                        name="designation"
+                                        type="dropdown"
+                                        options={designationOptions}
+                                        rules={{
+                                            required: "Select Designation",
+                                        }}
+                                        register={
+                                            register as UseFormRegister<any>
+                                        }
+                                        errors={
+                                            errors as FieldErrors<any>
+                                        }
+                                        control={
+                                            control as Control<any>
+                                        }
+                                    />
+                                </div>
 
                                 <label className="mt-2 block text-[9px] font-semibold">
                                     Effective From Date *
@@ -1113,9 +1065,7 @@ const PromotionIncrementRequest: React.FC = () => {
 
                                 <input
                                     type="date"
-                                    value={
-                                        effectiveFrom
-                                    }
+                                    value={effectiveFrom}
                                     onChange={(e) =>
                                         setEffectiveFrom(
                                             e.target.value,
@@ -1186,9 +1136,7 @@ const PromotionIncrementRequest: React.FC = () => {
 
                                     <input
                                         type="number"
-                                        value={
-                                            incrementPercent
-                                        }
+                                        value={incrementPercent}
                                         disabled={
                                             incrementType !==
                                             "percentage"
@@ -1316,9 +1264,7 @@ const PromotionIncrementRequest: React.FC = () => {
                                 </label>
 
                                 <textarea
-                                    value={
-                                        reason
-                                    }
+                                    value={reason}
                                     onChange={(e) =>
                                         setReason(
                                             e.target.value,
@@ -1331,12 +1277,8 @@ const PromotionIncrementRequest: React.FC = () => {
 
                                 <button
                                     type="button"
-                                    disabled={
-                                        !employee
-                                    }
-                                    onClick={
-                                        handleAddToList
-                                    }
+                                    disabled={!employee}
+                                    onClick={handleAddToList}
                                     className="mt-2 flex h-[32px] w-full items-center justify-center gap-2 rounded-md bg-[#3217c7] text-[10px] font-bold text-white hover:bg-[#2813a5] disabled:cursor-not-allowed disabled:opacity-50"
                                 >
 
@@ -1370,9 +1312,7 @@ const PromotionIncrementRequest: React.FC = () => {
                                 </span>
 
                                 <strong>
-                                    {
-                                        requests.length
-                                    }
+                                    {requests.length}
                                 </strong>
                             </div>
 
@@ -1540,15 +1480,12 @@ const PromotionIncrementRequest: React.FC = () => {
 
                             <tbody>
 
-                                {requests.length ===
-                                    0 ? (
+                                {requests.length === 0 ? (
 
                                     <tr>
 
                                         <td
-                                            colSpan={
-                                                15
-                                            }
+                                            colSpan={15}
                                             className="py-8 text-center text-gray-400"
                                         >
                                             No promotion requests
@@ -1560,10 +1497,7 @@ const PromotionIncrementRequest: React.FC = () => {
                                 ) : (
 
                                     requests.map(
-                                        (
-                                            item,
-                                            index,
-                                        ) => (
+                                        (item, index) => (
 
                                             <tr
                                                 key={`${item.employeeId}-${index}`}
@@ -1571,52 +1505,35 @@ const PromotionIncrementRequest: React.FC = () => {
                                             >
 
                                                 <td className="px-2 py-2">
-                                                    {
-                                                        index +
-                                                        1
-                                                    }
+                                                    {index + 1}
                                                 </td>
 
                                                 <td className="px-2 py-2 font-semibold text-[#164bd7]">
-                                                    {
-                                                        item.employeeId
-                                                    }
+                                                    {item.employeeCode}
                                                 </td>
 
                                                 <td className="px-2 py-2">
-                                                    {
-                                                        item.employeeName
-                                                    }
+                                                    {item.employeeName}
                                                 </td>
 
                                                 <td className="px-2 py-2">
-                                                    {
-                                                        item.department
-                                                    }
+                                                    {item.department}
                                                 </td>
 
                                                 <td className="px-2 py-2">
-                                                    {
-                                                        item.currentDesignation
-                                                    }
+                                                    {item.currentDesignation}
                                                 </td>
 
                                                 <td className="px-2 py-2">
-                                                    {
-                                                        item.proposedDesignation
-                                                    }
+                                                    {item.proposedDesignation}
                                                 </td>
 
                                                 <td className="px-2 py-2">
-                                                    {
-                                                        item.currentGrade
-                                                    }
+                                                    {item.currentGrade}
                                                 </td>
 
                                                 <td className="px-2 py-2">
-                                                    {
-                                                        item.newGrade
-                                                    }
+                                                    {item.newGrade}
                                                 </td>
 
                                                 <td className="px-2 py-2">
@@ -1645,15 +1562,11 @@ const PromotionIncrementRequest: React.FC = () => {
                                                 </td>
 
                                                 <td className="px-2 py-2">
-                                                    {
-                                                        item.effectiveFrom
-                                                    }
+                                                    {item.effectiveFrom}
                                                 </td>
 
                                                 <td className="max-w-[150px] px-2 py-2 text-left">
-                                                    {
-                                                        item.reason
-                                                    }
+                                                    {item.reason}
                                                 </td>
 
                                                 <td className="px-2 py-2">
@@ -1669,9 +1582,7 @@ const PromotionIncrementRequest: React.FC = () => {
                                                     >
 
                                                         <Trash2
-                                                            size={
-                                                                14
-                                                            }
+                                                            size={14}
                                                         />
 
                                                     </button>
@@ -1694,13 +1605,9 @@ const PromotionIncrementRequest: React.FC = () => {
                     <div className="px-3 py-2 text-[9px] text-gray-500">
 
                         Showing 1 to{" "}
-                        {
-                            requests.length
-                        }{" "}
+                        {requests.length}{" "}
                         of{" "}
-                        {
-                            requests.length
-                        }{" "}
+                        {requests.length}{" "}
                         entries
 
                     </div>
@@ -1739,13 +1646,8 @@ const PromotionIncrementRequest: React.FC = () => {
 
                     <button
                         type="button"
-                        disabled={
-                            requests.length ===
-                            0
-                        }
-                        onClick={
-                            handleForward
-                        }
+                        disabled={requests.length === 0}
+                        onClick={handleForward}
                         className="flex h-[38px] items-center gap-2 rounded-md bg-[#3217c7] px-5 text-[10px] font-bold text-white hover:bg-[#2813a5] disabled:cursor-not-allowed disabled:opacity-50"
                     >
 
