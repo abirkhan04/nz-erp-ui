@@ -44,8 +44,10 @@ interface PromotionRequest {
     department: string;
     currentDesignation: string;
     proposedDesignation: string;
+    proposedDesignationId: string; 
     currentGrade: string;
     newGrade: string;
+    proposedGradeId: string;
     currentBasicSalary: number;
     currentGrossSalary: number;
     incrementPercent: number;
@@ -59,11 +61,12 @@ interface PromotionRequest {
 interface PromotionSearchForm {
     searchEmployee: string;
 }
+const POST_URL = "payroll/promotion-increment-requests/forward-to-director";
 
 const PromotionIncrementRequest: React.FC = () => {
 
     const { mutate: PromotionIncrement } =
-        usePost(`${API_ROUTES.PAYROLL}/increment-histories`);
+        usePost(POST_URL);
 
     const navigate = useNavigate();
     /* =========================================================
@@ -582,43 +585,46 @@ const PromotionIncrementRequest: React.FC = () => {
             toast.error("Please add at least one promotion request.");
             return;
         }
-
+    
         const payload = {
             requests: requests.map((item) => ({
                 employeeId: item.employeeId,
-                effectiveDate: item.effectiveFrom,
-                oldGrossSalary: item.currentGrossSalary,
-                newGrossSalary: item.newGrossSalary,
-                incrementAmount: item.incrementAmount,
+                employeeName: item.employeeName,
+                department: item.department,
+                currentDesignation: item.currentDesignation,
+                proposedDesignation: item.proposedDesignation,
+                currentGrade: item.currentGrade,
+                newGrade: item.newGrade,
+                proposedDesignationId: item.proposedDesignationId || item.proposedDesignation, // Map to the required ID if available
+                proposedGradeId: item.proposedGradeId || item.newGrade, // Map to the required ID if available
                 incrementPercent: item.incrementPercent,
-                incrementType: incrementType,
+                incrementAmount: item.incrementAmount,
+                effectiveFrom: item.effectiveFrom,
+                reason: item.reason,
             })),
-            createdBy: user?.userName ?? "",
-            forwardedBy: user?.userName ?? "",
-            forwardDate: new Date().toISOString(),
+            remarks: "", // Add remarks if needed
         };
-
-        console.log("Promotion + Increment Payload:", payload);
-
+    
+        console.log("Mapped Payload:", payload);
+    
         PromotionIncrement(payload, {
             onSuccess: (response) => {
                 toast.success(
                     response.message ||
-                    "Promotion + increment request forwarded successfully!",
+                    "Promotion + increment request forwarded successfully!"
                 );
-
+    
                 setRequests([]);
             },
-
             onError: (error) => {
                 console.error(
                     "Failed to forward promotion + increment request:",
-                    error,
+                    error
                 );
-
+    
                 toast.error(
                     error.message ||
-                    "Failed to forward promotion + increment request.",
+                    "Failed to forward promotion + increment request."
                 );
             },
         });
