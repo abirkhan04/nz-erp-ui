@@ -38,7 +38,7 @@ const footerItems = [
     { title: "INTEGRATED", subtitle: "Ensure integration", icon: Settings2 },
 ];
 
-const ITEMS_PER_PAGE = 5;
+const ITEMS_PER_PAGE = 10;
 const MAX_VISIBLE_PAGES = 5;
 
 /*
