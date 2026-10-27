@@ -83,16 +83,17 @@ const OTForwardingPage: React.FC = () => {
 
     const { mutate: ForwardToTimeCell } = usePost(API_ROUTES.OVERTIME_REQUESTS);
 
-    const { currentShift = {} } = useCurrentShift();
+    const { currentShift = {}, previousShift = {} } = useCurrentShift();
 
-    const shiftId = currentShift?.id;
+    // const shiftId = currentShift?.id;
+    const previouseShiftId = previousShift?.id;
     const departmentId = employee.departmentId;
     const unitId = employee.unitId;
 
     const { data: previousShiftEmployees = [] } = useGet<PreviousShiftEmployee[]>({
-        key: ["previouseShiftEmployees", shiftId, departmentId],
-        url: `${API_ROUTES.OVERTIME_REQUESTS}/employees/shift/${shiftId}/department/${departmentId}`,
-        enabled: !!shiftId && !!departmentId,
+        key: ["previouseShiftEmployees", previouseShiftId, departmentId],
+        url: `${API_ROUTES.OVERTIME_REQUESTS}/employees/shift/${previouseShiftId}/department/${departmentId}`,
+        enabled: !!previouseShiftId && !!departmentId,
     });
 
     const [currentPage, setCurrentPage] = useState(1);
