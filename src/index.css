@@ -17,6 +17,7 @@ input,
 select,
 textarea,
 table,
+table tr td, table tr th,
 button {
   font-size: inherit;
 }
