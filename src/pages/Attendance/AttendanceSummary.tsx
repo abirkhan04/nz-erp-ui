@@ -1,5 +1,4 @@
-
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   CalendarDays,
   Clock3,
@@ -12,6 +11,9 @@ import {
   Bell,
 } from "lucide-react";
 
+import { useForm } from "react-hook-form";
+
+import CommonInputField from "../../components/CommonInputFields" // adjust path
 import { useGet } from "../../hooks/useGet";
 import { API_ROUTES } from "../../api/routes";
 import { api } from "../../api/client";
@@ -19,6 +21,11 @@ import { api } from "../../api/client";
 /* =========================================================
    Types
 ========================================================= */
+
+interface FilterForm {
+  shiftId: string;
+  attendanceDate: string; // YYYY-MM-DD
+}
 
 interface DepartmentAttendance {
   department: string;
@@ -42,65 +49,39 @@ interface SummaryCard {
   subtitle?: string;
 }
 
-const summaryCards: SummaryCard[] = [
-  {
-    title: "TOTAL EMPLOYEES",
-    value: 1248,
-    icon: Users,
-    iconBg: "bg-blue-100",
-    iconColor: "text-blue-600",
-    valueColor: "text-slate-900",
-    percentageColor: "",
-  },
-  {
-    title: "PRESENT",
-    value: 1032,
-    percentage: 82.69,
-    icon: UserCheck,
-    iconBg: "bg-green-100",
-    iconColor: "text-green-600",
-    valueColor: "text-slate-900",
-    percentageColor: "text-green-600",
-  },
-  {
-    title: "ABSENT",
-    value: 158,
-    percentage: 12.66,
-    icon: UserX,
-    iconBg: "bg-red-100",
-    iconColor: "text-red-600",
-    valueColor: "text-slate-900",
-    percentageColor: "text-red-600",
-  },
-  {
-    title: "ON OT (RUNNING)",
-    value: 48,
-    percentage: 3.85,
-    icon: Timer,
-    iconBg: "bg-orange-100",
-    iconColor: "text-orange-500",
-    valueColor: "text-slate-900",
-    percentageColor: "text-orange-500",
-  },
-  {
-    title: "TOTAL ON DUTY",
-    value: 1080,
-    percentage: 86.54,
-    icon: CalendarCheck,
-    iconBg: "bg-blue-100",
-    iconColor: "text-blue-600",
-    valueColor: "text-slate-900",
-    percentageColor: "text-blue-600",
-    subtitle: "(Including OT)",
-  },
-];
-
 /* =========================================================
    Helpers
 ========================================================= */
 
+// Stable references: a fresh `[]` default on every render would re-trigger effects.
+const EMPTY_ARRAY: any[] = [];
+const EMPTY_OBJECT: any = {};
+
 const formatNumber = (value: number) =>
-  new Intl.NumberFormat("en-US").format(value);
+  new Intl.NumberFormat("en-US").format(value ?? 0);
+
+const todayString = () => new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD
+
+/** Returns the roster shift that is running right now (handles overnight shifts). */
+const findCurrentShift = (shifts: any[]) => {
+  const now = new Date();
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+  return shifts.find((shift) => {
+    const [startHour, startMinute] = shift.startTime.split(":").map(Number);
+    const [endHour, endMinute] = shift.endTime.split(":").map(Number);
+
+    const startMinutes = startHour * 60 + startMinute;
+    let endMinutes = endHour * 60 + endMinute;
+
+    if (endMinutes <= startMinutes) endMinutes += 24 * 60;
+
+    let current = currentMinutes;
+    if (current < startMinutes && endMinutes > 24 * 60) current += 24 * 60;
+
+    return current >= startMinutes && current < endMinutes;
+  });
+};
 
 /* =========================================================
    Summary Card
@@ -143,7 +124,7 @@ const SummaryCardComponent: React.FC<{
             <div
               className={`mt-2 text-[21px] font-bold leading-none ${card.percentageColor}`}
             >
-              {card.percentage.toFixed(2)}%
+              {Number(card.percentage ?? 0).toFixed(2)}%
             </div>
           )}
         </div>
@@ -157,121 +138,167 @@ const SummaryCardComponent: React.FC<{
 ========================================================= */
 
 const AttendanceSummary: React.FC = () => {
-  const { data: shifts = [] } = useGet<any[]>({
+  /* ---------- Filters (user controlled) ---------- */
+  const {
+    register,
+    control,
+    watch,
+    setValue,
+    formState: { errors },
+  } = useForm<FilterForm>({
+    defaultValues: { shiftId: "", attendanceDate: todayString() },
+  });
+
+  // Any change in the dropdown / date picker updates these values,
+  // which re-renders the page and re-triggers the API calls below.
+  const selectedShiftId = watch("shiftId");
+  const attendanceDate = watch("attendanceDate");
+
+  /* ---------- Live clock ---------- */
+  const [now, setNow] = useState(new Date());
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  /* ---------- Shifts ---------- */
+  const { data: shifts = EMPTY_ARRAY } = useGet<any[]>({
     key: ["shifts"],
     url: `${API_ROUTES.SHIFTS}?includeInactive=false`,
   });
 
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
-
-  const selectedId = user.employeeId;
-
-  const { data: employee = {} } = useGet<any>({
-    key: ["activationSummary", selectedId],
-    url: `${API_ROUTES.EMPLOYEES}/employee-detail/${selectedId}`,
-    enabled: !!selectedId,
-  });
-
-  const rosterShifts = shifts?.filter(
-    (shift) => shift.shiftType === "Roster" && shift.isActive
+  const rosterShifts = useMemo(
+    () =>
+      shifts.filter((shift) => shift.shiftType === "Roster" && shift.isActive),
+    [shifts]
   );
 
-  const getCurrentShift = () => {
-    const now = new Date();
+  // Pre-select the currently running shift once shifts are loaded
+  // (falls back to the first roster shift if none is running).
+  useEffect(() => {
+    if (selectedShiftId || rosterShifts.length === 0) return;
+    const initial = findCurrentShift(rosterShifts) ?? rosterShifts[0];
+    setValue("shiftId", String(initial.id));
+  }, [rosterShifts, selectedShiftId, setValue]);
 
-    const currentMinutes =
-      now.getHours() * 60 + now.getMinutes();
+  const shiftOptions = useMemo(
+    () =>
+      rosterShifts.map((shift) => ({
+        label: shift.shiftName,
+        value: String(shift.id),
+      })),
+    [rosterShifts]
+  );
 
-    return rosterShifts?.find((shift) => {
-      const [startHour, startMinute] = shift.startTime
-        .split(":")
-        .map(Number);
+  const selectedShift = rosterShifts.find(
+    (shift) => String(shift.id) === selectedShiftId
+  );
 
-      const [endHour, endMinute] = shift.endTime
-        .split(":")
-        .map(Number);
+  /* ---------- Logged-in employee ---------- */
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const employeeId = user.employeeId;
 
-      const startMinutes =
-        startHour * 60 + startMinute;
+  const { data: employee = EMPTY_OBJECT } = useGet<any>({
+    key: ["activationSummary", employeeId],
+    url: `${API_ROUTES.EMPLOYEES}/employee-detail/${employeeId}`,
+    enabled: !!employeeId,
+  });
 
-      let endMinutes =
-        endHour * 60 + endMinute;
-
-      if (endMinutes <= startMinutes) {
-        endMinutes += 24 * 60;
-      }
-
-      let current = currentMinutes;
-
-      if (
-        current < startMinutes &&
-        endMinutes > 24 * 60
-      ) {
-        current += 24 * 60;
-      }
-
-      return (
-        current >= startMinutes &&
-        current < endMinutes
-      );
-    });
-  };
-
-  const currentShift = getCurrentShift();
-
-  const shiftId = currentShift?.id;
   const departmentId = employee.departmentId;
-  const attendanceDate = new Date().toLocaleDateString("en-CA");
 
-  const { data: attendanceSummary = {} } = useGet({
-    key: ["attendanceSummary"],
-    url: `${API_ROUTES.ATTENDANCE}/summary?shiftId=${shiftId}&attendanceDate=${attendanceDate}&departmentId=${departmentId}`,
-    enabled: !!shiftId && !!departmentId
+  /* ---------- Summary (re-fetches when shift / date / department change) ---------- */
+  const { data: attendanceSummary = EMPTY_OBJECT } = useGet<any>({
+    key: ["attendanceSummary", selectedShiftId, attendanceDate, departmentId],
+    url: `${API_ROUTES.ATTENDANCE}/summary?shiftId=${selectedShiftId}&attendanceDate=${attendanceDate}&departmentId=${departmentId}`,
+    enabled: !!selectedShiftId && !!attendanceDate && !!departmentId,
   });
 
-  const { data: departments = [] } = useGet({ key: ["departments"], url: `${API_ROUTES.DEPARTMENT}` });
+  const { data: departments = EMPTY_ARRAY } = useGet<any[]>({
+    key: ["departments"],
+    url: `${API_ROUTES.DEPARTMENT}`,
+  });
 
-
-  summaryCards.forEach((i) => {
+  /* ---------- Summary cards (derived, no mutation of module state) ---------- */
+  const summaryCards: SummaryCard[] = useMemo(() => {
     const summary = attendanceSummary.summary || {};
-    if (i.title === "TOTAL EMPLOYEES") {
-      i.value = summary.totalEmployees;
-    }
-    if (i.title === "PRESENT") {
-      i.value = summary.presentCount;
-      i.percentage = summary.presentPercentage;
-    }
-    if (i.title === "ABSENT") {
-      i.value = summary.absentCount;
-      i.percentage = summary.absentPercentage;
-    }
-    if (i.title === "ON OT (RUNNING)") {
-      i.value = summary.onOtCount;
-      i.percentage = summary.onOtPercentage;
-    }
-    if (i.title === "TOTAL ON DUTY") {
-      i.value = summary.totalOnDuty;
-      i.percentage = summary.totalOnDutyPercentage;
-    }
-    return i;
-  });
 
-  const [departmentData, setDepartmentData] = useState<
-    DepartmentAttendance[]
-  >([]);
+    return [
+      {
+        title: "TOTAL EMPLOYEES",
+        value: summary.totalEmployees ?? 0,
+        icon: Users,
+        iconBg: "bg-blue-100",
+        iconColor: "text-blue-600",
+        valueColor: "text-slate-900",
+        percentageColor: "",
+      },
+      {
+        title: "PRESENT",
+        value: summary.presentCount ?? 0,
+        percentage: summary.presentPercentage ?? 0,
+        icon: UserCheck,
+        iconBg: "bg-green-100",
+        iconColor: "text-green-600",
+        valueColor: "text-slate-900",
+        percentageColor: "text-green-600",
+      },
+      {
+        title: "ABSENT",
+        value: summary.absentCount ?? 0,
+        percentage: summary.absentPercentage ?? 0,
+        icon: UserX,
+        iconBg: "bg-red-100",
+        iconColor: "text-red-600",
+        valueColor: "text-slate-900",
+        percentageColor: "text-red-600",
+      },
+      {
+        title: "ON OT (RUNNING)",
+        value: summary.onOtCount ?? 0,
+        percentage: summary.onOtPercentage ?? 0,
+        icon: Timer,
+        iconBg: "bg-orange-100",
+        iconColor: "text-orange-500",
+        valueColor: "text-slate-900",
+        percentageColor: "text-orange-500",
+      },
+      {
+        title: "TOTAL ON DUTY",
+        value: summary.totalOnDuty ?? 0,
+        percentage: summary.totalOnDutyPercentage ?? 0,
+        icon: CalendarCheck,
+        iconBg: "bg-blue-100",
+        iconColor: "text-blue-600",
+        valueColor: "text-slate-900",
+        percentageColor: "text-blue-600",
+        subtitle: "(Including OT)",
+      },
+    ];
+  }, [attendanceSummary]);
+
+  /* ---------- Department-wise data ---------- */
+  const [departmentData, setDepartmentData] = useState<DepartmentAttendance[]>(
+    []
+  );
+  const [loadingDepartments, setLoadingDepartments] = useState(false);
 
   useEffect(() => {
+    // Ignore responses from an older shift/date selection (race protection)
+    let cancelled = false;
+
     const loadDepartmentAttendance = async () => {
-      if (!shiftId || !attendanceDate || !departments?.length) {
+      if (!selectedShiftId || !attendanceDate || departments.length === 0) {
         setDepartmentData([]);
         return;
       }
+
+      setLoadingDepartments(true);
 
       try {
         const results = await Promise.all(
           departments.map(async (department: any) => {
             const response = await api.get(
-              `${API_ROUTES.ATTENDANCE}/summary?shiftId=${shiftId}&attendanceDate=${attendanceDate}&departmentId=${department.departmentId}`
+              `${API_ROUTES.ATTENDANCE}/summary?shiftId=${selectedShiftId}&attendanceDate=${attendanceDate}&departmentId=${department.departmentId}`
             );
 
             const summary = response.data?.summary ?? {};
@@ -288,41 +315,64 @@ const AttendanceSummary: React.FC = () => {
           })
         );
 
-        setDepartmentData(results);
+        if (!cancelled) setDepartmentData(results);
       } catch (error) {
         console.error("Failed to load department-wise attendance:", error);
-        setDepartmentData([]);
+        if (!cancelled) setDepartmentData([]);
+      } finally {
+        if (!cancelled) setLoadingDepartments(false);
       }
     };
 
     loadDepartmentAttendance();
-  }, [shiftId, attendanceDate, departments]);
 
-  const totalRow: DepartmentAttendance = departmentData.reduce(
-    (total, row) => ({
-      department: "TOTAL",
-      totalEmployees: total.totalEmployees + row.totalEmployees,
-      present: total.present + row.present,
-      absent: total.absent + row.absent,
-      otRunning: total.otRunning + row.otRunning,
-      totalOnDuty: total.totalOnDuty + row.totalOnDuty,
-      percentagePresent: 0,
-    }),
-    {
-      department: "TOTAL",
-      totalEmployees: 0,
-      present: 0,
-      absent: 0,
-      otRunning: 0,
-      totalOnDuty: 0,
-      percentagePresent: 0,
-    }
-  );
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedShiftId, attendanceDate, departments]);
 
-  totalRow.percentagePresent =
-    totalRow.totalEmployees > 0
-      ? (totalRow.present / totalRow.totalEmployees) * 100
-      : 0;
+  const totalRow: DepartmentAttendance = useMemo(() => {
+    const total = departmentData.reduce(
+      (acc, row) => ({
+        department: "TOTAL",
+        totalEmployees: acc.totalEmployees + row.totalEmployees,
+        present: acc.present + row.present,
+        absent: acc.absent + row.absent,
+        otRunning: acc.otRunning + row.otRunning,
+        totalOnDuty: acc.totalOnDuty + row.totalOnDuty,
+        percentagePresent: 0,
+      }),
+      {
+        department: "TOTAL",
+        totalEmployees: 0,
+        present: 0,
+        absent: 0,
+        otRunning: 0,
+        totalOnDuty: 0,
+        percentagePresent: 0,
+      }
+    );
+
+    total.percentagePresent =
+      total.totalEmployees > 0
+        ? (total.present / total.totalEmployees) * 100
+        : 0;
+
+    return total;
+  }, [departmentData]);
+
+  /* ---------- Display values ---------- */
+  const shiftLabel = (selectedShift?.shiftName ?? "").split("-")[0];
+
+  // Append T00:00:00 so the date is parsed in local time (avoids off-by-one day).
+  const formattedDate = attendanceDate
+    ? new Date(`${attendanceDate}T00:00:00`).toLocaleDateString("en-GB", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      })
+    : "";
 
   return (
     <div className="min-h-screen bg-white">
@@ -358,18 +408,13 @@ const AttendanceSummary: React.FC = () => {
               </h1>
 
               <div className="text-xl font-bold text-cyan-400 md:text-2xl">
-                {attendanceSummary.shift?.shiftName.split("-")[0]} SHIFT
+                {shiftLabel} SHIFT
               </div>
 
               <div className="mt-2 flex items-center justify-center gap-4 rounded-full border border-blue-500/60 bg-[#051b50] px-5 py-2 text-sm">
                 <div className="flex items-center gap-2">
                   <CalendarDays className="h-4 w-4" />
-                  <span>  {new Date(attendanceSummary.attendanceDate).toLocaleDateString("en-GB", {
-                    weekday: "long",
-                    day: "numeric",
-                    month: "long",
-                    year: "numeric",
-                  })}</span>
+                  <span>{formattedDate}</span>
                 </div>
 
                 <span className="text-blue-300">|</span>
@@ -377,7 +422,7 @@ const AttendanceSummary: React.FC = () => {
                 <div className="flex items-center gap-2">
                   <Clock3 className="h-4 w-4" />
                   <span>
-                    {new Date().toLocaleTimeString("en-US", {
+                    {now.toLocaleTimeString("en-US", {
                       hour: "2-digit",
                       minute: "2-digit",
                       second: "2-digit",
@@ -393,15 +438,40 @@ const AttendanceSummary: React.FC = () => {
         </header>
 
         {/* =================================================
+            FILTERS
+        ================================================= */}
+        <section className="px-5 pt-5">
+          <div className="grid grid-cols-1 gap-3 sm:max-w-xl sm:grid-cols-2">
+            <CommonInputField<FilterForm>
+              label="Shift"
+              name="shiftId"
+              type="dropdown"
+              isPlaceholderVisible={false}
+              options={shiftOptions}
+              register={register}
+              control={control}
+              errors={errors}
+            />
+
+            <CommonInputField<FilterForm>
+              label="Date"
+              name="attendanceDate"
+              type="date"
+              className="[&_.react-datepicker-wrapper]:w-full"
+              register={register}
+              control={control}
+              errors={errors}
+            />
+          </div>
+        </section>
+
+        {/* =================================================
             SUMMARY CARDS
         ================================================= */}
         <section className="px-5 py-5">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
             {summaryCards.map((card) => (
-              <SummaryCardComponent
-                key={card.title}
-                card={card}
-              />
+              <SummaryCardComponent key={card.title} card={card} />
             ))}
           </div>
         </section>
@@ -411,10 +481,15 @@ const AttendanceSummary: React.FC = () => {
         ================================================= */}
         <section className="px-5 pb-5">
           {/* Section title */}
-          <div className="mb-0 rounded-t-xl border border-blue-100 bg-gradient-to-r from-white to-blue-50 px-4 py-2">
+          <div className="mb-0 flex items-center justify-between rounded-t-xl border border-blue-100 bg-gradient-to-r from-white to-blue-50 px-4 py-2">
             <h2 className="text-lg font-bold uppercase text-blue-700">
               Department Wise Summary
             </h2>
+            {loadingDepartments && (
+              <span className="text-xs font-medium text-blue-600">
+                Updating…
+              </span>
+            )}
           </div>
 
           {/* Table */}
@@ -490,6 +565,17 @@ const AttendanceSummary: React.FC = () => {
                     </td>
                   </tr>
                 ))}
+
+                {!loadingDepartments && departmentData.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan={7}
+                      className="px-4 py-6 text-center text-sm text-slate-500"
+                    >
+                      No attendance data for the selected shift and date.
+                    </td>
+                  </tr>
+                )}
               </tbody>
 
               {/* Total */}
@@ -526,12 +612,26 @@ const AttendanceSummary: React.FC = () => {
               </tfoot>
             </table>
           </div>
-          <a href="/production-floor-portal" >Click here to go to Production Floor Portal</a><br/>
-          <a href="/attendance-dashboard">Go to Attendance Dashboard</a><br/>
-          <a href="/payroll-and-workforce-movement">Payroll and Workforce Movement</a><br/>
-          <a href="/director-dashboard">Click to go to Directors Dashboard</a><br/>
-          <a href="/attendance-and-workforce-movement">Click to go to Attendance and Workforce Movement</a><br/>
-          <a href="/hr-branch-manager">Click to go to HR Branch Manager Dashboard</a>
+
+          <a href="/production-floor-portal">
+            Click here to go to Production Floor Portal
+          </a>
+          <br />
+          <a href="/attendance-dashboard">Go to Attendance Dashboard</a>
+          <br />
+          <a href="/payroll-and-workforce-movement">
+            Payroll and Workforce Movement
+          </a>
+          <br />
+          <a href="/director-dashboard">Click to go to Directors Dashboard</a>
+          <br />
+          <a href="/attendance-and-workforce-movement">
+            Click to go to Attendance and Workforce Movement
+          </a>
+          <br />
+          <a href="/hr-branch-manager">
+            Click to go to HR Branch Manager Dashboard
+          </a>
         </section>
 
         {/* =================================================
@@ -557,9 +657,7 @@ const AttendanceSummary: React.FC = () => {
           <div className="flex items-center gap-2 text-xs">
             <Bell className="h-5 w-5 text-cyan-400" />
 
-            <span>
-              Every Punch Counts! Ensure accurate attendance.
-            </span>
+            <span>Every Punch Counts! Ensure accurate attendance.</span>
           </div>
 
           {/* Right */}
