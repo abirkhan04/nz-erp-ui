@@ -242,7 +242,9 @@ const MaternityLeaveEncashment = () => {
                 period:
                     "Pre-Delivery",
 
-                numberOfDays: 64,
+                numberOfDays: maternityLeave?.closingBalance
+                    ? maternityLeave?.closingBalance / 2
+                    : 0,
 
                 fromDate: "",
                 toDate: "",
@@ -268,7 +270,9 @@ const MaternityLeaveEncashment = () => {
                 period:
                     "Post-Delivery",
 
-                numberOfDays: 64,
+                numberOfDays: maternityLeave?.closingBalance
+                    ? maternityLeave?.closingBalance / 2
+                    : 0,
 
                 fromDate: "",
                 toDate: "",
